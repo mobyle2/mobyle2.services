@@ -1,0 +1,52 @@
+_type: Program
+name: sig
+version: '1.0'
+title: sig
+description: Multiple Prosite motifs searching
+authors: Eric Deveaud
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Protein Sequences
+        name: seqfile
+        simple: true
+        argpos: '100'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2044
+    -   _type: InputProgramParameter
+        comment: 'File format : one pattern per line.A pattern consists in motifs
+            definition separated by distance constraints.The format is strictly the
+            following: motif_1 (min,max) motif_2 ... (min,max) motif_n, and so on..'
+        prompt: Pattern File (-f)
+        name: patterns
+        simple: true
+        argpos: '2'
+        format: {perl: '(defined $value) ? " -f $value" : ""', python: '("", " -f
+                "+str(value))[value is not None]'}
+        mandatory: true
+    -   _type: InputProgramParameter
+        prompt: Allows motifs from pattern to be overlapping (-i)
+        name: overlapping
+        argpos: '2'
+        format: {perl: '($value) ? " -i" : ""', python: '("", " -i")[ value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Searches motifs in ordered and reverse search order, conserving the
+            distance constraints (-r)
+        name: reverse
+        argpos: '2'
+        format: {perl: '($value) ? " -r" : ""', python: '("", " -r")[ value ]'}
+        type: {_type: BooleanType, default: false}
+outputs: {_type: OutputParagraph}
+comment: "sig  is a program to search  multiple occurences of\n\tmultiple motifs in\
+    \ a set of sequences."
+operations: ['EDAM_operation:0342']
+topics: ['EDAM_topic:0160', 'EDAM_topic:0090']
+public_name: sig
+command: {path: null, value: sig}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/sig/']

@@ -1,0 +1,99 @@
+_type: Program
+name: primo
+title: PRIMO
+description: A primer design tool
+authors: Kupfer, Li
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Sequence data
+        name: input_file_name
+        simple: true
+        argpos: '1'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2977
+    -   _type: InputProgramParameter
+        name: all
+        argpos: '10'
+        format: {perl: '" -all"', python: '" -all"'}
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Cover template with walking-primers on both strands (-cover)
+        name: cover
+        argpos: '10'
+        format: {perl: '($value)? " -cover" : ""', python: '( "" , " -cover" )[ value
+                ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Print formatted/annotated sequence to log file (-print)
+        name: print
+        argpos: '10'
+        format: {perl: '($value)? " -print" : ""', python: '( "" , " -print" )[ value
+                ]'}
+        precond: {'#not': cover}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Regions file (-read)
+        name: regions_file
+        argpos: '10'
+        format: {perl: '(defined $value)? " -read $value" : ""', python: '( "" , "
+                -read " + str(value) )[ value is not None ]'}
+    -   _type: InputProgramParameter
+        prompt: Use quality data? (-noqual)
+        name: qual_file
+        argpos: '10'
+        format: {perl: '($value)? "" : " -noqual"', python: '( " -noqual" , "" )[
+                value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Repeats file
+        name: repeats_file
+        argpos: '-10'
+        format: {perl: '(defined $value)? "ln -s $value human.rep; " : ""', python: '(
+                "" , "ln -s " +str(value)+ " human.rep; " )[ value is not None ]'}
+    -   _type: InputProgramParameter
+        prompt: Oligo file
+        name: oligo_file
+        argpos: '-10'
+        format: {perl: '(defined $value )? "ln -s $value oligo.screen; " : ""', python: '(
+                "" , "ln -s " +str(value)+ " oligo.screen; " )[ value is not None
+                ]'}
+    -   _type: InputProgramParameter
+        name: rf
+        argpos: '-10'
+        format: {perl: '"ln -s $regions_file $input_file_name.regions && "', python: '"ln
+                -s "+str(regions_file) + " " + str(input_file_name) + ".regions &&
+                "'}
+        precond:
+            regions_file: {'#ne': None}
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        name: qf
+        argpos: '-10'
+        format: {perl: '"ln -s $qual_file $input_file_name.qual; "', python: '"ln
+                -s "+str(qual_file) + " " + str(input_file_name) + ".qual && "'}
+        precond: qual_file
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output files
+        name: results_files
+        filenames: {perl: '"oligo.cri"', python: '"oligo.cri"'}
+operations: ['EDAM_operation:0308']
+topics: ['EDAM_topic:3032']
+references:
+- {doi: null, label: 'P. Li, K. C. Kupfer, C. J. Davies, D. Burbee, G. A. Evans, and
+        H. R. Garner. PRIMO: A primer design program that applies base quality statistics
+        for automated large-scale DNA sequencing. Genomics 40:476-485 (1997).', url: null}
+public_name: primo
+command: {path: null, value: primo}

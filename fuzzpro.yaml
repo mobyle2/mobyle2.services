@@ -1,0 +1,122 @@
+_type: Program
+name: fuzzpro
+title: fuzzpro
+description: Search for patterns in protein sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+        -   _type: InputProgramParameter
+            comment: "The standard IUPAC one-letter codes for the amino acids are\
+                \ used. \n  The symbol 'x' is used for a position where any amino\
+                \ acid is  accepted. \n  Ambiguities are indicated by listing the\
+                \ acceptable amino acids  for a given position, between square parentheses\
+                \ '[ ]'. For  example: [ALT] stands for Ala or Leu or Thr. \n  Ambiguities\
+                \ are also indicated by listing between a pair of curly  brackets\
+                \ '{ }' the amino acids that are not accepted at a given  position.\
+                \ For example: {AM} stands for any amino acid except Ala  and Met.\
+                \ \n  Each element in a pattern is separated from its neighbor by\
+                \ a '-'.  (Optional in fuzzpro). \n  Repetition of an element of the\
+                \ pattern can be indicated by  following that element with a numerical\
+                \ value or a numerical range  between parenthesis. Examples: x(3)\
+                \ corresponds to x-x-x, x(2,4)  corresponds to x-x or x-x-x or x-x-x-x.\
+                \ \n  When a pattern is restricted to either the N- or C-terminal\
+                \ of a  sequence, that pattern either starts with a '<' symbol or\
+                \  respectively ends with a '>' symbol. \n  A period ends the pattern.\
+                \ (Optional in fuzzpro). \n  For example, [DE](2)HS{P}X(2)PX(2,4)C"
+            prompt: Search pattern
+            name: e_pattern
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -pattern=@" + str(value))[value is not None]'}
+            mandatory: true
+        -   _type: InputProgramParameter
+            prompt: Search pattern
+            name: e_pmismatch
+            argpos: '3'
+            format: {python: '("", " -pmismatch=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '4'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: fuzzpro.report}
+        -   _type: InputProgramParameter
+            prompt: Choose the report output format
+            name: e_rformat_outfile
+            argpos: '5'
+            format: {python: '("", " -rformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: SEQTABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '6'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+operations: ['EDAM_operation:0382', 'EDAM_operation:0347']
+topics: ['EDAM_topic:0161']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/fuzzpro.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: fuzzpro
+command: {path: null, value: fuzzpro}

@@ -1,0 +1,207 @@
+_type: Program
+name: cons
+title: cons
+description: Create a consensus sequence from a multiple alignment
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            comment: File containing a sequence alignment.
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200', 'EDAM_format:1993', 'EDAM_format:1996',
+                    'EDAM_format:1985', 'EDAM_format:1986', 'EDAM_format:1988', 'EDAM_format:1989',
+                    'EDAM_format:1987', 'EDAM_format:2002', 'EDAM_format:2003', 'EDAM_format:1999',
+                    'EDAM_format:2001', 'EDAM_format:2001', 'EDAM_format:2001', 'EDAM_format:1990']
+                data_terms: EDAM_data:0863
+        -   _type: InputProgramParameter
+            comment: This is the scoring matrix file used when comparing sequences.
+                By default it is the file 'EBLOSUM62' (for proteins) or  the file
+                'EDNAFULL' (for nucleic sequences). These files are  found in the
+                'data' directory of the EMBOSS installation.
+            prompt: Scoring matrix
+            name: e_datafile
+            argpos: '2'
+            format: {python: '("", " -datafile=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: Eblosum30, value: EBLOSUM30}
+                - {label: Eblosum35, value: EBLOSUM35}
+                - {label: Eblosum40, value: EBLOSUM40}
+                - {label: Eblosum45, value: EBLOSUM45}
+                - {label: Eblosum50, value: EBLOSUM50}
+                - {label: Eblosum55, value: EBLOSUM55}
+                - {label: Eblosum60, value: EBLOSUM60}
+                - {label: Eblosum62, value: EBLOSUM62}
+                - {label: Eblosum62-12, value: EBLOSUM62-12}
+                - {label: Eblosum65, value: EBLOSUM65}
+                - {label: Eblosum70, value: EBLOSUM70}
+                - {label: Eblosum75, value: EBLOSUM75}
+                - {label: Eblosum80, value: EBLOSUM80}
+                - {label: Eblosum85, value: EBLOSUM85}
+                - {label: Eblosum90, value: EBLOSUM90}
+                - {label: Eblosumn, value: EBLOSUMN}
+                - {label: Ednafull, value: EDNAFULL}
+                - {label: Ednamat, value: EDNAMAT}
+                - {label: Ednasimple, value: EDNASIMPLE}
+                - {label: Epam10, value: EPAM10}
+                - {label: Epam100, value: EPAM100}
+                - {label: Epam110, value: EPAM110}
+                - {label: Epam120, value: EPAM120}
+                - {label: Epam130, value: EPAM130}
+                - {label: Epam140, value: EPAM140}
+                - {label: Epam150, value: EPAM150}
+                - {label: Epam160, value: EPAM160}
+                - {label: Epam170, value: EPAM170}
+                - {label: Epam180, value: EPAM180}
+                - {label: Epam190, value: EPAM190}
+                - {label: Epam20, value: EPAM20}
+                - {label: Epam200, value: EPAM200}
+                - {label: Epam210, value: EPAM210}
+                - {label: Epam220, value: EPAM220}
+                - {label: Epam230, value: EPAM230}
+                - {label: Epam240, value: EPAM240}
+                - {label: Epam250, value: EPAM250}
+                - {label: Epam260, value: EPAM260}
+                - {label: Epam270, value: EPAM270}
+                - {label: Epam280, value: EPAM280}
+                - {label: Epam290, value: EPAM290}
+                - {label: Epam30, value: EPAM30}
+                - {label: Epam300, value: EPAM300}
+                - {label: Epam310, value: EPAM310}
+                - {label: Epam320, value: EPAM320}
+                - {label: Epam330, value: EPAM330}
+                - {label: Epam340, value: EPAM340}
+                - {label: Epam350, value: EPAM350}
+                - {label: Epam360, value: EPAM360}
+                - {label: Epam370, value: EPAM370}
+                - {label: Epam380, value: EPAM380}
+                - {label: Epam390, value: EPAM390}
+                - {label: Epam40, value: EPAM40}
+                - {label: Epam400, value: EPAM400}
+                - {label: Epam410, value: EPAM410}
+                - {label: Epam420, value: EPAM420}
+                - {label: Epam430, value: EPAM430}
+                - {label: Epam440, value: EPAM440}
+                - {label: Epam450, value: EPAM450}
+                - {label: Epam460, value: EPAM460}
+                - {label: Epam470, value: EPAM470}
+                - {label: Epam480, value: EPAM480}
+                - {label: Epam490, value: EPAM490}
+                - {label: Epam50, value: EPAM50}
+                - {label: Epam500, value: EPAM500}
+                - {label: Epam60, value: EPAM60}
+                - {label: Epam70, value: EPAM70}
+                - {label: Epam80, value: EPAM80}
+                - {label: Epam90, value: EPAM90}
+                - {label: Sssub, value: SSSUB}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            comment: Set a cut-off for the number of positive matches below which
+                there is no consensus. The default plurality is taken as  half the
+                total weight of all the sequences in the alignment.
+            prompt: Plurality check value
+            name: e_plurality
+            argpos: '3'
+            format: {python: '("", " -plurality=" + str(value))[value is not None]'}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            comment: Provides the facility of setting the required number of identities
+                at a site for it to give a consensus at that position.  Therefore,
+                if this is set to the number of sequences in the  alignment only columns
+                of identities contribute to the consensus.
+            prompt: Required number of identities at a position (value greater than
+                or equal to 0)
+            name: e_identity
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '4'
+            format: {python: '("", " -identity=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+        -   _type: InputProgramParameter
+            comment: Sets the threshold for the positive matches above which the consensus
+                is is upper-case and below which the consensus is in  lower-case.
+            prompt: Define a threshold above which the consensus is given in uppercase
+            name: e_setcase
+            argpos: '5'
+            format: {python: '("", " -setcase=" + str(value))[value is not None]'}
+            type: {_type: FloatType}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output sequence file (e_outseq)
+            name: e_outseq
+            argpos: '6'
+            format: {python: '("" , " -outseq=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: cons.e_outseq}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outseq
+            argpos: '7'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Gff, value: GFF}
+        -   _type: InputProgramParameter
+            prompt: Name of the consensus sequence
+            name: e_name
+            argpos: '8'
+            format: {python: '("", " -name=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '9'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outseq_out option
+            name: e_outseq_out
+            filenames: {python: e_outseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+operations: ['EDAM_operation:0448']
+topics: ['EDAM_topic:0187']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cons.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: cons
+command: {path: null, value: cons}

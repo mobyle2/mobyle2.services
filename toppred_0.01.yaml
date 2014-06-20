@@ -1,0 +1,178 @@
+_type: Program
+name: toppred
+version: '0.01'
+title: TopPred
+description: Topology prediction of membrane proteins
+authors: Heijne, Wallin, Claros, Deveaud, Schuerer
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Command
+        name: toppred
+        argpos: '0'
+        format: {perl: '"toppred"', python: '"toppred"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Sequence
+        name: query
+        simple: true
+        argpos: '10'
+        format: {perl: '" $value"', python: '" "+ str( value )'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2976
+    -   _type: InputProgramParameter
+        prompt: Produce hydrophobicity graph image (-g)
+        name: graph_output
+        simple: true
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Produce image of each topology (-t)
+        name: topo_output
+        simple: true
+        argpos: '7'
+        format: {perl: '($value) ? "" : " -t none"', python: '(" -t none","")[ value
+                ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Control options
+        name: control
+        children:
+        -   _type: InputProgramParameter
+            prompt: Hydrophobicity scale (-H)
+            name: scale
+            argpos: '1'
+            format: {perl: '(defined $value and $value ne $vdef) ? "-H $value" : ""',
+                python: '( "" , " -H " + str( value ) )[ value is not None and value
+                    != vdef ]'}
+            type:
+                _type: StringType
+                default: GES-scale
+                options:
+                - {label: KD-scale (Kyte and Doolittle), value: KD-scale}
+                - {label: GVH-scale (Gunnar von Heijne), value: GVH-scale}
+                - {label: GES-scale (Goldman Engelman Steitz), value: GES-scale}
+        -   _type: InputProgramParameter
+            prompt: 'Organism: eukaryot (default is prokaryot) (-e)'
+            name: organism
+            argpos: '1'
+            format: {perl: '($value) ? " -e" : ""', python: '( "" , " -e" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Certain cutoff (-c)
+            name: certain
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? " -c $value" :
+                    ""', python: '( "" , " -c " + str(value) ) [ value is not None
+                    and value!= vdef ]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            prompt: Putative cutoff (-p)
+            name: putative
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? "-p $value" : ""',
+                python: '( "" , " -p " + str(value) )[ value is not None and value
+                    != vdef ]'}
+            type: {_type: FloatType, default: 0.6}
+        -   _type: InputProgramParameter
+            prompt: 'Core window size: (-n)'
+            name: core
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? " -n $value" :
+                    ""', python: '( "" , " -n " + str(value) )[ value is not None
+                    and value != vdef ]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: 'Wedge window size: (-q)'
+            name: triangle
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? " -q $value" :
+                    ""', python: '( "" , " -q " + str(value) )[ value is not None
+                    and value != vdef ]'}
+            type: {_type: IntegerType, default: 5}
+        -   _type: InputProgramParameter
+            prompt: Critical loop length (-s)
+            name: loop_length
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? " -s $value" :
+                    ""', python: '( "" , " -s " + str(value) )[ value is not None
+                    and value != vdef ]'}
+            type: {_type: IntegerType, default: 60}
+        -   _type: InputProgramParameter
+            prompt: Critical transmembrane spacer (-d)
+            name: Segment_distance
+            argpos: '2'
+            format: {perl: '(defined $value and $value != $vdef) ? " -d $value" :
+                    ""', python: '( "" , " -d " + str( value ) )[ value is not None
+                    and value!= vdef ]'}
+            type: {_type: IntegerType, default: 2}
+    -   _type: InputParagraph
+        prompt: Output options
+        name: output_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Output format (-O)
+            name: outformat
+            argpos: '5'
+            format: {perl: '(defined $value and $value ne $vdef) ? " -O $value" :
+                    ""', python: '( "" , " -O " + str(value) )[ value is not None
+                    and value != vdef ]'}
+            type:
+                _type: StringType
+                default: new
+                options:
+                - {label: New text output format (new), value: new}
+                - {label: HTML, value: html}
+                - {label: Output format of the old toppred implementation (old), value: old}
+        -   _type: InputProgramParameter
+            prompt: Hydrophobicity Profile file format (-g)
+            name: profile_format
+            argpos: '7'
+            format: {perl: '($graph_output) ? " -g $value" : " -g none"', python: '(
+                    " -g none" , " -g " + str(value) )[ graph_output ]'}
+            precond: graph_output
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: PNG output (png), value: png}
+                - {label: PostScript output (ps), value: ps}
+                - {label: PPM output (ppm), value: ppm}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Graphic output files
+        name: graphicfiles
+        filenames: {perl: '*.$profile_format', python: '''*.'' + profile_format'}
+        precond: graph_output
+    -   _type: OutputProgramParameter
+        prompt: Hydrophobicity output files
+        name: hydrophobicity_files
+        filenames: {perl: '*.hydro*', python: '''*.hydro*'''}
+    -   _type: OutputProgramParameter
+        prompt: Output file in html format
+        name: html_file
+        filenames: {perl: '*.html', python: '''*.html'''}
+        precond: {outformat: html}
+operations: ['EDAM_operation:0269']
+topics: ['EDAM_topic:0820']
+references:
+- {doi: null, label: 'von Heijne, G. (1992) Membrane Protein Structure Prediction:
+        Hydrophobicity Analysis and the ''Positive Inside'' Rule. J.Mol.Biol. 225,
+        487-494.', url: null}
+- {doi: null, label: 'Claros, M.G., and von Heijne, G. (1994) TopPred II: An Improved
+        Software For Membrane Protein Structure Predictions. CABIOS 10, 685-686.',
+    url: null}
+- {doi: null, label: 'Deveaud and Schuerer (Institut Pasteur) new implementation of
+        the original toppred program, based on G. von Heijne algorithm.', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/toppred/toppred.pdf']
+public_name: toppred
+command: {path: null, value: null}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/toppred/']

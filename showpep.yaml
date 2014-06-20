@@ -1,0 +1,302 @@
+_type: Program
+name: showpep
+title: showpep
+description: Displays protein sequences with features in pretty format
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Things to display
+            name: e_format
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -format=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: '2'
+                options:
+                - {label: Enter your own list of things to display, value: '0'}
+                - {label: Sequence only, value: '1'}
+                - {label: Default sequence with features, value: '2'}
+                - {label: Pretty sequence  4, value: '3'}
+        -   _type: InputProgramParameter
+            comment: 'Specify a list of one or more code characters in the order in
+                which you wish things to be displayed one above the other down  the
+                page. For example if you wish to see things displayed in the  order:
+                sequence, ticks line, blank line; then you should enter  ''S,T,B''.S:
+                SequenceB: Blank lineT: Ticks lineN: Number ticks lineF: FeaturesA:
+                AnnotationFor example if you wish to see things displayed in the  order:
+                sequence, ticks line, blank line; then you should enter ''S,T,B''.'
+            prompt: Specify your own things to display (value from 1 to 100)
+            name: e_things
+            argpos: '3'
+            format: {python: '("", " -things=" + str(value))[value is not None and
+                    value!=vdef]'}
+            precond: {e_format: '0'}
+            type: {_type: StringType, default: 'B,N,T,S,A,F'}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            comment: "Regions to put in uppercase. \n If this is left blank, then\
+                \ the sequence case is left alone. \n  A set of regions is specified\
+                \ by a set of pairs of positions. \n  The positions are integers.\
+                \ \n  They are separated by any non-digit, non-alpha character. \n\
+                \  Examples of region specifications are: \n  24-45, 56-78 \n  1:45,\
+                \ 67=99;765..888 \n  1,5,8,10,23,45,57,99"
+            prompt: 'Regions to put in uppercase (eg: 4-57,78-94)'
+            name: e_uppercase
+            argpos: '4'
+            format: {python: '("", " -uppercase=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            comment: "Regions to colour if formatting for HTML. \n If this is left\
+                \ blank, then the sequence is left alone. \n  A set of regions is\
+                \ specified by a set of pairs of positions. \n  The positions are\
+                \ integers. \n  They are followed by any valid HTML font colour. \n\
+                \  Examples of region specifications are: \n  24-45 blue 56-78 orange\
+                \ \n  1-100 green 120-156 red \n  A file of ranges to colour (one\
+                \ range per line) can be specified  as '@filename'."
+            prompt: 'Regions to colour in html (eg: 4-57 red 78-94 green)'
+            name: e_highlight
+            argpos: '5'
+            format: {python: '("", " -highlight=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            comment: "Regions to annotate by marking. \n If this is left blank, then\
+                \ no annotation is added. \n  A set of regions is specified by a set\
+                \ of pairs of positions  followed by optional text. \n  The positions\
+                \ are integers. \n  They are followed by any text (but not digits\
+                \ when on the  command-line). \n  Examples of region specifications\
+                \ are: \n  24-45 new domain 56-78 match to Mouse \n  1-100 First part\
+                \ 120-156 oligo \n  A file of ranges to annotate (one range per line)\
+                \ can be specified  as '@filename'."
+            prompt: 'Regions to mark (eg: 4-57 promoter region 78-94 first exon)'
+            name: e_annotation
+            argpos: '6'
+            format: {python: '("", " -annotation=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+        -   _type: InputParagraph
+            prompt: Feature display options
+            name: e_featuresection
+            children:
+            -   _type: InputProgramParameter
+                comment: "By default any feature source in the feature table is shown.\
+                    \ You can set this to match any feature source you wish to  show.\
+                    \ \n  The source name is usually either the name of the program\
+                    \ that  detected the feature or it is the feature table (eg: EMBL)\
+                    \ that  the feature came from. \n  The source may be wildcarded\
+                    \ by using '*'. \n  If you wish to show more than one source,\
+                    \ separate their names  with the character '|', eg: \n  gene*\
+                    \ | embl"
+                prompt: Source of feature to display
+                name: e_sourcematch
+                argpos: '7'
+                format: {python: '("", " -sourcematch=" + str(value))[value is not
+                        None]'}
+                type: {_type: StringType}
+            -   _type: InputProgramParameter
+                comment: "By default any feature type in the feature table is shown.\
+                    \ You can set this to match any feature type you wish to  show.\
+                    \ \n  See http://www.ebi.ac.uk/embl/WebFeat/ for a list of the\
+                    \  EMBL feature types and see Appendix A of the Swissprot user\
+                    \  manual in http://www.expasy.org/sprot/userman.html  for a list\
+                    \ of the Swissprot feature types. \n  The type may be wildcarded\
+                    \ by using '*'. \n  If you wish to show more than one type, separate\
+                    \ their names  with the character '|', eg: \n  *UTR | intron"
+                prompt: Type of feature to display
+                name: e_typematch
+                argpos: '8'
+                format: {python: '("", " -typematch=" + str(value))[value is not None]'}
+                type: {_type: StringType}
+            -   _type: InputProgramParameter
+                comment: Minimum score of feature to display (see also maxscore)
+                prompt: Minimum score of feature to display
+                name: e_minscore
+                argpos: '9'
+                format: {python: '("", " -minscore=" + str(value))[value is not None
+                        and value!=vdef]'}
+                type: {_type: FloatType, default: 0.0}
+            -   _type: InputProgramParameter
+                comment: "Maximum score of feature to display. \n If both minscore\
+                    \ and maxscore are zero (the default),  then any score is ignored"
+                prompt: Maximum score of feature to display
+                name: e_maxscore
+                argpos: '10'
+                format: {python: '("", " -maxscore=" + str(value))[value is not None
+                        and value!=vdef]'}
+                type: {_type: FloatType, default: 0.0}
+            -   _type: InputProgramParameter
+                comment: "Tags are the types of extra values that a feature may have.\
+                    \  By default any feature tag in the feature table is shown. You\
+                    \  can set this to match any feature tag you wish to show. \n\
+                    \  The tag may be wildcarded by using '*'. \n  If you wish to\
+                    \ show more than one tag, separate their names with  the character\
+                    \ '|', eg: \n  gene | label"
+                prompt: Tag of feature to display
+                name: e_tagmatch
+                argpos: '11'
+                format: {python: '("", " -tagmatch=" + str(value))[value is not None]'}
+                type: {_type: StringType}
+            -   _type: InputProgramParameter
+                comment: "Tag values are the values associated with a feature tag.\
+                    \ Tags are the types of extra values that a feature may have.\
+                    \  By default any feature tag value in the  feature table is shown.\
+                    \ You can set this to match any feature  tag value you wish to\
+                    \ show. \n  The tag value may be wildcarded by using '*'. \n \
+                    \ If you wish to show more than one tag value, separate their\
+                    \  names with the character '|', eg: \n  pax* | 10"
+                prompt: Value of feature tags to display
+                name: e_valuematch
+                argpos: '12'
+                format: {python: '("", " -valuematch=" + str(value))[value is not
+                        None]'}
+                type: {_type: StringType}
+            -   _type: InputProgramParameter
+                comment: By default if any tag/value pair in a feature matches the
+                    specified tag and value, then all the tags/value pairs of that  feature
+                    will be displayed. If this is set to be true, then only  those
+                    tag/value pairs in a feature that match the specified tag  and
+                    value will be displayed.
+                prompt: Only display the matching tags
+                name: e_stricttags
+                argpos: '13'
+                format: {python: '("", " -stricttags")[ bool(value) ]'}
+                type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            prompt: Display protein sequences in three-letter code
+            name: e_threeletter
+            argpos: '14'
+            format: {python: '("", " -threeletter")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Number the sequences
+            name: e_number
+            argpos: '15'
+            format: {python: '("", " -number")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Width of sequence to display (value greater than or equal to 1)
+            name: e_width
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '16'
+            format: {python: '("", " -width=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 60}
+        -   _type: InputProgramParameter
+            prompt: Line length of page (0 for indefinite) (value greater than or
+                equal to 0)
+            name: e_length
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '17'
+            format: {python: '("", " -length=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+        -   _type: InputProgramParameter
+            prompt: Margin around sequence for numbering (value greater than or equal
+                to 0)
+            name: e_margin
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '18'
+            format: {python: '("", " -margin=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to display the ID name
+                of the sequence
+            prompt: Show sequence id
+            name: e_name
+            argpos: '19'
+            format: {python: '(" -noname", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to display the description
+                of the sequence
+            prompt: Show description
+            name: e_description
+            argpos: '20'
+            format: {python: '(" -nodescription", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Offset to start numbering the sequence from
+            name: e_offset
+            argpos: '21'
+            format: {python: '("", " -offset=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Use html formatting
+            name: e_html
+            argpos: '22'
+            format: {python: '("", " -html")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '23'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: showpep.e_outfile}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '24'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0564']
+topics: ['EDAM_topic:0092']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/showpep.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: showpep
+command: {path: null, value: showpep}

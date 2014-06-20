@@ -1,0 +1,246 @@
+_type: Program
+name: water
+title: water
+description: Smith-Waterman local alignment of sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: asequence option
+            name: e_asequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -asequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: bsequence option
+            name: e_bsequence
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -bsequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            comment: This is the scoring matrix file used when comparing sequences.
+                By default it is the file 'EBLOSUM62' (for proteins) or  the file
+                'EDNAFULL' (for nucleic sequences). These files are  found in the
+                'data' directory of the EMBOSS installation.
+            prompt: Matrix file
+            name: e_datafile
+            argpos: '3'
+            format: {python: '("", " -datafile=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: Eblosum30, value: EBLOSUM30}
+                - {label: Eblosum35, value: EBLOSUM35}
+                - {label: Eblosum40, value: EBLOSUM40}
+                - {label: Eblosum45, value: EBLOSUM45}
+                - {label: Eblosum50, value: EBLOSUM50}
+                - {label: Eblosum55, value: EBLOSUM55}
+                - {label: Eblosum60, value: EBLOSUM60}
+                - {label: Eblosum62, value: EBLOSUM62}
+                - {label: Eblosum62-12, value: EBLOSUM62-12}
+                - {label: Eblosum65, value: EBLOSUM65}
+                - {label: Eblosum70, value: EBLOSUM70}
+                - {label: Eblosum75, value: EBLOSUM75}
+                - {label: Eblosum80, value: EBLOSUM80}
+                - {label: Eblosum85, value: EBLOSUM85}
+                - {label: Eblosum90, value: EBLOSUM90}
+                - {label: Eblosumn, value: EBLOSUMN}
+                - {label: Ednafull, value: EDNAFULL}
+                - {label: Ednamat, value: EDNAMAT}
+                - {label: Ednasimple, value: EDNASIMPLE}
+                - {label: Epam10, value: EPAM10}
+                - {label: Epam100, value: EPAM100}
+                - {label: Epam110, value: EPAM110}
+                - {label: Epam120, value: EPAM120}
+                - {label: Epam130, value: EPAM130}
+                - {label: Epam140, value: EPAM140}
+                - {label: Epam150, value: EPAM150}
+                - {label: Epam160, value: EPAM160}
+                - {label: Epam170, value: EPAM170}
+                - {label: Epam180, value: EPAM180}
+                - {label: Epam190, value: EPAM190}
+                - {label: Epam20, value: EPAM20}
+                - {label: Epam200, value: EPAM200}
+                - {label: Epam210, value: EPAM210}
+                - {label: Epam220, value: EPAM220}
+                - {label: Epam230, value: EPAM230}
+                - {label: Epam240, value: EPAM240}
+                - {label: Epam250, value: EPAM250}
+                - {label: Epam260, value: EPAM260}
+                - {label: Epam270, value: EPAM270}
+                - {label: Epam280, value: EPAM280}
+                - {label: Epam290, value: EPAM290}
+                - {label: Epam30, value: EPAM30}
+                - {label: Epam300, value: EPAM300}
+                - {label: Epam310, value: EPAM310}
+                - {label: Epam320, value: EPAM320}
+                - {label: Epam330, value: EPAM330}
+                - {label: Epam340, value: EPAM340}
+                - {label: Epam350, value: EPAM350}
+                - {label: Epam360, value: EPAM360}
+                - {label: Epam370, value: EPAM370}
+                - {label: Epam380, value: EPAM380}
+                - {label: Epam390, value: EPAM390}
+                - {label: Epam40, value: EPAM40}
+                - {label: Epam400, value: EPAM400}
+                - {label: Epam410, value: EPAM410}
+                - {label: Epam420, value: EPAM420}
+                - {label: Epam430, value: EPAM430}
+                - {label: Epam440, value: EPAM440}
+                - {label: Epam450, value: EPAM450}
+                - {label: Epam460, value: EPAM460}
+                - {label: Epam470, value: EPAM470}
+                - {label: Epam480, value: EPAM480}
+                - {label: Epam490, value: EPAM490}
+                - {label: Epam50, value: EPAM50}
+                - {label: Epam500, value: EPAM500}
+                - {label: Epam60, value: EPAM60}
+                - {label: Epam70, value: EPAM70}
+                - {label: Epam80, value: EPAM80}
+                - {label: Epam90, value: EPAM90}
+                - {label: Sssub, value: SSSUB}
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: The gap open penalty is the score taken away when a gap is created.
+                The best value depends on the choice of comparison  matrix. The default
+                value assumes you are using the EBLOSUM62  matrix for protein sequences,
+                and the EDNAFULL matrix for  nucleotide sequences.
+            prompt: Gap opening penalty (value from 0.0 to 100.0)
+            name: e_gapopen
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100.0 is required
+                test:
+                    value: {'#lte': '100.0'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -gapopen=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            comment: The gap extension penalty is added to the standard gap penalty
+                for each base or residue in the gap. This is how long gaps  are penalized.
+                Usually you will expect a few long gaps rather  than many short gaps,
+                so the gap extension penalty should be lower  than the gap penalty.
+                An exception is where one or both sequences  are single reads with
+                possible sequencing errors in which case  you would expect many single
+                base gaps. You can get this result by  setting the gap open penalty
+                to zero (or very low) and using the  gap extension penalty to control
+                gap scoring.
+            prompt: Gap extension penalty (value from 0.0 to 10.0)
+            name: e_gapextend
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 10.0 is required
+                test:
+                    value: {'#lte': '10.0'}
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -gapextend=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: FloatType}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            comment: Brief identity and similarity
+            prompt: Brief identity and similarity
+            name: e_brief
+            argpos: '6'
+            format: {python: '(" -nobrief", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Name of the output alignment file
+            name: e_outfile
+            argpos: '7'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: water.align}
+        -   _type: InputProgramParameter
+            prompt: Choose the alignment output format
+            name: e_aformat_outfile
+            argpos: '8'
+            format: {python: '("", " -aformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: SRS
+                options:
+                - {label: Fasta, value: FASTA}
+                - {label: Msf, value: MSF}
+                - {label: Pair, value: PAIR}
+                - {label: Markx0, value: MARKX0}
+                - {label: Markx1, value: MARKX1}
+                - {label: Markx2, value: MARKX2}
+                - {label: Markx3, value: MARKX3}
+                - {label: Markx10, value: MARKX10}
+                - {label: Srs, value: SRS}
+                - {label: Srspair, value: SRSPAIR}
+                - {label: Score, value: SCORE}
+                - {label: Unknown, value: UNKNOWN}
+                - {label: Multiple, value: MULTIPLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Match, value: MATCH}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '9'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_aformat_outfile:
+                    '#in': [FASTA, MSF]
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0863'}
+        -   _type: OutputProgramParameter
+            prompt: outfile_out2 option
+            name: e_outfile_out2
+            filenames: {python: e_outfile}
+            precond:
+                e_aformat_outfile:
+                    '#in': [PAIR, MARKX0, MARKX1, MARKX2, MARKX3, MARKX10, SRS, SRSPAIR,
+                        SCORE, UNKNOWN, MULTIPLE, SIMPLE, MATCH]
+operations: ['EDAM_operation:0493']
+topics: ['EDAM_topic:0185']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/water.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: water
+command: {path: null, value: water}

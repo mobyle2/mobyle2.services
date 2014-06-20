@@ -1,0 +1,140 @@
+_type: Program
+name: octanol
+title: octanol
+description: Draw a White-Wimley protein hydropathy plot
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+        -   _type: InputProgramParameter
+            prompt: White-wimley data file
+            name: e_datafile
+            argpos: '2'
+            format: {python: '("", " -datafile=" + str(value))[value is not None ]'}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Window size (value from 1 to 200)
+            name: e_width
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 200 is required
+                test:
+                    value: {'#lte': '200'}
+            argpos: '3'
+            format: {python: '("", " -width=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 19}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            simple: true
+            argpos: '4'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '5'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: octanol_xygraph}
+        -   _type: InputProgramParameter
+            prompt: Display the octanol plot
+            name: e_plotoctanol
+            argpos: '6'
+            format: {python: '("", " -plotoctanol")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Display the interface plot
+            name: e_plotinterface
+            argpos: '7'
+            format: {python: '("", " -plotinterface")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Display the difference plot
+            name: e_plotdifference
+            argpos: '8'
+            format: {python: '(" -noplotdifference", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '9'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond: {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond: {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond: {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond: {e_graph: data}
+operations: ['EDAM_operation:0401']
+topics: ['EDAM_topic:0137']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/octanol.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: octanol
+command: {path: null, value: octanol}

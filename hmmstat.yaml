@@ -1,0 +1,19 @@
+_type: Program
+name: hmmstat
+title: HMMSTAT
+description: Sisplay summary statistics for a profile file
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Name of the HMM profile
+        name: Name
+        simple: true
+        argpos: '2'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+outputs: {_type: OutputParagraph}
+operations: ['EDAM_operation:2404']
+topics: ['EDAM_topic:0188']
+public_name: hmmstat
+command: {path: null, value: hmmstat}

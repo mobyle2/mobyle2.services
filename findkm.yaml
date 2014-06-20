@@ -1,0 +1,113 @@
+_type: Program
+name: findkm
+title: findkm
+description: Calculate and plot enzyme reaction data
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Enzyme kinetics data (application-specific) file
+            name: e_infile
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -infile=" + str(value))[value is not None]'}
+            mandatory: true
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            prompt: S/v vs s
+            name: e_plot
+            argpos: '2'
+            format: {python: '(" -noplot", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '3'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: findkm.e_outfile}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graphlb output format
+            name: e_graphlb
+            simple: true
+            argpos: '4'
+            format: {python: '(" -graphlb=" + str(vdef), " -graphlb=" + str(value))[value
+                    is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '5'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: findkm_xygraph}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '6'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond: {e_graphlb: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond: {e_graphlb: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                - {e_graphlb: ps}
+                - {e_graphlb: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond: {e_graphlb: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond: {e_graphlb: data}
+operations: ['EDAM_operation:0334']
+topics: ['EDAM_topic:0132']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/findkm.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: findkm
+command: {path: null, value: findkm}

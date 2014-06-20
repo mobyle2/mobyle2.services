@@ -1,0 +1,206 @@
+_type: Program
+name: est2genome
+title: est2genome
+description: Align EST sequences to genomic DNA sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Spliced est nucleotide sequence(s)
+            name: e_estsequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -estsequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+        -   _type: InputProgramParameter
+            prompt: Additional section
+            name: e_genomesequence
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -genomesequence=" + str(value))[value is not
+                    None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+        -   _type: InputProgramParameter
+            prompt: Score for matching two bases
+            name: e_match
+            argpos: '3'
+            format: {python: '("", " -match=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Cost for mismatching two bases
+            name: e_mismatch
+            argpos: '4'
+            format: {python: '("", " -mismatch=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            comment: Cost for deleting a single base in either sequence, excluding
+                introns
+            prompt: Gap penalty
+            name: e_gappenalty
+            argpos: '5'
+            format: {python: '("", " -gappenalty=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 2}
+        -   _type: InputProgramParameter
+            comment: Cost for an intron, independent of length.
+            prompt: Intron penalty
+            name: e_intronpenalty
+            argpos: '6'
+            format: {python: '("", " -intronpenalty=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 40}
+        -   _type: InputProgramParameter
+            comment: Cost for an intron, independent of length and starting/ending
+                on donor-acceptor sites
+            prompt: Splice site penalty
+            name: e_splicepenalty
+            argpos: '7'
+            format: {python: '("", " -splicepenalty=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 20}
+        -   _type: InputProgramParameter
+            comment: Exclude alignments with scores below this threshold score.
+            prompt: Minimum accepted score
+            name: e_minscore
+            argpos: '8'
+            format: {python: '("", " -minscore=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 30}
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            comment: Reverse the orientation of the EST sequence
+            prompt: Reverse orientation
+            name: e_reverse
+            argpos: '9'
+            format: {python: '("", " -reverse")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Use donor and acceptor splice sites. If you want to ignore donor-acceptor
+                sites then set this to be false.
+            prompt: Use donor and acceptor splice sites
+            name: e_usesplice
+            argpos: '10'
+            format: {python: '(" -nousesplice", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This determines the comparison mode. The default value is 'both',
+                in which case both strands of the est are compared  assuming a forward
+                gene direction (ie GT/AG splice sites), and the  best comparison redone
+                assuming a reversed (CT/AC) gene splicing  direction. The other allowed
+                modes are 'forward', when just the  forward strand is searched, and
+                'reverse', ditto for the reverse  strand.
+            prompt: Comparison mode
+            name: e_mode
+            argpos: '11'
+            format: {python: '("", " -mode=" + str(value))[value is not None and value!=vdef]'}
+            type:
+                _type: StringType
+                default: both
+                options:
+                - {label: Both strands, value: both}
+                - {label: Forward strand only, value: forward}
+                - {label: Reverse strand only, value: reverse}
+        -   _type: InputProgramParameter
+            comment: You can print out all comparisons instead of just the best one
+                by setting this to be false.
+            prompt: Print out only best alignment
+            name: e_best
+            argpos: '12'
+            format: {python: '(" -nobest", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "For linear-space recursion. If product of sequence lengths divided\
+                \ by 4 exceeds this then a divide-and-conquer strategy is  used to\
+                \ control the memory requirements. In this way very long  sequences\
+                \ can be aligned. \n  If you have a machine with plenty of memory\
+                \ you can raise this  parameter (but do not exceed the machine's physical\
+                \ RAM)"
+            prompt: Space threshold (in megabytes)
+            name: e_space
+            argpos: '13'
+            format: {python: '("", " -space=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: FloatType, default: 10.0}
+        -   _type: InputProgramParameter
+            prompt: Shuffle
+            name: e_shuffle
+            argpos: '14'
+            format: {python: '("", " -shuffle=" + str(value))[value is not None]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Random number seed
+            name: e_seed
+            argpos: '15'
+            format: {python: '("", " -seed=" + str(value))[value is not None and value!=vdef]'}
+            type: {_type: IntegerType, default: 20825}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '16'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: est2genome.e_outfile}
+        -   _type: InputProgramParameter
+            comment: Show the alignment. The alignment includes the first and last
+                5 bases of each intron, together with the intron width. The  direction
+                of splicing is indicated by angle brackets (forward or  reverse) or
+                ???? (unknown).
+            prompt: Show the alignment
+            name: e_align
+            argpos: '17'
+            format: {python: '("", " -align")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Alignment width
+            name: e_width
+            argpos: '18'
+            format: {python: '("", " -width=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 50}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '19'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:2429']
+topics: ['EDAM_topic:0102', 'EDAM_topic:0196']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/est2genome.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: est2genome
+command: {path: null, value: est2genome}

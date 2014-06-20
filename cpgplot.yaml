@@ -1,0 +1,245 @@
+_type: Program
+name: cpgplot
+title: cpgplot
+description: Identify and plot CpG islands in nucleotide sequence(s)
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: The percentage CG content and the Observed frequency of CG is
+                calculated within a window whose size is set by this parameter.  The
+                window is moved down the sequence and these statistics are  calculated
+                at each position that the window is moved to.
+            prompt: Window size (value greater than or equal to 1)
+            name: e_window
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -window=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            comment: This sets the minimum length that a CpG island has to be before
+                it is reported.
+            prompt: Minimum length of an island (value greater than or equal to 1)
+            name: e_minlen
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -minlen=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 200}
+        -   _type: InputProgramParameter
+            comment: This sets the minimum average observed to expected ratio of C
+                plus G to CpG in a set of 10 windows that are required before a  CpG
+                island is reported.
+            prompt: Minimum observed/expected (value from 0. to 10.)
+            name: e_minoe
+            ctrl:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 10. is required
+                test:
+                    value: {'#lte': '10.0'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -minoe=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 0.6}
+        -   _type: InputProgramParameter
+            comment: This sets the minimum average percentage of G plus C a set of
+                10 windows that are required before a CpG island is reported.
+            prompt: Minimum percentage (value from 0. to 100.)
+            name: e_minpc
+            ctrl:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100. is required
+                test:
+                    value: {'#lte': '100.0'}
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -minpc=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 50.0}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            comment: This sets the name of the file holding the report of the input
+                sequence name, CpG island parameters and the output details  of any
+                CpG islands that are found.
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '6'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: cpgplot.e_outfile}
+        -   _type: InputProgramParameter
+            prompt: Plot cpg island score
+            name: e_plot
+            argpos: '7'
+            format: {python: '(" -noplot", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            argpos: '8'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            precond: e_plot
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '9'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            precond: e_plot
+            type: {_type: StringType, default: cpgplot_xygraph}
+        -   _type: InputProgramParameter
+            comment: If this is set to true then the graph of the observed to expected
+                ratio of C plus G to CpG within a window is displayed.
+            prompt: Show observed/expected threshold line
+            name: e_obsexp
+            argpos: '10'
+            format: {python: '(" -noobsexp", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If this is set to true then the graph of the regions which have
+                been determined to be CpG islands is displayed.
+            prompt: Show cpg rich regions
+            name: e_cg
+            argpos: '11'
+            format: {python: '(" -nocg", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If this is set to true then the graph of the percentage C plus
+                G within a window is displayed.
+            prompt: Show percentage line
+            name: e_pc
+            argpos: '12'
+            format: {python: '(" -nopc", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: File for output features
+            prompt: Name of the output feature file (e_outfeat)
+            name: e_outfeat
+            argpos: '13'
+            format: {python: '("" , " -outfeat=" + str(value))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: Choose the feature output format
+            name: e_offormat_outfeat
+            argpos: '14'
+            format: {python: '("", " -offormat=" + str(value))[value is not None and
+                    value!=vdef]'}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '15'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                -   '#and':
+                    - e_plot
+                    - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: data}
+        -   _type: OutputProgramParameter
+            prompt: outfeat_out option
+            name: e_outfeat_out
+            filenames: {python: e_outfeat}
+operations: ['EDAM_operation:0430', 'EDAM_operation:0576']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cpgplot.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: cpgplot
+command: {path: null, value: cpgplot}

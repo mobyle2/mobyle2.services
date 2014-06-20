@@ -1,0 +1,117 @@
+_type: Program
+name: palindrome
+title: palindrome
+description: Finds inverted repeats in nucleotide sequence(s)
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Enter minimum length of palindrome (value greater than or equal
+                to 1)
+            name: e_minpallen
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -minpallen=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: Enter maximum length of palindrome
+            name: e_maxpallen
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -maxpallen=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            prompt: Enter maximum gap between repeated regions (value greater than
+                or equal to 0)
+            name: e_gaplimit
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -gaplimit=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            prompt: Number of mismatches allowed (Positive integer)
+            name: e_nummismatches
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -nummismatches=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 0}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '6'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: outfile.pal}
+        -   _type: InputProgramParameter
+            prompt: Report overlapping matches
+            name: e_overlap
+            argpos: '7'
+            format: {python: '(" -nooverlap", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '8'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0379', 'EDAM_operation:0278']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/palindrome.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: palindrome
+command: {path: null, value: palindrome}

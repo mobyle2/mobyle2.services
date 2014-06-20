@@ -1,0 +1,550 @@
+_type: Program
+name: pars
+title: pars
+description: Discrete character parsimony
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: pars
+        argpos: '0'
+        format: {perl: '"pars < pars.params"', python: '"pars < pars.params"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        comment: 'Warnning: if you want to perform a bootstrap (seqboot method) before
+            your pars analysis your data must be in sequential format.'
+        prompt: Input File
+        name: infile
+        simple: true
+        argpos: '-10'
+        format: {perl: '"ln -s $infile infile && "', python: '"ln -s " + str( infile
+                ) +" infile && "'}
+        precond:
+            infile: {'#ne': infile}
+        mandatory: true
+    -   _type: InputProgramParameter
+        comment: "if you intend to perform pars alone, your data must be in Phylip\
+            \ format interleaved or sequential. But\n    \t\tif you want to perform\
+            \ a bootsrap (seqboot) before the pars analysis, the data must be in Phylip\
+            \ sequential format."
+        prompt: Input File Format
+        name: input_format
+        argpos: '90'
+        type: {_type: StringType, default: sequential}
+        paramfile: pars.params
+    -   _type: InputParagraph
+        prompt: Pars options
+        name: pars_opt
+        children:
+        -   _type: InputProgramParameter
+            comment: "PARS is a general parsimony program which carries out the Wagner\
+                \ parsimony method with multiple states. Wagner parsimony allows changes\
+                \ among all states. The criterion is to find the tree which requires\
+                \ the minimum number of changes. The Wagner method was originated\
+                \ by Eck and Dayhoff (1966) and by Kluge and Farris (1969). Here are\
+                \ its assumptions:1. Ancestral states are unknown.2. Different characters\
+                \ evolve independently.3. Different lineages evolve independently.4.\
+                \ Changes to all other states are equally probable (Wagner).5. These\
+                \ changes are a priori improbable over the evolutionary time spans\
+                \ involved in the differentiation of the group in question.6. Other\
+                \ kinds of evolutionary event such as retention of polymorphism are\
+                \ far less probable than these state changes.7. Rates of evolution\
+                \ in different lineages are sufficiently low that two changes in a\
+                \ long segment of the tree are far less probable than one change in\
+                \ a short segment.PARS can handle both bifurcating and multifurcating\
+                \ trees. In doing its search for most parsimonious trees, it adds\
+                \ species not only by creating new forks in the middle of existing\
+                \ branches, but it also tries putting them at the end of new branches\
+                \ which are added to existing forks. Thus it searches among both bifurcating\
+                \ and multifurcating trees. If a branch in a tree does not have any\
+                \ characters which might change in that branch in the most parsimonious\
+                \ tree, it does not save\n              that tree. Thus in any tree\
+                \ that results, a branch exists only if some character has a most\
+                \ parsimonious reconstruction that would involve change in that branch."
+            prompt: Search option (S)
+            name: search_opt
+            argpos: '1'
+            type: {_type: StringType, default: '0'}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Number of trees to save? (V)
+            name: save_trees
+            argpos: '1'
+            format: {perl: '(defined $value and $value != $vdef) ? "V\\n$value\\n"
+                    : ""', python: '("", "V\n"+str(value)+"\n")[value is not None
+                    and value != vdef]'}
+            type: {_type: IntegerType, default: 100}
+            paramfile: pars.params
+    -   _type: InputParagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        -   _type: InputProgramParameter
+            comment: The weights follow the format described in the main documentation
+                file, with integer weights from 0 to 35 allowed by using the characters
+                0, 1, 2, ..., 9 and A, B, ... Z.
+            prompt: Weighted sites (W)
+            name: weights
+            argpos: '1'
+            format: {perl: '($value) ? "W\\n" : ""', python: '("" , "W\n")[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Weight file
+            name: weight_file
+            argpos: '-9'
+            format: {perl: '"ln -s $weight_file weights && "', python: '"ln -s " +
+                    str( weight_file ) + " weights && "'}
+            precond: weights
+            mandatory: true
+    -   _type: InputParagraph
+        prompt: User tree options
+        name: user_tree_opt
+        children:
+        -   _type: InputProgramParameter
+            comment: 'To give your tree to the program, you must normally put it in
+                the alignment file, after the sequences, preceded by a line indicating
+                how many trees you give.Here, this will be automatically appended:
+                just give a treefile and the number of trees in it.'
+            prompt: 'Use user tree (default: no, search for best tree)? (U)'
+            name: user_tree
+            argpos: '1'
+            format: {perl: '($value) ? "U\\n" : ""', python: '("", "U\n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            comment: Give a tree whenever the infile does not already contain the
+                tree.
+            prompt: User Tree file
+            name: tree_file
+            argpos: '-1'
+            format: {perl: '(defined $value) ? "cat $tree_file >> intree && " : ""',
+                python: '("", " cat "+ str( tree_file ) + " >> intree && " )[value
+                    is not None]'}
+            precond: user_tree
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1910']
+                data_terms: EDAM_data:0872
+        -   _type: InputProgramParameter
+            comment: Give this information whenever the infile does not already contain
+                the tree.
+            prompt: How many tree(s) in the User Tree file
+            name: tree_nb
+            argpos: '-2'
+            format: {perl: '"echo $value >> intree && "', python: '"echo " + str(
+                    value ) + " >> intree && "'}
+            precond:
+                tree_file: {'#ne': None}
+            mandatory: true
+            type: {_type: IntegerType, default: 1}
+    -   _type: InputParagraph
+        comment: By selecting this option, the bootstrap will be performed on your
+            sequence file. So you don't need to perform a separated seqboot before.Don't
+            give an already bootstrapped file to the program, this won't work!
+        prompt: Bootstrap and Jumble options
+        name: jumble_bootstrap
+        children:
+        -   _type: InputProgramParameter
+            comment: "The resampling methods available are:The bootstrap.Bootstrapping\
+                \ was invented by Bradley Efron in 1979, and its use in phylogeny\
+                \ estimation was introduced by me (Felsenstein, 1985b; see also Penny\
+                \ and Hendy, 1985). \n          It involves creating a new data set\
+                \ by sampling N characters randomly with replacement, so that the\
+                \ resulting data set has the same size as the original,\n        \
+                \  but some characters have been left out and others are duplicated.\
+                \ The random variation of the results from analyzing these bootstrapped\
+                \ data sets can be\n          shown statistically to be typical of\
+                \ the variation that you would get from collecting new data sets.\n\
+                \          The method assumes that the characters evolve independently,\
+                \ an assumption that may not be realistic for many kinds of data.Delete-half-jackknifing.This\
+                \ alternative to the bootstrap involves sampling a random half of\
+                \ the characters, and including them in the data but dropping the\
+                \ others.\n           The resulting data sets are half the size of\
+                \ the original, and no characters are duplicated.\n           The\
+                \ random variation from doing this should be very similar to that\
+                \ obtained from the bootstrap. \n           The method is advocated\
+                \ by Wu (1986). It was mentioned by me in my bootstrapping paper (Felsenstein,\
+                \ 1985b), and has been available\n           for many years in this\
+                \ program as an option. \n           Note that, for the present, block-jackknifing\
+                \ is not available, because I cannot figure out how to do it straightforwardly\
+                \ when the block size is not a divisor of the number of characters.Permuting\
+                \ species within characters.This method of resampling (well, OK, it\
+                \ may not be best to call it resampling) was introduced by Archie\
+                \ (1989) and Faith (1990; see also Faith and Cranston, 1991).\n  \
+                \        It involves permuting the columns of the data matrix separately.\n\
+                \          This produces data matrices that have the same number and\
+                \ kinds of characters but no taxonomic structure.\n          It is\
+                \ used for different purposes than the bootstrap, as it tests not\
+                \ the variation around an estimated tree but the\n          hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, \n          then we\
+                \ can argue that there is some taxonomic structure in the data (though\
+                \ perhaps it might be just the presence of aa pair of sibling species).Permuting\
+                \ characters.This simply permutes the order of the characters, the\
+                \ same reordering being applied to all species.\n          For many\
+                \ methods of tree inference this will make no difference to the outcome\
+                \ (unless one has rates of evolution correlated among adjacent sites).\n\
+                \          It is included as a possible step in carrying out a permutation\
+                \ test of homogeneity of characters (such as the Incongruence Length\
+                \ Difference test).Permuting characters separately for each species.This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before.\n     \
+                \     It shuffles the character order separately for each species.Jumblethe\
+                \ tree construction programs the exact details of the search of different\
+                \ trees depend on the order of input of species. \n          In these\
+                \ programs J option enables you to tell the program to use a random\
+                \ number generator to choose the input order of species."
+            prompt: I want to
+            name: seqboot_or_jumble
+            simple: true
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: choose a method, value: 'null'}
+                - {label: perform a Bootstrap on Data before analysis (Seqboot), value: '0'}
+                - {label: perform a Delete-half jackknife on Data (Seqboot), value: '1'}
+                - {label: permute species for each character (Seqboot), value: '2'}
+                - {label: permute character order (Seqboot), value: '3'}
+                - {label: permute within species (Seqboot), value: '4'}
+                - {label: randomize input order of sequences (Jumble), value: '5'}
+        -   _type: InputProgramParameter
+            comment: "The seqboot and jumble seed option should be an integer between\
+                \ 1 and 32767, and should of form 4n+1, which means that it must give\
+                \ a remainder of 1 when divided by 4. \n               This can be\
+                \ judged by looking at the last two digits of the number. Each different\
+                \ seed leads to a different sequence of addition of species. \n  \
+                \             By simply changing the random number seed and re-running\
+                \ the programs one can look for other, and better trees. \n      \
+                \         If the seed entered is not odd, the program will not proceed."
+            prompt: Random number seed (must be odd)
+            name: seed
+            simple: true
+            precond:
+                seqboot_or_jumble: {'#ne': None}
+            mandatory: true
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            name: seqboot
+            argpos: '-5'
+            format: {perl: '($value) ? "seqboot <seqboot.params && mv outfile seqboot.outfile
+                    && rm infile  && ln -s seqboot.outfile infile && " : ""', python: '"seqboot
+                    <seqboot.params && mv outfile seqboot.outfile && rm infile  &&
+                    ln -s seqboot.outfile infile && "'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            hidden: true
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            name: seqboot_method
+            argpos: '1'
+            format: {perl: 'qw ( D\\n D\\nJ\\n D\\nJ\\nJ\\n D\\nJ\\nJ\\nJ\\n D\\nJ\\nJ\\nJ\\nJ\\n
+                    )[$seqboot_or_jumble]', python: '( ''D\n'' , ''D\nJ\n'' , ''D\nJ\nJ\n''
+                    , ''D\nJ\nJ\nJ\n'' , ''D\nJ\nJ\nJ\nJ\n'' , )[ int( seqboot_or_jumble
+                    ) ]'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            hidden: true
+            type: {_type: IntegerType}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            name: seqboot_seed
+            argpos: '1000'
+            format: {perl: '"$seed\\n"', python: str( seed ) + "\n"}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            hidden: true
+            type: {_type: IntegerType}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            comment: "This option is mandatory if you select a seqboot method. This\
+                \ value indicate how many set of data you will generate.\n       \
+                \     This option could generate huge data and should be used with\
+                \ discernment.  \n            If you provide 10 \"sequences\" of 1000\
+                \ char lenght each (a file of ~10Kb) and select 1000 replicates wou\
+                \ will generate 10.000 sequences of 1000 char lenght (a file of ~10Mb\
+                \ which could lead to some problems to view or download the results)"
+            prompt: How many replicates
+            name: seqboot_replicates
+            argpos: '20'
+            format: {perl: '"R\\n$value\\n"', python: '"R\n" + str( value ) + "\n"'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            name: bootconfirm
+            argpos: '100'
+            format: {perl: '"y\\n"', python: '"y\n"'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            hidden: true
+            type: {_type: StringType}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            name: bootterminal_type
+            argpos: '-1'
+            format: {perl: '"0\\n"', python: '"0\n"'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            hidden: true
+            type: {_type: StringType}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            name: jumble
+            argpos: '10'
+            format: {perl: '"J\\n$seed\\n$jumble_times\\n"', python: '''J\n'' + str(
+                    seed ) + "\n" + str( jumble_times ) +"\n"'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                - {seqboot_or_jumble: '5'}
+            hidden: true
+            type: {_type: IntegerType}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            comment: "The Seqboot or Jumble options also causes the program to ask\
+                \ you how many times you want to restart the jumble process.\n   \
+                \         If you answer 10, the program will try ten different orders\
+                \ of species in constructing the trees, and the results printed out\
+                \ will reflect this entire search process (that is, the best trees\
+                \ found among all 10 runs will be printed out, not the best trees\
+                \ from each individual run)."
+            prompt: Number of times to jumble
+            name: jumble_times
+            precond:
+                seqboot_or_jumble: {'#ne': None}
+            mandatory: true
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            name: multiple_dataset
+            argpos: '20'
+            format: {perl: '"M\nD\n" + str( seqboot_replicates ) + "\n" + str( seed
+                    ) +"\n" + str( jumble_times ) +"\n"', python: '"M\nD\n" + str(
+                    seqboot_replicates ) + "\n" + str( seed ) +"\n" + str( jumble_times
+                    ) +"\n"'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   seqboot_or_jumble: {'#ne': '5'}
+            hidden: true
+            type: {_type: StringType}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            comment: this option make sense only if you have multiple data set ( seqboot
+                )
+            prompt: Compute a consensus tree ( seqboot )
+            name: consense
+            argpos: '30'
+            format: {perl: '($value) ? " && cp infile pars.infile && cp pars.outtree
+                    intree && consense <consense.params && mv outtree consense.outtree
+                    && mv outfile consense.outfile" : ""', python: '( "" , " && cp
+                    infile pars.infile && cp pars.outtree intree && consense <consense.params
+                    && mv outtree consense.outtree && mv outfile consense.outfile"
+                    )[ value ]'}
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   seqboot_or_jumble: {'#ne': '5'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Output options
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            name: print_tree
+            argpos: '1'
+            format: {perl: '($value) ? "" : "3\\n"', python: '("3\n", "")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Print out steps in each character (4)
+            name: print_step
+            argpos: '1'
+            format: {perl: '($value) ? "4\\n" : ""', python: '("", "4\n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Print states at all nodes of tree (5)
+            name: print_states
+            argpos: '1'
+            format: {perl: '($value) ? "5\\n" : ""', python: '("", "5\n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (6)
+            name: print_treefile
+            argpos: '1'
+            format: {perl: '($value) ? "" : "6\\n"', python: '("6\n", "")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Print out the data at start of run (1)
+            name: printdata
+            argpos: '1'
+            format: {perl: '($value) ? "1\\n" : ""', python: '("", "1\n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+    -   _type: InputParagraph
+        prompt: Parsimony options
+        name: parsimony_opt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Use Threshold parsimony (T)
+            name: use_threshold
+            argpos: '3'
+            format: {perl: '($value) ? "T\\n$threshold\\n" : ""', python: '("", "T\n"
+                    + str(threshold) + "\n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: pars.params
+        -   _type: InputProgramParameter
+            prompt: Threshold parsimony value
+            name: threshold
+            argpos: '2'
+            format: {perl: '""', python: '""'}
+            precond: use_threshold
+            mandatory: true
+            type: {_type: IntegerType}
+            paramfile: pars.params
+    -   _type: InputParagraph
+        prompt: Other options
+        name: other_options
+        children:
+        -   _type: InputProgramParameter
+            comment: The O (Outgroup) option specifies which species is to have the
+                root of the tree be on the line leading to it.For example, if the
+                outgroup is a species "Mouse" then the root of the tree will be placed
+                in the middle of the branch which is connected to this species, with
+                Mouse branching off on one side of the root and the lineage leading
+                to the rest of the tree on the other.This option is toggle on by choosing
+                the number of the outgroup (the species being taken in the numerical
+                order that they occur in the input file).Outgroup-rooting will not
+                be attempted  if it is a user-defined tree, despite your invoking
+                the option.When it is used, the tree as printed out is still listed
+                as being an unrooted tree, though the outgroup is connected to the
+                bottommost node so that it is easy to visually convert the tree into
+                rooted form.
+            prompt: Outgroup root species (O)
+            name: outgroup
+            argpos: '1'
+            format: {perl: '(defined $value and $value != $vdef) ? "o\\n$value\\n"
+                    : ""', python: '("", "o\n" + str(value) + "\n")[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+            paramfile: pars.params
+    -   _type: InputProgramParameter
+        name: confirm
+        argpos: '1000'
+        format: {perl: '"y\\n"', python: '"y\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: pars.params
+    -   _type: InputProgramParameter
+        name: terminal_type
+        argpos: '-1'
+        format: {perl: '"0\\n"', python: '"0\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: pars.params
+    -   _type: InputProgramParameter
+        name: consense_confirm
+        argpos: '1000'
+        format: {perl: '"Y\\n"', python: '"Y\n"'}
+        precond: consense
+        hidden: true
+        type: {_type: StringType}
+        paramfile: consense.params
+    -   _type: InputProgramParameter
+        name: consense_terminal_type
+        argpos: '-2'
+        format: {perl: '"T\\n"', python: '"T\n"'}
+        precond: consense
+        hidden: true
+        type: {_type: StringType}
+        paramfile: consense.params
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Pars output file
+        name: outfile
+        filenames: {perl: '"pars.outfile"', python: '"pars.outfile"'}
+    -   _type: OutputProgramParameter
+        prompt: Pars output tree
+        name: treefile
+        filenames: {perl: '"pars.outtree"', python: '"pars.outtree"'}
+        precond: print_treefile
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+    -   _type: OutputProgramParameter
+        prompt: seqboot outfile
+        name: seqboot_out
+        filenames: {perl: '"seqboot.outfile"', python: '"seqboot.outfile"'}
+        precond:
+            '#and':
+            -   seqboot_or_jumble: {'#ne': None}
+            -   '#and':
+                -   seqboot_or_jumble: {'#gte': '0'}
+                -   seqboot_or_jumble: {'#lt': '5'}
+    -   _type: OutputProgramParameter
+        prompt: Consense output file
+        name: consense_outfile
+        filenames: {perl: '"consense.outfile"', python: '"consense.outfile"'}
+        precond: consense
+    -   _type: OutputProgramParameter
+        prompt: Consense output tree
+        name: consense_treefile
+        filenames: {perl: '"consense.outtree"', python: '"consense.outtree"'}
+        precond: consense
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+comment: PARS is a general parsimony program which carries out the Wagner parsimony
+    method with multiple states. Wagner parsimony allows changes among all states.
+    The criterion is to find the tree which requires the minimum number of changes.
+operations: ['EDAM_operation:0545']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/pars.html']
+public_name: pars
+command: {path: null, value: null}

@@ -1,0 +1,114 @@
+_type: Program
+name: makeprotseq
+title: makeprotseq
+description: Create random protein sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            comment: This file should be a pepstats output file. Protein sequences
+                will be created with the composition in the pepstats  output file.
+            prompt: Pepstats program output file (optional)
+            name: e_pepstatsfile
+            argpos: '1'
+            format: {python: '("", " -pepstatsfile=" + str(value))[value is not None]'}
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Number of sequences created (value greater than or equal to 1)
+            name: e_amount
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -amount=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            prompt: Length of each sequence (value greater than or equal to 1)
+            name: e_length
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -length=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            prompt: Do you want to make an insert
+            name: e_useinsert
+            argpos: '4'
+            format: {python: '("", " -useinsert")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: String that is inserted into sequence
+            prompt: Inserted string
+            name: e_insert
+            argpos: '5'
+            format: {python: '("", " -insert=" + str(value))[value is not None]'}
+            precond: e_useinsert
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: Start point of inserted sequence (value greater than or equal
+                to 1)
+            name: e_start
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '6'
+            format: {python: '("", " -start=" + str(value))[value is not None and
+                    value!=vdef]'}
+            precond: e_useinsert
+            type: {_type: IntegerType, default: 1}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output sequence file (e_outseq)
+            name: e_outseq
+            argpos: '7'
+            format: {python: '("" , " -outseq=" + str(value))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outseq
+            argpos: '8'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '9'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outseq_out option
+            name: e_outseq_out
+            filenames: {python: e_outseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2976'}
+operations: ['EDAM_operation:0364']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/makeprotseq.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: makeprotseq
+command: {path: null, value: makeprotseq}

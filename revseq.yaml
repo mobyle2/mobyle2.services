@@ -1,0 +1,97 @@
+_type: Program
+name: revseq
+title: revseq
+description: Reverse and complement a nucleotide sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to reverse the output
+                sequence
+            prompt: Reverse sequence
+            name: e_reverse
+            argpos: '2'
+            format: {python: '(" -noreverse", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to complement the output
+                sequence
+            prompt: Complement sequence
+            name: e_complement
+            argpos: '3'
+            format: {python: '(" -nocomplement", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output sequence file (e_outseq)
+            name: e_outseq
+            argpos: '4'
+            format: {python: '("" , " -outseq=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: outseq.rev}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outseq
+            argpos: '5'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Gff, value: GFF}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '6'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outseq_out option
+            name: e_outseq_out
+            filenames: {python: e_outseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+operations: ['EDAM_operation:0363']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/revseq.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: revseq
+command: {path: null, value: revseq}

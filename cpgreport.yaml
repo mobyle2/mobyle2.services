@@ -1,0 +1,95 @@
+_type: Program
+name: cpgreport
+title: cpgreport
+description: Identify and report CpG-rich regions in nucleotide sequence(s)
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: This sets the score for each CG sequence found. A value of 17
+                is more sensitive, but 28 has also been used with some  success.
+            prompt: Cpg score (value from 1 to 200)
+            name: e_score
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 200 is required
+                test:
+                    value: {'#lte': '200'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -score=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 17}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '3'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: cpgreport.e_outfile}
+        -   _type: InputProgramParameter
+            comment: File for output features
+            prompt: Name of the output feature file (e_outfeat)
+            name: e_outfeat
+            argpos: '4'
+            format: {python: '("" , " -outfeat=" + str(value))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: Choose the feature output format
+            name: e_offormat_outfeat
+            argpos: '5'
+            format: {python: '("", " -offormat=" + str(value))[value is not None and
+                    value!=vdef]'}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '6'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+        -   _type: OutputProgramParameter
+            prompt: outfeat_out option
+            name: e_outfeat_out
+            filenames: {python: e_outfeat}
+operations: ['EDAM_operation:0430']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cpgreport.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: cpgreport
+command: {path: null, value: cpgreport}

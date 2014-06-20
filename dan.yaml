@@ -1,0 +1,360 @@
+_type: Program
+name: dan
+title: dan
+description: Calculates nucleic acid melting temperature
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: The values of melting point and other thermodynamic properties
+                of the sequence are determined by taking a short length  of sequence
+                known as a window and determining the properties of  the sequence
+                in that window. The window is incrementally moved  along the sequence
+                with the properties being calculated at each  new position.
+            prompt: Enter window size (value from 1 to 100)
+            name: e_windowsize
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 100 is required
+                test:
+                    value: {'#lte': '100'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -windowsize=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 20}
+        -   _type: InputProgramParameter
+            comment: This is the amount by which the window is moved at each increment
+                in order to find the melting point and other properties  along the
+                sequence.
+            prompt: Enter shift increment (value greater than or equal to 1)
+            name: e_shiftincrement
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -shiftincrement=" + str(value))[value is not
+                    None and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Enter dna concentration (nm) (value from 1. to 100000.)
+            name: e_dnaconc
+            ctrl:
+            -   message: Value greater than or equal to 1. is required
+                test:
+                    value: {'#gte': '1.0'}
+            -   message: Value less than or equal to 100000. is required
+                test:
+                    value: {'#lte': '100000.0'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -dnaconc=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 50.0}
+        -   _type: InputProgramParameter
+            prompt: Enter salt concentration (mm) (value from 1. to 1000.)
+            name: e_saltconc
+            ctrl:
+            -   message: Value greater than or equal to 1. is required
+                test:
+                    value: {'#gte': '1.0'}
+            -   message: Value less than or equal to 1000. is required
+                test:
+                    value: {'#lte': '1000.0'}
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -saltconc=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 50.0}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputParagraph
+            prompt: Product options
+            name: e_productsection
+            children:
+            -   _type: InputProgramParameter
+                comment: This prompts for percent formamide, percent of mismatches
+                    allowed and product length.
+                prompt: Prompt for product values
+                name: e_product
+                argpos: '6'
+                format: {python: '("", " -product")[ bool(value) ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                comment: This specifies the percent formamide to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter percentage of formamide (value from 0. to 100.)
+                name: e_formamide
+                ctrl:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+                argpos: '7'
+                format: {python: '("", " -formamide=" + str(value))[value is not None
+                        and value!=vdef]'}
+                precond: e_product
+                type: {_type: FloatType, default: 0.0}
+            -   _type: InputProgramParameter
+                comment: This specifies the percent mismatch to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter percent mismatch (value from 0. to 100.)
+                name: e_mismatch
+                ctrl:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+                argpos: '8'
+                format: {python: '("", " -mismatch=" + str(value))[value is not None
+                        and value!=vdef]'}
+                precond: e_product
+                type: {_type: FloatType, default: 0.0}
+            -   _type: InputProgramParameter
+                comment: This specifies the product length to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter the product length
+                name: e_prodlen
+                argpos: '9'
+                format: {python: '("", " -prodlen=" + str(value))[value is not None]'}
+                precond:
+                    '#and': [e_product, e_windowsize]
+                type: {_type: IntegerType}
+        -   _type: InputParagraph
+            prompt: Thermodynamic options
+            name: e_thermosection
+            children:
+            -   _type: InputProgramParameter
+                comment: Output the DeltaG, DeltaH and DeltaS values of the sequence
+                    windows to the output data file.
+                prompt: Thermodynamic calculations
+                name: e_thermo
+                argpos: '10'
+                format: {python: '("", " -thermo")[ bool(value) ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                comment: If -thermo has been specified then this specifies the temperature
+                    at which to calculate the DeltaG, DeltaH and DeltaS  values.
+                prompt: Enter temperature (value from 0. to 100.)
+                name: e_temperature
+                ctrl:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+                argpos: '11'
+                format: {python: '("", " -temperature=" + str(value))[value is not
+                        None and value!=vdef]'}
+                precond: e_thermo
+                type: {_type: FloatType, default: 25.0}
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            comment: This specifies that the sequence is an RNA sequence and not a
+                DNA sequence.
+            prompt: Use rna data values
+            name: e_rna
+            argpos: '12'
+            format: {python: '("", " -rna")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            comment: If this is not specified then the file of output data is produced,
+                else a plot of the melting point along the sequence is  produced.
+            prompt: Produce a plot
+            name: e_plot
+            argpos: '13'
+            format: {python: '("", " -plot")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Enter a minimum value for the temperature scale (y-axis) of the
+                plot.
+            prompt: Enter minimum temperature (value from 0. to 150.)
+            name: e_mintemp
+            ctrl:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 150. is required
+                test:
+                    value: {'#lte': '150.0'}
+            argpos: '14'
+            format: {python: '("", " -mintemp=" + str(value))[value is not None and
+                    value!=vdef]'}
+            precond: e_plot
+            type: {_type: FloatType, default: 55.0}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            argpos: '15'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            precond: e_plot
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '16'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            precond: e_plot
+            type: {_type: StringType, default: dan_xygraph}
+        -   _type: InputProgramParameter
+            comment: If a plot is not being produced then data on the melting point
+                etc. in each window along the sequence is output to the  file.
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '17'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            precond: {'#not': e_plot}
+            type: {_type: StringType, default: dan.report}
+        -   _type: InputProgramParameter
+            prompt: Choose the report output format
+            name: e_rformat_outfile
+            argpos: '18'
+            format: {python: '("", " -rformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            precond: {'#not': e_plot}
+            type:
+                _type: StringType
+                default: SEQTABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '19'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                -   '#and':
+                    - e_plot
+                    - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: data}
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+operations: ['EDAM_operation:0455']
+topics: ['EDAM_topic:0104']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/dan.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: dan
+command: {path: null, value: dan}

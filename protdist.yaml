@@ -1,0 +1,334 @@
+_type: Program
+name: protdist
+title: protdist
+description: Compute distance matrix from protein sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: protdist
+        argpos: '0'
+        format: {perl: '"protdist <protdist.params"', python: '"protdist <protdist.params"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        comment: The input file must contained aligned sequences in PHYLIP format
+            obtained by sequence alignment programs.
+        prompt: Alignment File
+        name: infile
+        simple: true
+        argpos: '-10'
+        format: {perl: '"ln -s $infile infile && "', python: '"ln -s " + str( infile
+                ) + " infile && "'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1955']
+            data_terms: EDAM_data:1384
+    -   _type: InputProgramParameter
+        prompt: Distance model (P)
+        name: Method
+        argpos: '2'
+        type: {_type: StringType, default: J}
+        paramfile: protdist.params
+    -   _type: InputProgramParameter
+        prompt: Gamma distribution of rates among positions (G)
+        name: gamma_dist
+        argpos: '2'
+        precond:
+            Method:
+                '#in': [J, D, C]
+        mandatory: true
+        type: {_type: StringType, default: N}
+        paramfile: protdist.params
+    -   _type: InputProgramParameter
+        comment: Instead of the more widely-known coefficient alpha, PROTDIST uses
+            the coefficient of variation (ratio of the standard deviation to the mean)
+            of rates among amino acid positions. So if there is 20% variation in rates,
+            the CV is is 0.20. The square of the C.V. is also the reciprocal of the
+            better-known shape parameter, alpha, of the Gamma distribution, so in
+            this case the shape parameter alpha = 1/(0.20*0.20) = 25. If you want
+            to achieve a particular value of alpha, such as 10, you will want to use
+            a CV of 1/sqrt(100) = 1/10 = 0.1.
+        prompt: Coefficient of variation of substitution rate among positions (must
+            be positive)
+        name: gamma
+        argpos: '1500'
+        format: {perl: '"$value\\n"', python: str( value )+ "\n"}
+        precond:
+            gamma_dist:
+                '#in': [Y, G]
+        mandatory: true
+        type: {_type: FloatType}
+        paramfile: protdist.params
+    -   _type: InputProgramParameter
+        prompt: Fraction of invariant positions
+        name: invariant
+        argpos: '1501'
+        format: {perl: '"$value\\n"', python: str(value)+"\n"}
+        precond: {gamma_dist: G}
+        mandatory: true
+        type: {_type: FloatType}
+        paramfile: protdist.params
+    -   _type: InputParagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        -   _type: InputProgramParameter
+            comment: By selecting this option, the bootstrap will be performed on
+                your sequence file. So you don't need to perform a separated seqboot
+                before.Don't give an already bootstrapped file to the program, this
+                won't work!
+            prompt: Perform a bootstrap before analysis
+            name: seqboot
+            simple: true
+            argpos: '-5'
+            format: {perl: '($value) ? "seqboot < seqboot.params && mv outfile seqboot.outfile
+                    && rm infile  && ln -s seqboot.outfile infile && " : ""', python: '(
+                    "" , "seqboot < seqboot.params && mv outfile seqboot.outfile &&
+                    rm infile && ln -s seqboot.outfile infile && " )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "1. The bootstrap. Bootstrapping was invented by Bradley Efron\
+                \ in 1979, and its use in phylogeny estimation was introduced by me\
+                \ (Felsenstein, 1985b). It involves creating a new data set by sampling\
+                \ N characters randomly with replacement, so that the resulting data\
+                \ set has the same size as the original, but some characters have\
+                \ been left out and others are duplicated. The random variation of\
+                \ the results from analyzing these bootstrapped data sets can be shown\
+                \ statistically to be\n              typical of the variation that\
+                \ you would get from collecting new data sets. The method assumes\
+                \ that the characters evolve independently, an assumption that may\
+                \ not be realistic for many kinds of data.2. Delete-half-jackknifing.\
+                \ This alternative to the bootstrap involves sampling a random half\
+                \ of the characters, and including them in the data but dropping the\
+                \ others. The resulting data sets are half the size of the original,\
+                \ and no characters are duplicated. The random variation from doing\
+                \ this should be very similar to that obtained from the bootstrap.\
+                \ The method is advocated by Wu (1986).3. Permuting species for each\
+                \ characters. This method of resampling (well, OK, it may not be best\
+                \ to call it resampling) was introduced by Archie (1989) and Faith\
+                \ (1990; see also Faith and Cranston, 1991). It involves permuting\
+                \ the columns of the data matrix separately. This produces data matrices\
+                \ that have the same number and kinds of characters but no taxonomic\
+                \ structure. It is used for different purposes than the bootstrap,\
+                \ as it tests not the variation around an estimated tree but the hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, then we can argue that\
+                \ there is some taxonomic structure in the data (though perhaps it\
+                \ might be just the presence of aa pair of sibling species).4. Permuting\
+                \ characters order. This simply permutes the order of the characters,\
+                \ the same reordering being applied to all species. For many methods\
+                \ of tree inference this will make no difference to the outcome (unless\
+                \ one has rates of evolution correlated among adjacent sites). It\
+                \ is included as a possible step in carrying out a permutation test\
+                \ of homogeneity of characters (such as the Incongruence Length Difference\
+                \ test).5. Permuting characters separately for each species. This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before. It shuffles\
+                \ the character order separately for each species."
+            prompt: Resampling methods (J)
+            name: resamp_method
+            simple: true
+            argpos: '1'
+            precond: seqboot
+            mandatory: true
+            type: {_type: StringType, default: bootstrap}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            prompt: Random number seed (must be odd)
+            name: seqboot_seed
+            simple: true
+            argpos: '10000'
+            format: {perl: '"$value\\n"', python: str( value ) + "\n"}
+            precond: seqboot
+            mandatory: true
+            type: {_type: IntegerType}
+            paramfile: seqboot.params
+        -   _type: InputProgramParameter
+            prompt: How many replicates (R)?
+            name: replicates
+            simple: true
+            argpos: '1'
+            format: {perl: '(defined $value and $value != $vdef) ? "R\\n$value\\n"
+                    : ""', python: '( "", "R\n" +str( value )+ "\n" )[ value is not
+                    None and value != vdef ]'}
+            precond: seqboot
+            type: {_type: IntegerType, default: 100}
+            paramfile: seqboot.params
+    -   _type: InputParagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Use weights for sites (W)
+            name: weights
+            argpos: '1'
+            format: {perl: '($value) ? "W\\n" : ""', python: '( "" , "W\n" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: protdist.params
+        -   _type: InputProgramParameter
+            prompt: Weights file
+            name: weights_file
+            ctrl:
+            -   message: the name of this data can't be "infile" or "outfile"
+                test:
+                    value:
+                        '#nin': [infile, outfile]
+            argpos: '-1'
+            format: {perl: '(defined $value) ? "ln -s $weights_file weights && " :
+                    ""', python: '( "" , "ln -s " + str( weights_file ) + " weights
+                    && " )[ value is not None ]'}
+            precond: weights
+            mandatory: true
+    -   _type: InputProgramParameter
+        name: multiple_dataset
+        argpos: '1'
+        format: {perl: '"M\\nD\\n$replicates\\n"', python: '"M\nD\n"+ str( replicates
+                ) + "\n"'}
+        precond:
+            '#and':
+            - seqboot
+            -   replicates: {'#gt': '1'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: protdist.params
+    -   _type: InputProgramParameter
+        name: bootconfirm
+        argpos: '1000'
+        format: {perl: '"Y\\n"', python: '"Y\n"'}
+        precond: seqboot
+        hidden: true
+        type: {_type: StringType}
+        paramfile: seqboot.params
+    -   _type: InputProgramParameter
+        name: bootterminal_type
+        argpos: '-1'
+        format: {perl: '"0\\n"', python: '"0\n"'}
+        precond: seqboot
+        hidden: true
+        type: {_type: StringType}
+        paramfile: seqboot.params
+    -   _type: InputParagraph
+        prompt: Output options
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Print out the data at start of run (1)
+            name: printdata
+            argpos: '1'
+            format: {perl: '($value) ? "1\\n" : ""', python: '( "" , "1\n" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: protdist.params
+    -   _type: InputParagraph
+        prompt: Categories model options (options available only if Categories model
+            choosed)
+        name: categ_options
+        precond: {Method: C}
+        children:
+        -   _type: InputProgramParameter
+            prompt: Genetic code (U)
+            name: code
+            argpos: '3'
+            format: {perl: '(defined $value and $value ne $vdef) ? "U\\n$code\\n"
+                    : ""', python: '( "", "U\n" + str( code ) + "\n" )[ value is not
+                    None and value != vdef ]'}
+            type:
+                _type: StringType
+                default: U
+                options:
+                - {label: Universal (U), value: U}
+                - {label: Mitochondrial (M), value: M}
+                - {label: Vertebrate mitochondrial (V), value: V}
+                - {label: Fly mitochondrial (F), value: F}
+                - {label: Yeast mitochondrial (Y), value: Y}
+            paramfile: protdist.params
+        -   _type: InputProgramParameter
+            comment: 'All have groups: (Glu Gln Asp Asn), (Lys Arg His), (Phe Tyr
+                Trp) plus:George/Hunt/Barker: (Cys), (Met Val Leu Ileu), (Gly Ala
+                Ser Thr Pro)Chemical: (Cys Met), (Val Leu Ileu Gly Ala Ser Thr), (Pro)Hall:
+                (Cys), (Met Val Leu Ileu), (Gly Ala Ser Thr), (Pro)'
+            prompt: Categorization of amino acids (A)
+            name: categorization
+            argpos: '10'
+            format: {perl: '(defined $value and $value ne $vdef) ? "A\\n$categorization\\n"
+                    : ""', python: '( "" , "A\n" +str( categorization ) +"\n" )[ value
+                    is not None and value != vdef ]'}
+            type:
+                _type: StringType
+                default: G
+                options:
+                - {label: George/Hunt/Barker (G), value: G}
+                - {label: Chemical (C), value: C}
+                - {label: Hall (H), value: H}
+            paramfile: protdist.params
+        -   _type: InputProgramParameter
+            prompt: Prob change category (1.0=easy) (E)
+            name: change_prob
+            argpos: '3'
+            format: {perl: '(defined $value and $value != $vdef) ? "E\\n$value\\n"
+                    : ""', python: '("", "E\n"+ str( value ) +"\n")[ value is not
+                    None and value != vdef ]'}
+            type: {_type: FloatType, default: 0.457}
+            paramfile: protdist.params
+        -   _type: InputProgramParameter
+            comment: "If the Categories distance is selected another menu option,\
+                \ T,\n             will appear allowing the user to supply the Transition/Transversion\
+                \ ratio that should be assumed at the underlying DNA level.\n    \
+                \         The transition/transversion ratio can be any number from\
+                \ 0.5 upwards."
+            prompt: Transition/transversion ratio (T)
+            name: ratio
+            ctrl:
+            -   message: The transition/transversion ratio must be any number from
+                    0.5 upwards.
+                test:
+                    value: {'#gte': '0.5'}
+            argpos: '3'
+            format: {perl: '(defined $value and $value != $vdef) ? "T\\n$value\\n"
+                    : ""', python: '("", "T\n"+str(value)+"\n")[value is not None
+                    and value != vdef]'}
+            type: {_type: FloatType, default: 2.0}
+            paramfile: protdist.params
+    -   _type: InputProgramParameter
+        name: confirm
+        argpos: '1000'
+        format: {perl: '"Y\\n"', python: '"Y\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: protdist.params
+    -   _type: InputProgramParameter
+        name: terminal_type
+        argpos: '-1'
+        format: {perl: '"0\\n"', python: '"0\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: protdist.params
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Outfile
+        name: outfile
+        filenames: {perl: '"protdist.outfile"', python: '"protdist.outfile"'}
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0870'}
+    -   _type: OutputProgramParameter
+        prompt: seqboot outfile
+        name: seqboot_out
+        filenames: {perl: '"seqboot.outfile"', python: '"seqboot.outfile"'}
+        precond: seqboot
+comment: "This program uses protein sequences to compute\n\t  a distance matrix, under\
+    \ four different models of amino acid\n\t  replacement. It can also compute a\
+    \ table of similarity between\n\t  the amino acid sequences.The distance for each\
+    \ pair of species estimates the\n\t  total branch length between the two species,\
+    \ and can be used in the\n\t  distance matrix programs FITCH, KITSCH or NEIGHBOR."
+operations: ['EDAM_operation:0289']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/protdist.html']
+public_name: protdist
+command: {path: null, value: null}

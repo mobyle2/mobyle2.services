@@ -1,0 +1,119 @@
+_type: Program
+name: xxr
+version: '3.02'
+title: xxr
+description: Integrons Analysis and Cassette Identification
+authors: P. Bouige
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: xxr
+        format: {perl: '"xxr <xxr.params"', python: '"xxr <xxr.params"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Input sequence
+        name: input
+        simple: true
+        format: {perl: '"$value\\n.\\n"', python: str( value )+"\n.\n"}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2977
+        paramfile: xxr.params
+    -   _type: InputParagraph
+        prompt: Options
+        name: input_opt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Extension to add to files
+            name: outsuffix
+            format: {perl: '(defined $value) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value is not None]'}
+            type: {_type: StringType}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            prompt: Minimal core size
+            name: minsize
+            format: {perl: '($value != $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: IntegerType, default: 4}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            prompt: Maximal core size
+            name: maxsize
+            format: {perl: '($value != $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: IntegerType, default: 10}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            prompt: Maximal XXR size
+            name: maxxxr
+            format: {perl: '($value != $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: IntegerType, default: 200}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            prompt: Maximal gene size
+            name: maxgene
+            format: {perl: '($value != $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: IntegerType, default: 2800}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            comment: By default, Core Site is GCGTT.
+            prompt: Core Site (CS) - Variable site part upstream GTT
+            name: cs
+            format: {perl: '($value ne $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: StringType, default: GC}
+            paramfile: xxr.params
+        -   _type: InputProgramParameter
+            comment: By default, Inverted Core Site is AACAAA.
+            prompt: Inverted Core Site (ICS) - Variable site part downstream AAC
+            name: ICS
+            format: {perl: '($value ne $vdef) ? "$value\\n" : "\\n"', python: '( "\n"
+                    , str( value ) + "\n" )[value != vdef]'}
+            type: {_type: StringType, default: AAA}
+            paramfile: xxr.params
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: XXR results report
+        name: res
+        filenames: {perl: '"Resultat_*"', python: '"Resultat_*"'}
+    -   _type: OutputProgramParameter
+        comment: If they exist, the 3th cassette gene files ONLY are displayed but
+            you will find ALL of them in the job archive.
+        prompt: Cassette gene files
+        name: sk7
+        filenames: {perl: '"3_*_XXR_*"', python: '"3_*_XXR_*"'}
+    -   _type: OutputProgramParameter
+        prompt: XXR fasta
+        name: xxrfasta
+        filenames: {perl: '"XXR.fasta_*"', python: '"XXR.fasta_*"'}
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2044
+    -   _type: OutputProgramParameter
+        prompt: Cassette gene files
+        name: hk7
+        filenames: {perl: '"*_XXR_*"', python: '"*_XXR_*"'}
+        hidden: true
+        type: {_type: StringType}
+comment: This software is able to extract putative cassette structures that fulfill
+    the criteria established from analysis of previously known cassettes from integrons
+    and superintegrons.
+operations: ['EDAM_operation:3024']
+topics: ['EDAM_topic:0114']
+references:
+- {doi: null, label: 'Rowe-Magnus D.A., Guerout A.M., Biskri L., Bouige P., Mazel
+        D. Comparative analysis of superintegrons: Engineering extensive genetic diversity
+        in the Vibrionaceae. Genome Res. 2003;13:428-442.', url: null}
+public_name: xxr
+command: {path: null, value: null}

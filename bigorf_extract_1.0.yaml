@@ -1,0 +1,47 @@
+_type: Program
+name: bigorf_extract
+version: '1.0'
+title: bigorf_extract
+description: extract sequences with the largest ORF from a sequence translated with
+    EMBOSS transseq and checktrans
+authors: E. Deveaud
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: This is where you should enter the list of candidate ORFs for each
+            gene
+        prompt: Protein sequences to filter
+        name: protein_sequences
+        simple: true
+        argpos: '2'
+        format: {python: '" " + value'}
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2976
+    -   _type: InputProgramParameter
+        comment: Number of characters that should be stripped. Default value is 4
+            because transseq adds 2 characters (_[frame index]) and checktrans another
+            2 (_[candidate index])
+        prompt: Integer
+        name: characters_to_strip
+        argpos: '1'
+        format: {python: '" -s %d" % value'}
+        type: {_type: IntegerType, default: 4}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Sequence
+        name: protein_sequence_out
+        filenames: {perl: '"bigorf_extract.out"', python: '"bigorf_extract.out"'}
+        output_type: stdout
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2976
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0108']
+public_name: bigorf_extract
+command: {path: null, value: bigorf_extract.py}

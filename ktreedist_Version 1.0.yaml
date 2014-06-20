@@ -1,0 +1,128 @@
+_type: Program
+name: ktreedist
+version: Version 1.0
+title: Ktreedist
+description: Calculation of the minimum branch length distance (K tree score) between
+    phylogenetic trees
+authors: Victor Soria-Carrasco, Jose Castresana
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        comment: The program is supposed to run with one reference tree and one or
+            several comparison trees. If the reference file contains more than one
+            tree, only the first one will be used.
+        prompt: Input
+        name: input
+        children:
+        -   _type: InputProgramParameter
+            comment: This is the file that contains the tree to which you want to
+                compare the comparison tree/s.Only NEWICK or NEXUS tree format are
+                accepted by ktreedist.The input tree must be write in one line. for
+                nexus tree the tree itself must be write in one line
+            prompt: Reference Tree
+            name: ref_tree
+            simple: true
+            argpos: '2'
+            format: {perl: '"-rt $value"', python: '" -rt "+str(value)'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1910', 'EDAM_format:1912']
+                data_terms: EDAM_data:0872
+        -   _type: InputProgramParameter
+            comment: This is the file that contains the tree or the set of trees you
+                want to compare to the reference tree. They will be scaled to match
+                as much as possible the reference tree.Only NEWICK or NEXUS tree format
+                are accepted by ktreedist.The input tree must be write in one line.
+                for nexus tree the tree itself must be write in one line
+            prompt: Comparison Tree
+            name: comp_tree
+            simple: true
+            argpos: '3'
+            format: {perl: '"-ct $value "', python: '" -ct "+str(value)+" "'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1910', 'EDAM_format:1912']
+                data_terms: EDAM_data:0872
+    -   _type: InputParagraph
+        prompt: Options
+        name: options
+        children:
+        -   _type: InputProgramParameter
+            comment: A file containing a table of results is generated.
+            prompt: Output file for table of results (-t)
+            name: output_res
+            format: {perl: '($value) ? " -t"', python: '("", " -t")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: A file containing a table of partitions for each comparison tree
+                is generated.
+            prompt: Output file for table of partitions (-p)
+            name: output_part
+            format: {perl: '($value) ? " -p"', python: '("", " -p")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: A file containing the scaled comparison tree/s is generated.
+            prompt: Output file for comparison tree/s after scaling (-s)
+            name: output_comp
+            format: {perl: '($value) ? " -s"', python: '("", " -s")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "The symmetric difference is defined as the number of partitions\
+                \ that are not shared between two trees, \n\t\t\t\t\t\tthat is, the\
+                \ number of partitions of the first tree that are not present in the\
+                \ second tree plus the number of partitions \n\t\t\t\t\t\tof the second\
+                \ tree that are not present in the first tree."
+            prompt: Output symmetric difference (Robinson-Foulds) (-r)
+            name: output_rf
+            format: {perl: '($value) ? " -r"', python: '("", " -r")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: The knowledge of the number of partitions may be useful to detect
+                trees with polytomies.
+            prompt: Output number of partitions in the comparison tree/s (-n)
+            name: output_nbpf
+            format: {perl: '($value) ? " -n"', python: '("", " -n")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Equivalent to all options.
+            prompt: Equivalent to all options (-a)
+            name: output_all
+            format: {perl: '($value) ? " -a"', python: '("", " -a")[ value ]'}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output file for table of results
+        name: output_res_f
+        filenames: {perl: '"*.tab"', python: '"*.tab"'}
+        precond:
+            '#or': [output_res, output_all]
+    -   _type: OutputProgramParameter
+        prompt: Output file for table of partitions
+        name: output_part_f
+        filenames: {perl: '"*.part"', python: '"*.part"'}
+        precond:
+            '#or': [output_part, output_all]
+    -   _type: OutputProgramParameter
+        prompt: Output file for comparison tree/s after scaling
+        name: output_comp_f
+        filenames: {perl: '"*.scaled"', python: '"*.scaled"'}
+        precond:
+            '#or': [output_comp, output_all]
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0872'}
+operations: ['EDAM_operation:0557']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Soria-Carrasco, V., Talavera, G., Igea, J., and Castresana,\
+        \ J. (2007). The K tree score: quantification of differences \n      \t\t\
+        in the relative branch length and topology of phylogenetic trees. Bioinformatics\
+        \ 23, 2954-2956.", url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/ktreedist/']
+homepage_links: ['http://molevol.cmima.csic.es/castresana/Ktreedist.html']
+public_name: ktreedist
+command: {path: null, value: ktreedist}
+source_links: ['http://molevol.cmima.csic.es/castresana/Ktreedist.html']

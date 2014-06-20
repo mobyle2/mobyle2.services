@@ -1,0 +1,99 @@
+_type: Program
+name: listor
+title: listor
+description: Write a list file of the logical OR of two sets of sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: firstsequences option
+            name: e_firstsequences
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -firstsequences=" + str(value))[value is not
+                    None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: secondsequences option
+            name: e_secondsequences
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -secondsequences=" + str(value))[value is not
+                    None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            comment: "The following logical operators combine the sequences in the\
+                \ following ways: \n  OR - gives all that occur in one set or the\
+                \ other \n  AND - gives only those which occur in both sets \n  XOR\
+                \ - gives those which only occur in one set or the other, but  not\
+                \ in both \n  NOT - gives those which occur in the first set except\
+                \ for those  that also occur in the second"
+            prompt: Logical operator to combine sequence lists
+            name: e_operator
+            argpos: '3'
+            format: {python: '("", " -operator=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: Or - merger of both sets, value: O}
+                - {label: And - only those in both sets, value: A}
+                - {label: Xor - only those not in both sets, value: X}
+                - {label: Not - those of the  first set that are not in the second,
+                    value: N}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            comment: The list of sequence names will be written to this list file
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '4'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: outfile.list}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '5'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:2120']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/listor.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: listor
+command: {path: null, value: listor}

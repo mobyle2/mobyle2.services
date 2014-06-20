@@ -1,0 +1,131 @@
+_type: Program
+name: notseq
+title: notseq
+description: Write to file a subset of an input stream of sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: "Enter a list of sequence names or accession numbers to exclude\
+                \ from the sequences read in. The excluded sequences will be  written\
+                \ to the file specified in the 'junkout' parameter. The  remainder\
+                \ will be written out to the file specified in the  'outseq' parameter.\
+                \ \n  The list of sequence names can be separated by either spaces\
+                \ or  commas. \n  The sequence names can be wildcarded. \n  The sequence\
+                \ names are case independent. \n  An example of a list of sequences\
+                \ to be excluded is: \n  myseq, hs*, one two three \n  a file containing\
+                \ a list of sequence names can be specified by  giving the file name\
+                \ preceeded by a '@', eg: '@names.dat'"
+            prompt: Sequence names to exclude
+            name: e_exclude
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -exclude=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: StringType}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output sequence file (e_outseq)
+            name: e_outseq
+            argpos: '3'
+            format: {python: '("" , " -outseq=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: notseq.e_outseq}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outseq
+            argpos: '4'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Gff, value: GFF}
+        -   _type: InputProgramParameter
+            comment: This file collects the sequences which you have excluded from
+                the main output file of sequences.
+            prompt: Name of the output sequence file (e_junkoutseq)
+            name: e_junkoutseq
+            argpos: '5'
+            format: {python: '("" , " -junkoutseq=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: notseq.e_junkoutseq}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_junkoutseq
+            argpos: '6'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Gff, value: GFF}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '7'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outseq_out option
+            name: e_outseq_out
+            filenames: {python: e_outseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+        -   _type: OutputProgramParameter
+            prompt: junkoutseq_out option
+            name: e_junkoutseq_out
+            filenames: {python: e_junkoutseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+operations: ['EDAM_operation:2121']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/notseq.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: notseq
+command: {path: null, value: notseq}

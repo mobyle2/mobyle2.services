@@ -1,0 +1,150 @@
+_type: Program
+name: charge
+title: charge
+description: Draw a protein charge plot
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: seqall option
+            name: e_seqall
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -seqall=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+        -   _type: InputProgramParameter
+            prompt: Amino acids properties and molecular weight data file
+            name: e_aadata
+            argpos: '2'
+            format: {python: '("", " -aadata=" + str(value))[value is not None ]'}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Window length (value greater than or equal to 1)
+            name: e_window
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '3'
+            format: {python: '("", " -window=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 5}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Produce graphic
+            name: e_plot
+            argpos: '4'
+            format: {python: '("", " -plot")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            argpos: '5'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            precond: e_plot
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '6'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            precond: e_plot
+            type: {_type: StringType, default: charge_xygraph}
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '7'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            precond: {'#not': e_plot}
+            type: {_type: StringType, default: charge.e_outfile}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '8'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                -   '#and':
+                    - e_plot
+                    - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: data}
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0405']
+topics: ['EDAM_topic:0137']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/charge.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: charge
+command: {path: null, value: charge}

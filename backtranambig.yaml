@@ -1,0 +1,97 @@
+_type: Program
+name: backtranambig
+title: backtranambig
+description: Back-translate a protein sequence to ambiguous nucleotide sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Genetic codes
+            name: e_table
+            argpos: '2'
+            format: {python: '("", " -table=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '3'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outfile
+            argpos: '4'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '5'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2977'}
+operations: ['EDAM_operation:0371']
+topics: ['EDAM_topic:0108']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/backtranambig.html',
+    'http://emboss.sourceforge.net/docs/themes']
+public_name: backtranambig
+command: {path: null, value: backtranambig}

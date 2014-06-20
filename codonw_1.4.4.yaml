@@ -1,0 +1,302 @@
+_type: Program
+name: codonw
+version: 1.4.4
+title: codonw
+description: Correspondence Analysis of Codon Usage
+authors: J. Peden
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: codonw
+        argpos: '0'
+        format: {perl: '"codonw -silent -nomenu -nowarn"', python: '"codonw -silent
+                -nomenu -nowarn"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        name: outfiles
+        argpos: '2000'
+        format: {perl: '" $seqfile.indices $seqfile.bulk"', python: '" " + str(seqfile)
+                + ".indices " + str(seqfile) + ".bulk"'}
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Sequences File
+        name: seqfile
+        simple: true
+        argpos: '1000'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Defaults settings
+        name: defaults
+        children:
+        -   _type: InputProgramParameter
+            prompt: Genetic codes (-code)
+            name: gc
+            argpos: '2'
+            format: {perl: '(defined $value and $value ne $vdef) ? " -code $value"
+                    : ""', python: '( ""  , " -code " + str(value) )[value is not
+                    None and value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: 'Universal Genetic code [TGA=* TAA=* TAG=*] (0)', value: '0'}
+                - {label: 'Vertebrate Mitochondrial code [AGR=* ATA=M TGA=W] (1)',
+                    value: '1'}
+                - {label: 'Yeast Mitochondrial code [CTN=* ATA=M TGA=W] (2)', value: '2'}
+                - {label: 'Filamentous fungi Mitochondrial code [TGA=W] (3)', value: '3'}
+                - {label: 'Insects and Plathyhelminthes Mitochondrial co [ATA=M TGA=W
+                        AGR=S] (4)', value: '4'}
+                - {label: 'Nuclear code of Cilitia [UAA=Q=Gln UAG=Q] (5)', value: '5'}
+                - {label: 'Nuclear code of Euplotes [UGA=C] (6)', value: '6'}
+                - {label: Mitochondrial code of Echinoderms UGA=W AGR=S AAA=N (7),
+                    value: '7'}
+        -   _type: InputProgramParameter
+            prompt: Fop/CBI codons (-f_type)
+            name: fop_values
+            argpos: '2'
+            format: {perl: '(defined $value and $value ne $vdef) ? " -f_type $value"
+                    : ""', python: '( ""  , " -f_type " + str(value) )[ value is not
+                    None and value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: Escherichia coli (0), value: '0'}
+                - {label: Bacillus subtilis (1), value: '1'}
+                - {label: Dictyostelium discoideum (2), value: '2'}
+                - {label: Aspergillus nidulans (3), value: '3'}
+                - {label: Saccharomyces cerevisiae (4), value: '4'}
+                - {label: Drosophila melanogaster (5), value: '5'}
+                - {label: Caenorhabditis elegans (6), value: '6'}
+                - {label: Neurospora crassa (7), value: '7'}
+        -   _type: InputProgramParameter
+            prompt: CAI fitness values (-c_type)
+            name: cai_values
+            argpos: '2'
+            format: {perl: '(defined $value and $value ne $vdef) ? " -c_type $value"
+                    : ""', python: '( ""  , " -c_type " + str(value) )[value is not
+                    None and value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: Escherichia coli (0), value: '0'}
+                - {label: Bacillus subtilis (1), value: '1'}
+                - {label: Saccharomyces cerevisiae (2), value: '2'}
+        -   _type: InputProgramParameter
+            prompt: Output Computer readable (-machine)
+            name: output_type
+            argpos: '2'
+            format: {perl: '($value) ? " -machine" : ""', python: '( ""  , " -machine"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Concatenate all genes instead of individual genes (-totals)
+            name: genes
+            argpos: '3'
+            format: {perl: '($value) ? " -totals" : ""', python: '( ""  , " -totals"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Codon usage indices
+        name: CU_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: All indices (-all_indices)
+            name: all_indices
+            format: {perl: '($value) ? " -all_indices" : ""', python: '( ""  , " -all_indices"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputParagraph
+            prompt: Special indices
+            name: sp_indices
+            precond: {'#not': all_indices}
+            children:
+            -   _type: InputProgramParameter
+                prompt: Codon Adaptation Index (-cai)
+                name: CAI
+                format: {perl: '($value) ? " -cai" : ""', python: '( ""  , " -cai"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: User input file of CAI values (-cai_file)
+                name: cai_file
+                argpos: '2'
+                format: {perl: '(defined $value) ? " -cai_file $value" : ""', python: '(
+                        ""  , " -cai_file " + str(value) )[value is not None]'}
+                precond: CAI
+            -   _type: InputProgramParameter
+                prompt: Frequency of OPtimal codons index (-fop)
+                name: Fop
+                format: {perl: '($value) ? " -fop" : ""', python: '( ""  , " -fop"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: User input file of Fop values (-fop_file)
+                name: fop_file
+                argpos: '2'
+                format: {perl: '(defined $value) ? " -fop_file $value" : ""', python: '(
+                        ""  , " -fop_file " + str(value) )[ value is not None ]'}
+                precond: Fop
+            -   _type: InputProgramParameter
+                prompt: Codon bias index (-cbi)
+                name: CBI
+                format: {perl: '($value) ? " -cbi" : ""', python: '( ""  , " -cbi"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: User input file of CBI values (-cbi_file)
+                name: cbi_file
+                argpos: '2'
+                format: {perl: '(defined $value) ? " -cbi_file $value" : ""', python: '(
+                        ""  , " -cbi_file " + str(value) )[ value is not None ]'}
+                precond: CBI
+            -   _type: InputProgramParameter
+                prompt: Effective Number of Codons (-enc)
+                name: ENc
+                format: {perl: '($value) ? " -enc" : ""', python: '( ""  , " -enc"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: GC content of gene (-gc)
+                name: GC
+                format: {perl: '($value) ? " -gc" : ""', python: '( ""  , " -gc" )[
+                        value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: GC of silent 3rd codon posit. (-gc3s)
+                name: GC3s
+                format: {perl: '($value) ? " -gc3s" : ""', python: '( ""  , " -gc3s"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: Base composition at synonymous third codon positions (-sil_base)
+                name: silent_bc
+                format: {perl: '($value) ? " -sil_base" : ""', python: '( ""  , "
+                        -sil_base" )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: Number of synonymous codons (-L_sym)
+                name: L_sym
+                format: {perl: '( $value) ? " -L_sym" : ""', python: '( "" , " -L_sym"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: Total Number of synonymous and non-synonymous codons (-L_aa)
+                name: L_aa
+                format: {perl: '($value) ? " -L_aa" : ""', python: '( ""  , " -L_aa"
+                        )[ value ]'}
+                type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Amino acid indices
+        name: AA_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Hydrophobicity of protein (-hyd)
+            name: Hydro
+            argpos: '4'
+            format: {perl: '($value) ? " -hyd" : ""', python: '( ""  , " -hyd" )[
+                    value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Aromaticity of protein (-aro)
+            name: Aromo
+            argpos: '4'
+            format: {perl: '($value) ? " -aro" : ""', python: '( ""  , " -aro" )[
+                    value ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Bulk output option
+        name: bulk_output_option
+        argpos: '4'
+        format: {perl: '(defined $value and $value ne $vdef) ? " $value" : ""', python: '(
+                ""  , " " + str(value) )[ value is not None and value != vdef]'}
+        type:
+            _type: StringType
+            default: -cu
+            options:
+            - {label: Codon Usage (-cu), value: -cu}
+            - {label: Amino Acid Usage (-aau), value: -aau}
+            - {label: Relative Amino Acid Usage (-raau), value: -raau}
+            - {label: Tabulation of codon usage (-cutab), value: -cutab}
+            - {label: Tabulation of dataset's codon usage (-cutot), value: -cutot}
+            - {label: Relative Synonymous Codon Usage (-rscu), value: -rscu}
+            - {label: Fasta format (-fasta), value: -fasta}
+            - {label: Reader format with codons are seperated by spaces (-reader),
+                value: -reader}
+            - {label: Conceptual translation of DNA to amino acid (-transl), value: -transl}
+            - {label: Detailed report of codon G+C composition (-base), value: -base}
+            - {label: Dinucleotide usage of the three codon position (-dinuc), value: -dinuc}
+            - {label: No bulk output to be written to file (-noblk), value: -noblk}
+    -   _type: InputProgramParameter
+        prompt: Correspondence analysis options (available for several sequences)
+        name: COA_option
+        argpos: '3'
+        format: {perl: '(defined $value) ? " $value" : ""', python: '( "" , " %s"
+                %value)[value is not None]'}
+        type:
+            _type: StringType
+            default: 'Null'
+            options:
+            - {label: Do not perform a COA, value: 'Null'}
+            - {label: COA of codon usage frequencies (-coa_cu), value: -coa_cu}
+            - {label: COA of Relative Synonymous Codon Usage (-coa_rscu), value: -coa_rscu}
+            - {label: COA on Amino Acid usage frequencies (-coa_aa), value: -coa_aa}
+    -   _type: InputParagraph
+        prompt: Advanced COA options
+        name: coa_advanced
+        precond: COA_option
+        children:
+        -   _type: InputProgramParameter
+            prompt: Generate detailed (expert) statistics on COA (-coa_expert)
+            name: coa_expert
+            argpos: '3'
+            format: {perl: '($value) ? " -coa_expert" : ""', python: '( ""  , " -coa_expert"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Select number of axis to record (-coa_axes)
+            name: coa_axes
+            argpos: '3'
+            format: {perl: '(defined $value and $value != $vdef) ? " -coa_axes $value"
+                    : ""', python: '(  "" , "  -coa_axes " +  str(value) )[value is
+                    not None and value!=vdef]'}
+            type: {_type: IntegerType, default: 4}
+        -   _type: InputProgramParameter
+            comment: Values can be whole numbers or a percentage (5 or 10%).
+            prompt: Select number of genes to use to identify optimal codons (-coa_num)
+            name: coa_num
+            argpos: '3'
+            format: {perl: '(defined $value) ? " -coa_num $value" : ""', python: '(
+                    ""  , " -coa_num " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Results files
+        name: results_files
+        filenames: {perl: '"*.bulk"', python: '"*.bulk"'}
+    -   _type: OutputParagraph
+        prompt: Advanced COA options
+        name: coa_advanced
+        precond: COA_option
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Coa file
+            name: coa_files
+            filenames: {perl: '"coa_raw"', python: '"coa_raw"'}
+documentation_links: ['http://codonw.sourceforge.net/Readme.html', 'http://codonw.sourceforge.net/Tutorial.html']
+homepage_links: ['http://codonw.sourceforge.net/']
+public_name: codonw
+command: {path: null, value: null}
+source_links: ['http://sourceforge.net/projects/codonw/files/']

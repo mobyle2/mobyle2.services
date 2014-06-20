@@ -1,0 +1,251 @@
+_type: Program
+name: blast2genoclass
+version: '1.0'
+title: blast2genoclass
+description: One-line description of Blast program filtering
+authors: C. Maufrais
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Blast output file
+        name: infile
+        simple: true
+        argpos: '20'
+        format: {perl: '" -i $value"', python: '" -i " + str(value)'}
+        mandatory: true
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0857'}
+    -   _type: InputProgramParameter
+        prompt: 'Filter the one-line description of Blast program with:'
+        name: blastfilter
+        simple: true
+        format: {perl: '($value ne vdef) ? " -$value" : ""', python: '("", " -" +
+                str(value))[value != vdef]'}
+        type:
+            _type: StringType
+            default: 'Null'
+            options:
+            - {label: null, value: 'Null'}
+            - {label: best e-value, value: M}
+            - {label: most frequent description, value: F}
+    -   _type: InputProgramParameter
+        comment: '0: all hsp'
+        prompt: Number of hsp to consider (-x)
+        name: nbofhit
+        format: {perl: '(defined $value) ? " -x $value" : ""', python: '("", " -x
+                " + str(value) )[value is not None and value != vdef]'}
+        type: {_type: IntegerType, default: 10}
+    -   _type: InputProgramParameter
+        prompt: Filter the one-line description of Blast program with user name (-p)
+        name: genomic_name
+        simple: true
+        format: {perl: '(defined $value) ? " -p $value" : ""', python: '("", " -p
+                " + str(value).replace('' '',''_'') )[value is not None]'}
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Filter the hit of Blast with Taxonomic hierarchy name (-n)
+        name: taxonomic_name
+        simple: true
+        format: {perl: '(defined $value) ? " -n $value" : ""', python: '("", " -n
+                " + str(value).replace('' '',''_'') )[value is not None]'}
+        mandatory: true
+        type: {_type: StringType}
+    -   _type: InputParagraph
+        prompt: Output option
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            comment: 'In "res4individualBlast.txt" file, for all input blast, are
+                details:For all matching "Description filter option":- query name,
+                (query letter): percentage of matching descriptionand for all corresponding
+                hits:- Database sequence''s species, accession number and letters-
+                Hsp description'
+            prompt: Report detailed results matching "Description filter option" for
+                all blast (-v)
+            name: verboseall
+            format: {perl: '($value)? " -v" : ""', python: '("" , " -v") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: In "res4allBlast.txt" file, for the best database sequence(s),
+                are details:For database sequence matching "Description filter option":-
+                Database sequence's species, accession number, letters and description-
+                Number of query matching this sequence.- Query name, (letters)and
+                for all corresponding hsp:- Hsp description
+            prompt: Detailed report for database sequence(s) matching "Description
+                filter option" (-V)
+            name: verbose
+            format: {perl: '($value)? " -V" : ""', python: '("" , " -V") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Hsp(s) selection (-m)
+            name: option
+            format: {perl: '($value ne vdef) ? " -m $value" : ""', python: '("", "
+                    -m " + str(value))[value != vdef]'}
+            type:
+                _type: StringType
+                default: '1'
+                options:
+                - {label: All hsps, value: '0'}
+                - {label: Only compatible hsps, value: '1'}
+                - {label: Simple overlaps are possible, value: '2'}
+                - {label: Global overlaps on database sequence(s) are possible, value: '3'}
+        -   _type: InputProgramParameter
+            comment: For 1,2,3 hsps alignments (Sbjt and Query) are re-aligned on
+                the reference sequence extract from database.For 4,5,6 part of queries
+                corresponding to hsps are re-aligned on the reference sequence extract
+                from database.
+            prompt: 'Produce alignment: database sequence matching "Description filter
+                option" vs queries (-a)'
+            name: align
+            format: {perl: '($value  ne vdef)? " -a $value" : ""', python: '("" ,
+                    " -a " +str(value)) [value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: null, value: '0'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        merged in pairwise alignment', value: '1'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        in multiple alignment', value: '2'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        in multiple alignment and consensus', value: '3'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries merged in pairwise alignment', value: '4'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries in multiple alignment', value: '5'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries in multiple alignment and consensus', value: '6'}
+        -   _type: InputProgramParameter
+            prompt: 'Produce graphical alignment summary images: database sequence
+                matching "Description filter option" vs queries (-g)'
+            name: picture
+            format: {perl: '($value)? " -g" : ""', python: '("" , " -g") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Blast output file(s) sort/split by specific taxonomic hierarchy
+                (-b)
+            name: blastout
+            format: {perl: '($value)? " -b" : ""', python: '("" , " -b") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Extract Hsp(s) fragment from Query sequence(s) (-Q)
+            name: hspSeq
+            format: {perl: '($value)? " -Q" : ""', python: '("" , " -Q") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Query name write in file(s) sort/split by specific taxonomic hierarchy
+                (-q)
+            name: queryout
+            format: {perl: '($value)? " -q" : ""', python: '("" , " -q") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Report database sequence(s) matching option in fasta file (-s)
+            name: besthitseq
+            format: {perl: '($value)? " -s" : ""', python: '("" , " -s") [value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Extract fasta sequence, matching specified taxonomic filter,
+                from file containing query sequences witch are used to made blast.
+            prompt: Extraction of fasta sequences.
+            name: fastaExtract
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Query sequences witch are used to made blast.
+            name: query_seq
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Query sequences witch are used to made blast.
+            name: query_seq_run1
+            format: {perl: '(defined $value)? " -f $query_seq": ""', python: '("","
+                    -f "+ str(query_seq)) [query_seq is not None]'}
+            precond:
+                '#and': [hspSeq, query_seq]
+            hidden: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Query sequences witch are used to made blast.
+            name: query_seq_run2
+            argpos: '100'
+            format: {perl: '(defined $value)? " && extractfasta -i $query_seq *.qry":
+                    ""', python: '(""," && extractfasta -i "+ str(query_seq) + " *.qry")
+                    [query_seq is not None]'}
+            precond:
+                '#and': [fastaExtract, queryout, query_seq]
+            hidden: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output option
+        name: output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Output file
+            name: outfile
+            filenames: {perl: '"blast2genoclass.out"', python: '"blast2genoclass.out"'}
+            output_type: stdout
+        -   _type: OutputProgramParameter
+            prompt: Graphical output
+            name: pictureout
+            filenames: {perl: '"*.png"', python: '"*.png"'}
+            precond: picture
+        -   _type: OutputProgramParameter
+            prompt: Alignment
+            name: alignout
+            filenames: {perl: '"*.aln"', python: '"*.aln"'}
+            precond: align
+        -   _type: OutputProgramParameter
+            prompt: Verbose output file for all blast
+            name: verboseoutall
+            filenames: {perl: '"res4individualBlast.txt"', python: '"res4individualBlast.txt"'}
+            precond: verboseall
+        -   _type: OutputProgramParameter
+            prompt: Verbose output file for database sequence(s)
+            name: verboseout
+            filenames: {perl: '"res4allBlast.txt"', python: '"res4allBlast.txt"'}
+            precond: verbose
+        -   _type: OutputProgramParameter
+            prompt: Blast output file(s)
+            name: blastoutfile
+            filenames: {perl: '"*.blast"', python: '"*.blast"'}
+            precond: blastout
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0857'}
+        -   _type: OutputProgramParameter
+            prompt: Query name file
+            name: queryoutfile
+            filenames: {perl: '"*.qry"', python: '"*.qry"'}
+            precond: queryout
+        -   _type: OutputProgramParameter
+            prompt: Database sequence(s) fasta file
+            name: besthitseqfile
+            filenames: {perl: '"*.dbfasta"', python: '"*.dbfasta"'}
+            precond: besthitseq
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: OutputProgramParameter
+            prompt: Fasta file
+            name: fastafile
+            filenames: {perl: '"*.fasta"', python: '"*.fasta"'}
+            precond:
+                '#or': [fastaExtract, hspSeq]
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+operations: ['EDAM_operation:0258']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0623']
+public_name: blast2genoclass
+command: {path: null, value: blast2genoclass}

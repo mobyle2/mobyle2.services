@@ -1,0 +1,103 @@
+_type: Program
+name: newicktops
+version: '1.0'
+title: newicktops
+description: A phylogenetic tree drawing program for biologists
+authors: Manolo Gouy
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: command
+        argpos: '0'
+        format: {perl: '"newicktops"', python: '"newicktops"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Tree file
+        name: tree
+        simple: true
+        argpos: '10'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0872'}
+    -   _type: InputProgramParameter
+        prompt: paper format
+        name: paper_format
+        argpos: '1'
+        format: {perl: '($value eq $vdef) ? " -us" : ""', python: '( "" , " -us" )[
+                value != vdef ]'}
+        type:
+            _type: StringType
+            default: a4
+            options:
+            - {label: a4, value: a4}
+            - {label: us letter, value: us}
+    -   _type: InputProgramParameter
+        prompt: Font size used for taxon names
+        name: font_size
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -size $value" : ""', python: '( "" ,
+                " -size " + str( value ) )[ value is not None ]'}
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        prompt: Show branch lengths if they appear in tree file
+        name: lengths
+        argpos: '2'
+        format: {perl: '($value) ? " -lengths" : ""', python: '( "" , " -lengths"
+                )[ value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Show bootstrap values if they appear in tree file
+        name: boots
+        argpos: '3'
+        format: {perl: '($value) ? " -boot" : ""', python: '( "" , " -boot" )[ value
+                ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Don't include title in postscript output
+        name: no_title
+        argpos: '4'
+        format: {perl: '($value) ? " -notitle" : ""', python: '( "" , " -notitle"
+                )[ value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: the size of page for postscript
+        name: paper_size
+        children:
+        -   _type: InputProgramParameter
+            prompt: width
+            name: width
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: height
+            name: height
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            name: ps_size
+            format: {perl: '" -pssize $widthx$height"', python: '" -pssize %dx%d"
+                    %( width , height )'}
+            precond:
+                '#and':
+                -   width: {'#ne': None}
+                -   height: {'#ne': None}
+            hidden: true
+            type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Tree draw
+        name: tree_out
+        filenames: {perl: '"*.ps"', python: '"*.ps"'}
+comment: "newicktops is a tree drawing program able to draw any binary tree expressed\n\
+    \          in the standard phylogenetic tree format (e.g., the format used by\
+    \ the PHYLIP package).\n          NJplot allows display of bootstrap scores and\
+    \ printing in the PostScript format."
+operations: ['EDAM_operation:0567']
+topics: ['EDAM_topics:0092', 'EDAM_topics:0084']
+homepage_links: ['http://pbil.univ-lyon1.fr/software/njplot.html']
+public_name: newicktops
+command: {path: null, value: null}
+source_links: ['ftp://pbil.univ-lyon1.fr/pub/mol_phylogeny/njplot/']

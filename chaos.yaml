@@ -1,0 +1,99 @@
+_type: Program
+name: chaos
+title: chaos
+description: Draw a chaos game representation plot for a nucleotide sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            simple: true
+            argpos: '2'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: e_goutfile
+            argpos: '3'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: chaos_graph}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '4'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_png
+            filenames: {python: '"*.png"'}
+            precond: {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond: {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond: {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond: {e_graph: data}
+operations: ['EDAM_operation:0377']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/chaos.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: chaos
+command: {path: null, value: chaos}

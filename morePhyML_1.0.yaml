@@ -1,0 +1,246 @@
+_type: Program
+name: morePhyML
+version: '1.0'
+title: morePhyML
+description: Improving ML tree searching with PhyML 3
+authors: Alexis Criscuolo
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Sequence Alignment
+        name: alignment
+        simple: true
+        format: {perl: '"-i $value"', python: '" -i "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1955']
+            data_terms: EDAM_data:0863
+    -   _type: InputProgramParameter
+        prompt: Data type (-d)
+        name: seqtype
+        simple: true
+        format: {perl: '(defined $value) ? " -d $value" : ""', python: '( "" , " -d
+                " + str(value) )[ value is not None ]'}
+        type:
+            _type: StringType
+            default: nt
+            options:
+            - {label: DNA (nt), value: nt}
+            - {label: Amino-Acids (aa), value: aa}
+    -   _type: InputParagraph
+        prompt: Control Options
+        name: control_opt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Nucleotide substitution model (-m)
+            name: ntmodel
+            simple: true
+            format: {perl: '($value ne $vdef) ? " -m $value" : ""', python: '("",
+                    " -m "+str(value))[value != vdef]'}
+            precond: {seqtype: nt}
+            type:
+                _type: StringType
+                default: GTR
+                options:
+                - {label: HKY85, value: HKY85}
+                - {label: JC69, value: JC69}
+                - {label: K80, value: K80}
+                - {label: F81, value: F81}
+                - {label: F84, value: F84}
+                - {label: TN93, value: TN93}
+                - {label: GTR, value: GTR}
+                - {label: TN93e, value: TN93e}
+                - {label: TPM1e, value: TPM1e}
+                - {label: TPM1u, value: TPM1u}
+                - {label: TPM2e, value: TPM2e}
+                - {label: TPM2u, value: TPM2u}
+                - {label: TPM3e, value: TPM3e}
+                - {label: TPM3u, value: TPM3u}
+                - {label: TIM1e, value: TIM1e}
+                - {label: TIM1u, value: TIM1u}
+                - {label: TIM2e, value: TIM2e}
+                - {label: TIM2u, value: TIM2u}
+                - {label: TIM3e, value: TIM3e}
+                - {label: TIM3u, value: TIM3u}
+                - {label: TVMe, value: TVMe}
+                - {label: TVMu, value: TVMu}
+                - {label: SYM, value: SYM}
+        -   _type: InputProgramParameter
+            prompt: Amino-acid substitution model (-m)
+            name: aamodel
+            simple: true
+            format: {perl: '($value ne $vdef) ? " -m $value" : ""', python: '("",
+                    " -m "+str(value))[value != vdef]'}
+            precond: {seqtype: aa}
+            type:
+                _type: StringType
+                default: LG
+                options:
+                - {label: LG, value: LG}
+                - {label: WAG, value: WAG}
+                - {label: JTT, value: JTT}
+                - {label: MtREV, value: MtREV}
+                - {label: Dayhoff, value: Dayhoff}
+                - {label: DCMut, value: DCMut}
+                - {label: RtREV, value: RtREV}
+                - {label: CpREV, value: CpREV}
+                - {label: VT, value: VT}
+                - {label: Blosum62, value: Blosum62}
+                - {label: MtMam, value: MtMam}
+                - {label: MtArt, value: MtArt}
+                - {label: HIVw, value: HIVw}
+                - {label: HIVb, value: HIVb}
+        -   _type: InputProgramParameter
+            prompt: Estimated transition/transversion ratio for DNA sequences? (-t)
+            name: tstvratio1
+            format: {perl: '($value) ? " -t e" : ""', python: '( ""  , " -t e")[ value
+                    ]'}
+            precond: {seqtype: nt}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User transition/transversion ratio for DNA sequences? (-t)
+            name: tstvratio2
+            format: {perl: '(defined $value ) ? " -t $value" : ""', python: '( ""  ,
+                    " -t "+str(value))[ value is not None ]'}
+            precond:
+                '#and':
+                - {seqtype: nt}
+                - {'#not': tstvratio1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Estimated proportion of invariable sites? (-v)
+            name: propinvar1
+            format: {perl: '($value) ? " -v e" : ""', python: '( ""  , " -v e")[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User proportion of invariable sites? (-v)
+            name: propinvar2
+            format: {perl: '(defined $value) ? " -v $value" : ""', python: '( ""  ,
+                    " -v "+str(value))[value is not None]'}
+            precond: {'#not': propinvar1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Number of relative substitution rate categories (-c)
+            name: nbsubstcat
+            format: {perl: '(defined $value and $value != $vdef) ? " -c $value" :
+                    ""', python: '("", " -c "+str(value))[value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Estimated Gamma distribution parameter? (-a)
+            name: gamma1
+            format: {perl: '($value) ? " -a e" : ""', python: '("", " -a e")[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User gamma distribution parameter? (-a)
+            name: gamma2
+            format: {perl: '(defined $value) ? " -a $value" : ""', python: '("", "
+                    -a "+str(value))[value is not None]'}
+            precond: {'#not': gamma1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Equilibrium character frequencies (-f)
+            name: frequencies
+            simple: true
+            format: {perl: '(defined $value) ? " -f $value" : ""', python: '("", "
+                    -f "+str(value))[value is not None]'}
+            type:
+                _type: StringType
+                default: m
+                options:
+                - {label: 'm: equilibrium frequency estimated by ML for nucleotides
+                        or defined by the substitution model for amino acids.', value: m}
+                - {label: 'e: equilibrium frequency estimated by counting the occurence
+                        of each character state in the alignment.', value: e}
+        -   _type: InputProgramParameter
+            prompt: Starting tree filename (u)
+            name: usertreefile
+            format: {perl: '(defined $value) ? " -u $value" : ""', python: '("", "
+                    -u "+str(value))[value is not None]'}
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1910']
+                data_terms: EDAM_data:0872
+        -   _type: InputProgramParameter
+            prompt: Most parsimonious starting tree (-p)
+            name: parsimoniousTree
+            format: {perl: '(defined $value) ? " -p" : ""', python: '("", " -p")[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Number of random starting trees to be used (-n)
+            name: randomNumber
+            format: {perl: '(defined $value) ? " -n $value" : ""', python: '("", "
+                    -n " + str(value))[value is not None]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: First tree swapping (-s)
+            name: tree_swapping
+            format: {perl: '(defined $value and $value ne $vdef) ? " -s $value" :
+                    ""', python: '("", " -s "+str(value))[value is not None and value
+                    !=vdef]'}
+            type:
+                _type: StringType
+                default: SPR
+                options:
+                - {label: SPR, value: SPR}
+                - {label: NNI, value: NNI}
+                - {label: both, value: both}
+        -   _type: InputProgramParameter
+            prompt: Branch support (-b)
+            name: branch_support
+            format: {perl: '(defined $value and $value ne $vdef) ? " -b $value" :
+                    ""', python: '("", " -b "+str(value))[value is not None and value
+                    !=vdef]'}
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: SH-like branch support, value: 'null'}
+                - {label: '-2: khi2-based parametric support', value: '-2'}
+                - {label: '0: none support', value: '0'}
+                - {label: '-1: aLRT support', value: '-1'}
+        -   _type: InputProgramParameter
+            prompt: Write the likelihood for each character (-l)
+            name: likelihoodCar
+            format: {perl: '(defined $value) ? " -l" : ""', python: '("", " -l")[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Write the results outputed by the first run of phyml (-x)
+            name: firstRun
+            format: {perl: '(defined $value) ? " -x" : ""', python: '("", " -x")[value]'}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output file
+        name: outfile
+        filenames: {perl: '"*_morephyml_stats.txt"', python: '"*_morephyml_stats.txt"'}
+    -   _type: OutputProgramParameter
+        prompt: Output tree
+        name: outtree
+        filenames: {perl: '"*_morephyml_tree.txt"', python: '"*_morephyml_tree.txt"'}
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+operations: ['EDAM_operation:0547']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Criscuolo A (2011) morePhyML: improving the phylogenetic tree\
+        \ space\n\texploration with PhyML 3. Molecular Phylogenetics and Evolution.",
+    url: null}
+- {doi: null, label: "Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel\
+        \ O\n\t(2010) New algorithms and methods to estimate maximum-likelihood\n\t\
+        phylogenies: assessing the performance of PhyML 3.0. Syst Biol\n\t59:307-321.",
+    url: null}
+- {doi: null, label: 'Guindon, S. and Gascuel, O. (2003) A simple, fast and accurate
+        algorithm to estimate large phylogenies by maximum likelihood Syst. Biol.,
+        52, 696-704', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/morePhyML/morePhyML_doc.pdf']
+public_name: morePhyML
+command: {path: null, value: morePhyML}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/morePhyML/']

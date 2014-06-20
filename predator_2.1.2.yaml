@@ -1,0 +1,213 @@
+_type: Program
+name: predator
+version: 2.1.2
+title: PREDATOR
+description: Protein secondary structure prediction from a single sequence or a set
+    of sequences
+authors: D. Frishman & P. Argos
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        comment: You must enter either a protein sequences or alignment file
+        prompt: Input file
+        name: inputfile
+        children:
+        -   _type: InputProgramParameter
+            prompt: Protein sequence(s) File
+            name: sequences
+            argpos: '100'
+            format: {perl: '(defined $value) ? " $value" : ""', python: '("" , " "
+                    + str(value) )[ value is not None ]'}
+            precond:
+                '#and':
+                -   sequences: {'#ne': None}
+                -   alignment: {'#eq': None}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Protein Alignment File
+            name: alignment
+            simple: true
+            argpos: '101'
+            format: {perl: '(defined $value) ? " $value" : ""', python: '("" , " "
+                    + str(value))[ value is not None ]'}
+            precond:
+                '#and':
+                -   alignment: {'#ne': None}
+                -   sequences: {'#eq': None}
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200', 'EDAM_format:1982', 'EDAM_format:1993']
+                data_terms: EDAM_data:0863
+    -   _type: InputParagraph
+        prompt: Prediction options
+        name: prediction
+        children:
+        -   _type: InputProgramParameter
+            prompt: Perform single sequence prediction. Ignore other sequences in
+                the set for computing the prediction (-s)
+            name: single
+            argpos: '1'
+            format: {perl: '($value) ? " -s" : ""', python: '( "" , " -s" )[ value
+                    ]'}
+            precond: {'#not': all}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Do not copy assignment directly from the PDB database if query
+                sequence is found in PDB. By default, the known conformation of 7-residue
+                segments will be used if they are identical to a 7-residue fragment
+                in the query sequence.
+            prompt: Do not copy assignment directly from the PDB database (-u)
+            name: dont_copy
+            argpos: '1'
+            format: {perl: '($value) ? " -u" : ""', python: '( "" , " -u" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Use DSSP target assignment (default is STRIDE). The predictions
+                made with DSSP and STRIDE target assignments are optimized to reproduce
+                these assignments as well as possible.
+            prompt: Use DSSP target assignment (-d)
+            name: dssp
+            argpos: '1'
+            format: {perl: '($value) ? " -d" : ""', python: '( "" , " -d" )[ value
+                    ]'}
+            precond:
+                dssp_file: {'#ne': None}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Find a subset of sequences with no more than this identity between
+                any pair of sequences (-n)
+            name: percentid
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -n$value" : ""', python: '( "" ,
+                    " -n" + str(value) )[ value is not None ]'}
+            type: {_type: FloatType}
+    -   _type: InputParagraph
+        prompt: Input parameters
+        name: input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Make prediction for All sequences in the input file (-a)
+            name: all
+            argpos: '1'
+            format: {perl: '($value) ? " -a" : ""', python: '( "" , " -a" )[ value
+                    ]'}
+            precond:
+                seqid: {'#eq': None}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This option is case sensitive!
+            prompt: Make prediction for this sequence (give its id) (-i)
+            name: seqid
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -i$value" : ""', python: '( "" ,
+                    " -i" + str(value) )[ value is not None ]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: STRIDE file (-x)
+            name: stride_file
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -x$value" : ""', python: '( "" ,
+                    " -x" + str(value) )[ value is not None ]'}
+        -   _type: InputProgramParameter
+            prompt: DSSP file (-y)
+            name: dssp_file
+            argpos: '1'
+            format: {perl: '(defined $value)? " -y$value" : ""', python: '( "" , "
+                    -y"+str( value ) )[ value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: PDB Chain (-z)
+            name: pdb_chain
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -z$value" : " -z-"', python: '( "
+                    -z-" , " -z" + str(value) )[ value is not None ]'}
+            precond:
+                '#or':
+                -   dssp_file: {'#ne': None}
+                -   stride_file: {'#ne': None}
+            mandatory: true
+            type: {_type: StringType}
+    -   _type: InputParagraph
+        prompt: Output parameters
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            comment: Every output line contains residue number, three-letter residue
+                name, one-letter residue name, predicted secondary structural state
+                and reliability estimate. If a STRIDE or DSSP secondary structure
+                assignment has been read (see other options), the known assignment
+                will also be shown in the output for comparison. By default the short
+                output form is used.
+            prompt: Long output form (-l)
+            name: long
+            argpos: '1'
+            format: {perl: '($value) ? " -l" : ""', python: '( "" , " -l" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Output other additional information if available (-h)
+            name: other_info
+            argpos: '1'
+            format: {perl: '($value) ? " -h" : ""', python: '( "" , " -h" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output parameters
+        name: output
+        children:
+        -   _type: OutputProgramParameter
+            comment: "Short output form:Secondary structure states of amino acids\
+                \ are indicated by the letters\n                \"H\" (helix), \"\
+                E\" (extended or sheet), and \"_\" (coil).Long output form ( option\
+                \ -L selected ):Secondary structure states of amino acids are indicated\
+                \ by letters \"H\"\n       or   \"h\" (helix),  \"E\"  or  \"e\" (extended),\
+                \ and \"C\" or \"c\" (coil). The\n       prediction is shown in lower\
+                \ case except for those residues for  which\n       the assignment\
+                \ was directly copied from the PDB database. This feature\n      \
+                \ is added so that you can distinguish between the predictions  actually\n\
+                \       made by PREDATOR and those taken from known structures.\n\
+                \       The  prediction is  contained  in  the records  beginning\
+                \   with   the\n       identifier PRED in the first columns. For each\
+                \ amino acid site of your\n       sequence,  residue  number,  three-\
+                \  and   one-letter   residue  code,\n       prediction,  reliability\
+                \  estimate,  and  the  number of residues from\n       related sequences\
+                \  projected  onto  this  residue  through  the  local\n       alignment\
+                \  procedure are shown in subsequent columns. Additionally, if\n \
+                \      the STRIDE or DSSP assignments have been read using the options\
+                \ -x  or\n       -y  (and  -z), the last column of the PREDATOR output\
+                \ will contain the\n       actual  secondary  structural  assignment\
+                \  for  your  sequence  if  it\n       corresponds  exactly  to  the\
+                \  one  in  the  STRIDE  or DSSP file (for\n       comparison). If\
+                \ the known assignment is not available,  i.e.,  if  you\n       did\
+                \ not use the -x or -y options, question signs will be output.Both\
+                \ output forms:If option -h has been used, PREDATOR will show  progress\
+                \  by  printing\n       dots  on  the  standard output. If your sequence\
+                \ has related sequences\n       with known 3D structure, PDB identifiers\
+                \ of these  sequences  will  be\n       printed."
+            name: predator_output
+            filenames: {python: '''predator.out'''}
+            output_type: stdout
+operations: ['EDAM_operation:0267']
+topics: ['EDAM_topic:0172', 'EDAM_topic:0694']
+references:
+- {doi: null, label: 'Frishman, D. and Argos, P. (1996) Incorporation of long-distance
+        interactions into a secondary structure prediction algorithm. Protein Engineering,
+        9, 133-142.', url: null}
+- {doi: null, label: 'Frishman, D. and Argos, P. (1997) 75% accuracy in protein secondary
+        structure prediction. Proteins, 27, 329-335.', url: null}
+- {doi: null, label: 'Frishman,D and Argos,P. (1995) Knowledge-based secondary structure
+        assignment. Proteins: structure, function and genetics, 23, 566-579.', url: null}
+- {doi: null, label: 'Kabsch,W. and Sander,C. (1983) Dictionary of protein secondary
+        structure: pattern recognition of hydrogen-bonded and geometrical features.
+        Biopolymers, 22: 2577-2637.', url: null}
+public_name: predator
+command: {path: null, value: predator}
+source_links: ['ftp://ftp.ebi.ac.uk/pub/software/unix/predator/']

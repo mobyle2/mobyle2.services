@@ -1,0 +1,197 @@
+_type: Program
+name: wordmatch
+title: wordmatch
+description: Finds regions of identity (exact matches) of two sequences
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: asequence option
+            name: e_asequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -asequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: bsequence option
+            name: e_bsequence
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -bsequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Word size (value greater than or equal to 2)
+            name: e_wordsize
+            ctrl:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -wordsize=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 4}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Dump matches as alignments
+            name: e_dumpalign
+            argpos: '4'
+            format: {python: '(" -nodumpalign", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Name of the output alignment file
+            name: e_outfile
+            argpos: '5'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: wordmatch.align}
+        -   _type: InputProgramParameter
+            prompt: Choose the alignment output format
+            name: e_aformat_outfile
+            argpos: '6'
+            format: {python: '("", " -aformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: MATCH
+                options:
+                - {label: Fasta, value: FASTA}
+                - {label: Msf, value: MSF}
+                - {label: Pair, value: PAIR}
+                - {label: Markx0, value: MARKX0}
+                - {label: Markx1, value: MARKX1}
+                - {label: Markx2, value: MARKX2}
+                - {label: Markx3, value: MARKX3}
+                - {label: Markx10, value: MARKX10}
+                - {label: Srs, value: SRS}
+                - {label: Srspair, value: SRSPAIR}
+                - {label: Score, value: SCORE}
+                - {label: Unknown, value: UNKNOWN}
+                - {label: Multiple, value: MULTIPLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Match, value: MATCH}
+        -   _type: InputProgramParameter
+            comment: Statistics on distribution of kmers and matches
+            prompt: logfile option
+            name: e_logfile
+            argpos: '7'
+            format: {python: '("" , " -logfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: wordmatch.e_logfile}
+        -   _type: InputProgramParameter
+            prompt: Dump matches as feature files
+            name: e_dumpfeat
+            argpos: '8'
+            format: {python: '(" -nodumpfeat", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Name of the output feature file (e_aoutfeat)
+            name: e_aoutfeat
+            argpos: '9'
+            format: {python: '("" , " -aoutfeat=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: wordmatch.e_aoutfeat}
+        -   _type: InputProgramParameter
+            prompt: Choose the feature output format
+            name: e_offormat_aoutfeat
+            argpos: '10'
+            format: {python: '("", " -offormat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+        -   _type: InputProgramParameter
+            prompt: Name of the output feature file (e_boutfeat)
+            name: e_boutfeat
+            argpos: '11'
+            format: {python: '("" , " -boutfeat=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: wordmatch.e_boutfeat}
+        -   _type: InputProgramParameter
+            prompt: Choose the feature output format
+            name: e_offormat_boutfeat
+            argpos: '12'
+            format: {python: '("", " -offormat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '13'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_aformat_outfile:
+                    '#in': [FASTA, MSF]
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0863'}
+        -   _type: OutputProgramParameter
+            prompt: outfile_out2 option
+            name: e_outfile_out2
+            filenames: {python: e_outfile}
+            precond:
+                e_aformat_outfile:
+                    '#in': [PAIR, MARKX0, MARKX1, MARKX2, MARKX3, MARKX10, SRS, SRSPAIR,
+                        SCORE, UNKNOWN, MULTIPLE, SIMPLE, MATCH]
+        -   _type: OutputProgramParameter
+            prompt: logfile_out option
+            name: e_logfile_out
+            filenames: {python: e_logfile}
+        -   _type: OutputProgramParameter
+            prompt: aoutfeat_out option
+            name: e_aoutfeat_out
+            filenames: {python: e_aoutfeat}
+        -   _type: OutputProgramParameter
+            prompt: boutfeat_out option
+            name: e_boutfeat_out
+            filenames: {python: e_boutfeat}
+operations: ['EDAM_operation:0288']
+topics: ['EDAM_topic:0159']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/wordmatch.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: wordmatch
+command: {path: null, value: wordmatch}

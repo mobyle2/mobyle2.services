@@ -1,0 +1,79 @@
+_type: Program
+name: comalign
+title: ComAlign
+description: is a program, that given a number of sequences generates a number of
+    heuristic alignments and combines these best possible.
+authors: O. Caprani, K. Bucka-Lassen
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: the sequences must be in the GenAl format
+        prompt: Sequences File (-f)
+        name: seq
+        simple: true
+        argpos: '1'
+        format: {perl: '" -f$value"', python: '" -f" + str(value)'}
+        mandatory: true
+        type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+    -   _type: InputProgramParameter
+        prompt: Random seed number (-s)
+        name: seed
+        argpos: '1'
+        format: {perl: '(defined $value and $value != $vdef) ? " -s$value" : ""',
+            python: '( "" , " -s" + str(value) )[ value is not None and value != vdef]'}
+        type: {_type: IntegerType, default: 1}
+    -   _type: InputProgramParameter
+        prompt: Number of sequences that are to be aligned (-n)
+        name: seqnb
+        argpos: '1'
+        format: {perl: '(defined $value and $value != $vdef) ? " -n$value" : ""',
+            python: '( "" , " -n" + str(value) )[ value is not None and value != vdef]'}
+        type: {_type: IntegerType, default: 2}
+    -   _type: InputProgramParameter
+        comment: On each iteration a new alignment is added to the pool of alignments
+            ComAlign is working on
+        prompt: Number of iterations (-i)
+        name: iterations
+        argpos: '1'
+        format: {perl: '(defined $value and $value != $vdef) ? " -i$value" : ""',
+            python: '( "" , " -i" + str(value) )[ value is not None and value != vdef]'}
+        type: {_type: IntegerType, default: 10}
+    -   _type: InputProgramParameter
+        prompt: 'Score: ComAlign records the time it took to find a solution as good
+            as this score (-l)'
+        name: score
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -l$value" : ""', python: '( "" , " -l"
+                + str(value) )[ value is not None]'}
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        prompt: ComAlign marks the best solution found after this number of 1/100
+            seconds (-t)
+        name: time
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -t$value" : ""', python: '( "" , " -t"
+                + str(value) )[ value is not None ]'}
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        prompt: Makes ComAlign terminate if the score hasn't changed within the last
+            this number of iterations (-c)
+        name: last_iterations
+        argpos: '1'
+        format: {perl: '(defined $value and $value != $vdef) ? " -c$value" : ""',
+            python: '( "" , " -c" + str(value) )[ value is not None and value != vdef]'}
+        type: {_type: IntegerType, default: 20}
+    -   _type: InputProgramParameter
+        prompt: Print the best found alignment on termination (-a)
+        name: print_best
+        argpos: '1'
+        format: {perl: '($value) ? " -a" : ""', python: '( "" , " -a" )[ value ]'}
+        type: {_type: BooleanType, default: false}
+outputs: {_type: OutputParagraph}
+operations: ['EDAM_operation:0498']
+topics: ['EDAM_topic:0182']
+documentation_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/HowTo.html']
+homepage_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/ComAlign.html']
+public_name: comalign
+command: {path: null, value: ComAlign}
+source_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/programs/']

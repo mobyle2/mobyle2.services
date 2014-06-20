@@ -1,0 +1,84 @@
+_type: Program
+name: hmmconvert
+title: HMMCONVERT
+description: Convert profile HMM file to a HMMER format
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Old HMM ascii file
+        name: oldhmmfile
+        argpos: '2'
+        format: {perl: '" $oldhmmfile"', python: '" " + str(oldhmmfile)'}
+        precond:
+            oldhmmfile: {'#ne': None}
+    -   _type: InputProgramParameter
+        prompt: Old HMM binary file
+        name: oldbinfile
+        argpos: '2'
+        format: {perl: '" $oldbinfile"', python: '" " + str(oldbinfile)'}
+        precond:
+            oldbinfile: {'#ne': None}
+    -   _type: InputParagraph
+        prompt: Advanced options
+        name: advanced
+        children:
+        -   _type: InputProgramParameter
+            prompt: New format
+            name: new_format
+            argpos: '1'
+            format: {perl: '($value)? " $value":""', python: '" "+str(value)'}
+            type:
+                _type: StringType
+                default: -a
+                options:
+                - {label: HMMER to ASCII file, value: -a}
+                - {label: HMMER to binary file, value: -b}
+                - {label: output backward compatible HMMER2 ASCII format, value: '-2'}
+        -   _type: InputProgramParameter
+            comment: "Output in a HMMER3 ASCII text format other then the most current\
+                \ one. Valid\n      choices for the value are '3/b' or '3/a'. The\
+                \ current format is '3/b', and this is the\n      default. There is\
+                \ a slightly different format '3/a' that was used in some alpha test\n\
+                \      code."
+            prompt: Choose output legacy 3.x file formats by name
+            name: outfmt
+            argpos: '1'
+            format: {perl: '($value ne $vdef)? " --outfmt $value":""', python: '("",
+                    " --outfmt "+str(value))[value !=vdef]'}
+            precond:
+                new_format: {'#ne': '-2'}
+            type:
+                _type: StringType
+                default: 3/b
+                options:
+                - {label: 3/b code, value: 3/b}
+                - {label: 3/a code, value: 3/a}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Hmm profile
+        name: result_file
+        filenames: {perl: '(defined $oldhmmfile)? "$oldhmmfile.convert": "$oldbinfile.convert"',
+            python: '(str(oldbinfile) + ".convert" , str(oldhmmfile) + ".convert")[oldhmmfile
+                is not None]'}
+        precond:
+            '#or':
+            - {new_format: -a}
+            - {new_format: '-2'}
+    -   _type: OutputProgramParameter
+        prompt: Hmm profile (binary)
+        name: result_bin_file
+        filenames: {perl: '(defined $oldhmmfile)? "$oldhmmfile.bin":"oldbinfile.bin"',
+            python: '(str(oldbinfile) + ".bin" , str(oldhmmfile) + ".bin")[oldhmmfile
+                is not None]'}
+        precond: {new_format: -b}
+comment: hmmconvert reads an HMM file from oldhmmfile in any HMMER format, and writes
+    it to a new file newhmmfile in a new format. oldhmmfile and newhmmfile must be
+    different files; you can't reliably overwrite the old file. By default, the new
+    HMM file is written in HMMER 2 ASCII format.
+operations: ['EDAM_operation:2409']
+topics: ['EDAM_topics:0188']
+public_name: hmmconvert
+command: {path: null, value: hmmconvert}

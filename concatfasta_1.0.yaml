@@ -1,0 +1,56 @@
+_type: Program
+name: concatfasta
+version: '1.0'
+title: concatfasta
+description: Concatenation of sequences from two fasta files with exactly the same
+    sequence identifiers
+authors: Maufrais Corinne
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Fasta file
+            name: firstFile
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -f " + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Fasta file
+            name: scdFile
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -s " + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Input section
+        name: input
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Sequence(s) file
+            name: outfile
+            filenames: {perl: '"concatfasta.out"', python: '"concatfasta.out"'}
+            output_type: stdout
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+operations: ['EDAM_operation:2121']
+topics: ['EDAM_topic:0220']
+public_name: concatfasta
+command: {path: null, value: concatfasta}

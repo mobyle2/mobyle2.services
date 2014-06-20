@@ -1,0 +1,215 @@
+_type: Program
+name: tcode
+title: tcode
+description: Identify protein-coding regions using Fickett TESTCODE statistic
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+        -   _type: InputProgramParameter
+            comment: The default data file is Etcode.dat and contains coding probabilities
+                for each base. The probabilities are for both  positional and compositional
+                information.
+            prompt: Testcode data file
+            name: e_datafile
+            argpos: '2'
+            format: {python: '("", " -datafile=" + str(value))[value is not None ]'}
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: This is the number of nucleotide bases over which the TESTCODE
+                statistic will be performed each time. The window will  then slide
+                along the sequence, covering the same number of bases  each time.
+            prompt: Length of sliding window (value greater than or equal to 200)
+            name: e_window
+            ctrl:
+            -   message: Value greater than or equal to 200 is required
+                test:
+                    value: {'#gte': '200'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -window=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 200}
+    -   _type: InputParagraph
+        prompt: Advanced section
+        name: e_advanced
+        children:
+        -   _type: InputProgramParameter
+            comment: The selected window will, by default, slide along the nucleotide
+                sequence by three bases at a time, retaining the frame  (although
+                the algorithm is not frame sensitive). This may be  altered to increase
+                or decrease the increment of the slide.
+            prompt: Stepping increment for the window (value greater than or equal
+                to 1)
+            name: e_step
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '4'
+            format: {python: '("", " -step=" + str(value))[value is not None and value!=vdef]'}
+            type: {_type: IntegerType, default: 3}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            comment: On selection a graph of the sequence (X axis) plotted against
+                the coding score (Y axis) will be displayed. Sequence  above the green
+                line is coding, that below the red line is  non-coding.
+            prompt: Graphical display
+            name: e_plot
+            argpos: '5'
+            format: {python: '("", " -plot")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '6'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            precond: {'#not': e_plot}
+            type: {_type: StringType, default: tcode.report}
+        -   _type: InputProgramParameter
+            prompt: Choose the report output format
+            name: e_rformat_outfile
+            argpos: '7'
+            format: {python: '("", " -rformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            precond: {'#not': e_plot}
+            type:
+                _type: StringType
+                default: TABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            argpos: '8'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            precond: e_plot
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '9'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            precond: e_plot
+            type: {_type: StringType, default: tcode_xygraph}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '10'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                -   '#and':
+                    - e_plot
+                    - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: data}
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0109']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/tcode.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: tcode
+command: {path: null, value: tcode}

@@ -1,0 +1,89 @@
+_type: Program
+name: pscan
+title: pscan
+description: Scans protein sequence(s) with fingerprints from the PRINTS database
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Minimum number of elements per fingerprint (value from 1 to 20)
+            name: e_emin
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 20 is required
+                test:
+                    value: {'#lte': '20'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -emin=" + str(value))[value is not None and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 2}
+        -   _type: InputProgramParameter
+            prompt: Maximum number of elements per fingerprint (value less than or
+                equal to 20)
+            name: e_emax
+            ctrl:
+            -   message: Value less than or equal to 20 is required
+                test:
+                    value: {'#lte': '20'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -emax=" + str(value))[value is not None and value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 20}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '4'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: pscan.e_outfile}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '5'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0382', 'EDAM_operation:0347', 'EDAM_operation:0340']
+topics: ['EDAM_topic:0161']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/pscan.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: pscan
+command: {path: null, value: pscan}

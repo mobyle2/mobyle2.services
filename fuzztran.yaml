@@ -1,0 +1,174 @@
+_type: Program
+name: fuzztran
+title: fuzztran
+description: Search for patterns in protein sequences (translated)
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+        -   _type: InputProgramParameter
+            comment: "The standard IUPAC one-letter codes for the amino acids are\
+                \ used. \n  The symbol 'x' is used for a position where any amino\
+                \ acid is  accepted. \n  Ambiguities are indicated by listing the\
+                \ acceptable amino acids  for a given position, between square parentheses\
+                \ '[ ]'. For  example: [ALT] stands for Ala or Leu or Thr. \n  Ambiguities\
+                \ are also indicated by listing between a pair of curly  brackets\
+                \ '{ }' the amino acids that are not accepted at a gven  position.\
+                \ For example: {AM} stands for any amino acid except Ala  and Met.\
+                \ \n  Each element in a pattern is separated from its neighbor by\
+                \ a '-'.  (Optional in fuzztran) \n  Repetition of an element of the\
+                \ pattern can be indicated by  following that element with a numerical\
+                \ value or a numerical range  between parenthesis. Examples: x(3)\
+                \ corresponds to x-x-x, x(2,4)  corresponds to x-x or x-x-x or x-x-x-x.\
+                \ \n  When a pattern is restricted to either the N- or C-terminal\
+                \ of a  sequence, that pattern either starts with a '<' symbol or\
+                \  respectively ends with a '>' symbol. \n  A period ends the pattern.\
+                \ (Optional in fuzztran). \n  For example, [DE](2)HS{P}X(2)PX(2,4)C"
+            prompt: Search pattern
+            name: e_pattern
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -pattern=@" + str(value))[value is not None]'}
+            mandatory: true
+        -   _type: InputProgramParameter
+            prompt: Search pattern
+            name: e_pmismatch
+            argpos: '3'
+            format: {python: '("", " -pmismatch=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Translation frames
+            name: e_frame
+            argpos: '4'
+            format: {python: '("", " -frame=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: '1'
+                options:
+                - {label: '1', value: '1'}
+                - {label: '2', value: '2'}
+                - {label: '3', value: '3'}
+                - {label: Forward three frames, value: F}
+                - {label: '-1', value: '-1'}
+                - {label: '-2', value: '-2'}
+                - {label: '-3', value: '-3'}
+                - {label: Reverse three frames, value: R}
+                - {label: All six frames, value: '6'}
+        -   _type: InputProgramParameter
+            prompt: Genetic codes
+            name: e_table
+            argpos: '5'
+            format: {python: '("", " -table=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '6'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: fuzztran.report}
+        -   _type: InputProgramParameter
+            prompt: Choose the report output format
+            name: e_rformat_outfile
+            argpos: '7'
+            format: {python: '("", " -rformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: TABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '8'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+            precond:
+                e_rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+operations: ['EDAM_operation:0382', 'EDAM_operation:0347', 'EDAM_operation:0371']
+topics: ['EDAM_topic:0158']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/fuzztran.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: fuzztran
+command: {path: null, value: fuzztran}

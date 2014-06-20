@@ -1,0 +1,283 @@
+_type: Program
+name: mspcrunch
+version: '2.5'
+title: MSPcrunch
+description: A BLAST post-processing filter
+authors: Sonnhammer, Durbin
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: mspcrunch
+        argpos: '0'
+        format: {perl: '"MSPcrunch"', python: '"MSPcrunch"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputParagraph
+        prompt: Input Options
+        name: input_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: BLAST output File
+            name: blast_output
+            simple: true
+            argpos: '2'
+            format: {perl: '" $value"', python: '" "+str(value)'}
+            mandatory: true
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0857'}
+        -   _type: InputProgramParameter
+            prompt: Force Blastp mode (default Blastx) (-p)
+            name: force_blastp
+            format: {perl: '($value) ? " -p" : ""', python: '( ""  , " -p" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Force Blastn mode (default Blastx) (-n)
+            name: force_blastn
+            format: {perl: '($value) ? " -n" : ""', python: '( ""  , " -n" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Control options
+        name: analyse_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Make gapped alignment of ungapped-MSP contigs (-G)
+            name: gapped
+            format: {perl: '($value) ? " -G" : ""', python: '( ""  , " -G" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: 0 = No coverage rejection
+            prompt: Set coverage limit (-l)
+            name: cov_limit
+            format: {perl: '(defined $value and $value != $vdef) ? " -l $value" :
+                    ""', python: '( ""  , " -l "+str(value) )[ value is not None  and
+                    value !=vdef]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: Use old step cutoffs for adjacency instead of the new continuous
+                system. (-O)
+            name: old_cutoff
+            format: {perl: '($value) ? " -O" : ""', python: '( ""  , " -O" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Don't reject any MSPs (-w)
+            name: dont_reject
+            format: {perl: '($value) ? " -w" : ""', python: '( ""  , " -w" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Report only rejected MSPs (-r)
+            name: report_rejected
+            format: {perl: '($value) ? " -r" : ""', python: '( ""  , " -r" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Reject all matches with less than this % identity (-I)
+            name: threshold_id
+            format: {perl: '(defined $value) ? " -I $value" : ""', python: '( ""  ,
+                    " -I " + str(value) )[ value is not None ]'}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Reject all matches with length less than this value (-L)
+            name: threshold_length
+            format: {perl: '(defined $value) ? " -L $value" : ""', python: '( ""  ,
+                    " -L " + str(value) )[ value is not None ]'}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Reject all matches with E-value higher than this value (-e)
+            name: expect
+            format: {perl: '(defined $value) ? " -e $value" : ""', python: '( "" ,
+                    " -e " + str(value))[ value is not None ]'}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Read in query seq (for rereading .seqbl files) (-Q)
+            name: query
+            format: {perl: '(defined $value)? " -Q $query" : ""', python: '( ""  ,
+                    " -Q " + str(value) )[ value is not None ]'}
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Coverage limitation requires whole contig to be covered (always
+                for Blastp) (-a)
+            name: whole_contig
+            format: {perl: '($value) ? " -a" : ""', python: '( ""  , " -a" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Accept hits to self (-s)
+            name: hits_to_self
+            format: {perl: '($value) ? " -s" : ""', python: '( ""  , " -s" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Ignore hits to earlier seqnames (for All-vs-All) (-A)
+            name: no_hits_to_earlier
+            format: {perl: '($value) ? " -A" : ""', python: '( ""  , " -A" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Recalculate percentage identity, ignoring X residues. (-j)
+            name: stats_without_X
+            format: {perl: '($value) ? " -j" : ""', python: '( ""  , " -j" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Recalculate percentage identity, ignoring mismatches at ends.
+                (-J)
+            name: stats_without_end
+            format: {perl: '($value) ? " -J" : ""', python: '( ""  , " -J" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Do Statistics of Silent mutations (only cDNA!) (-S)
+            name: silent_mutations
+            format: {perl: '($value) ? " -S" : ""', python: '( ""  , " -S" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print statistics on used matrices (-E)
+            name: matrix_stats
+            format: {perl: '($value) ? " -E" : ""', python: '( ""  , " -E" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print all Expected scores (default only when positive) (-X)
+            name: all_expected
+            format: {perl: '($value) ? " -X" : ""', python: '( ""  , " -X" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Line length of Wrapped alignment (-W)
+            name: line_length
+            format: {perl: '(defined $value) ? " -W $value" : ""', python: '( ""  ,
+                    " -W " +str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+    -   _type: InputParagraph
+        prompt: Output Options
+        name: output_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Big Picture output (-P)
+            name: big_pict
+            format: {perl: '($value) ? " -P" : ""', python: '( ""  , " -P" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: For Big Picture output, force all matches to the same subject
+                on one line (-F)
+            name: matches_one_line
+            format: {perl: '($value) ? " -F" : ""', python: '( ""  , " -F" )[ value
+                    ]'}
+            precond: big_pict
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce SFS output (-H)
+            name: sfs
+            format: {perl: '($value) ? " -H" : ""', python: '( "" , " -H" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce seqbl  output for Blixem (-q)
+            name: seqbl
+            format: {perl: '($value) ? " -q" : ""', python: '( ""  , " -q" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Indicate query insertions with numbers (For seqbl output from
+                Wublast) (-N)
+            name: wublast_numbered
+            format: {perl: '($value) ? " -N" : ""', python: '( ""  , " -N" )[ value
+                    ]'}
+            precond: seqbl
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce .ace output (for ACEDB 4) (-4)
+            name: ace
+            format: {perl: '($value) ? " -4" : ""', python: '( ""  , " -4" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Don't mirror (i.e. print the subject object) in ACE4 format (-M)
+            name: dont_mirror
+            format: {perl: '($value) ? " -M" : ""', python: '( ""  , " -M" )[ value
+                    ]'}
+            precond: ace
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce exblx output (for easy parsing) (-x)
+            name: exblx
+            format: {perl: '($value) ? " -x" : ""', python: '( ""  , " -x" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce exbldb output (as exblx with query names) (-d)
+            name: exbldb
+            format: {perl: '($value) ? " -d" : ""', python: '( ""  , " -d" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce fasta output (unaligned, for mult.alignm.) (-2)
+            name: fasta
+            format: {perl: '($value) ? " -2" : ""', python: '( ""  , " -2" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print 3 frame translation (blastn only) (-3)
+            name: three_frame
+            format: {perl: '($value) ? " -3" : ""', python: '( ""  , " -3" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print footer with parameters and stats (-f)
+            name: footer
+            format: {perl: '($value) ? " -f" : ""', python: '( ""  , " -f" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print percentage identity (seqbl output only) (-i)
+            name: percentage_id
+            format: {perl: '($value) ? " -i" : ""', python: '( ""  , " -i" )[ value
+                    ]'}
+            precond: seqbl
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Output coverage stats?
+            name: stats
+            format: {perl: '""', python: '""'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Produce output for Domainer (trim overlaps) (-D)
+            name: domainer
+            format: {perl: '($value) ? " -D" : ""', python: '( ""  , " -D" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output Options
+        name: output_options
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Result file
+            name: outfile
+            filenames: {perl: '"mspcrunch.out"', python: '"mspcrunch.out"'}
+            output_type: stdout
+        -   _type: OutputProgramParameter
+            prompt: Coverage stats outputfile
+            name: stats_file
+            filenames: {perl: '"mspcrunch.stats"', python: '"mspcrunch.stats"'}
+            precond: stats
+operations: ['EDAM_operation:2463']
+topics: ['EDAM_topic:0182']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/mspcrunch/MSPcrunch2.pdf']
+homepage_links: ['http://sonnhammer.sbc.su.se/MSPcrunch.html']
+public_name: mspcrunch
+command: {path: null, value: null}
+source_links: ['http://sonnhammer.sbc.su.se/download/software/MSPcrunch+Blixem/']

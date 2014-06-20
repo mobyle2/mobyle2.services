@@ -1,0 +1,179 @@
+_type: Program
+name: pepwheel
+title: pepwheel
+description: Draw a helical wheel diagram for a protein sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2976
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Plot the wheel
+            name: e_wheel
+            argpos: '2'
+            format: {python: '(" -nowheel", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: The number of residues plotted per turn is this value divided
+                by the 'turns' value.
+            prompt: Number of steps (value from 2 to 100)
+            name: e_steps
+            ctrl:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+            -   message: Value less than or equal to 100 is required
+                test:
+                    value: {'#lte': '100'}
+            argpos: '3'
+            format: {python: '("", " -steps=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 18}
+        -   _type: InputProgramParameter
+            comment: The number of residues plotted per turn is the 'steps' value
+                divided by this value.
+            prompt: Number of turns (value from 1 to 100)
+            name: e_turns
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 100 is required
+                test:
+                    value: {'#lte': '100'}
+            argpos: '4'
+            format: {python: '("", " -turns=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 5}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            simple: true
+            argpos: '5'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: e_goutfile
+            argpos: '6'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: pepwheel_graph}
+        -   _type: InputParagraph
+            prompt: Markup section
+            name: e_markupsection
+            children:
+            -   _type: InputProgramParameter
+                comment: If this is true then the residues ACFGILMVWY are marked as
+                    squares and all other residues are unmarked. This overrides  any
+                    other markup that you may have specified using the  qualifiers
+                    '-squares', '-diamonds' and '-octags'.
+                prompt: Prompt for amphipathic residue marking
+                name: e_amphipathic
+                argpos: '7'
+                format: {python: '("", " -amphipathic")[ bool(value) ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                comment: By default the aliphatic residues ILVM are marked with squares.
+                prompt: Mark as squares
+                name: e_squares
+                argpos: '8'
+                format: {python: '("", " -squares=" + str(value))[value is not None
+                        and value!=vdef]'}
+                precond: {'#not': e_amphipathic}
+                type: {_type: StringType, default: ILVM}
+            -   _type: InputProgramParameter
+                comment: By default the residues DENQST are marked with diamonds.
+                prompt: Mark as diamonds
+                name: e_diamonds
+                argpos: '9'
+                format: {python: '("", " -diamonds=" + str(value))[value is not None
+                        and value!=vdef]'}
+                precond: {'#not': e_amphipathic}
+                type: {_type: StringType, default: DENQST}
+            -   _type: InputProgramParameter
+                comment: By default the positively charged residues HKR are marked
+                    with octagons.
+                prompt: Mark as octagons
+                name: e_octags
+                argpos: '10'
+                format: {python: '("", " -octags=" + str(value))[value is not None
+                        and value!=vdef]'}
+                precond: {'#not': e_amphipathic}
+                type: {_type: StringType, default: HKR}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '11'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_png
+            filenames: {python: '"*.png"'}
+            precond: {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond: {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond: {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond: {e_graph: data}
+operations: ['EDAM_operation:0569']
+topics: ['EDAM_topic:0092', 'EDAM_topic:2124']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/pepwheel.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: pepwheel
+command: {path: null, value: pepwheel}

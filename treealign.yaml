@@ -1,0 +1,112 @@
+_type: Program
+name: treealign
+title: treealign
+description: Phylogenetic alignment of homologous sequences
+authors: J. Hein
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: 'The sequences should
+
+            be homologous and there should be a history to be found. If you give it
+            a set
+
+            of COMPLETELY unrelated sequences, it is possible that it will not be
+            able to
+
+            align them, since it cannot allocate enough memory.The sequences should
+            not vary in length because they have been sequenced
+
+            unequally much.  Length differences should be due to evolution. Thus it
+            should
+
+            not be used to look for local homologies.'
+        prompt: Sequences File
+        name: fileseq
+        simple: true
+        argpos: '30'
+        format: {perl: '"$value\\n"', python: str(value)+ "\n"}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1948']
+            data_terms: EDAM_data:2044
+        paramfile: par.dat
+    -   _type: InputProgramParameter
+        prompt: Sequence type
+        name: seqtype
+        simple: true
+        argpos: '11'
+        format: {perl: '"$value"', python: str(value)}
+        mandatory: true
+        type:
+            _type: StringType
+            default: 'null'
+            options:
+            - {label: Choose a sequence type, value: 'null'}
+            - {label: Protein (1), value: '1'}
+            - {label: DNA (0), value: '0'}
+        paramfile: par.dat
+    -   _type: InputProgramParameter
+        prompt: Number of sequences
+        name: nuseq
+        simple: true
+        argpos: '12'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type: {_type: IntegerType}
+        paramfile: par.dat
+    -   _type: InputProgramParameter
+        prompt: Gap open penalty
+        name: gap_open
+        simple: true
+        argpos: '13'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type: {_type: IntegerType}
+        paramfile: par.dat
+    -   _type: InputProgramParameter
+        prompt: Gap extension penalty
+        name: gap_ext
+        simple: true
+        argpos: '14'
+        format: {perl: '" $value\\n"', python: '" " + str(value) + "\n"'}
+        mandatory: true
+        type: {_type: IntegerType}
+        paramfile: par.dat
+    -   _type: InputParagraph
+        prompt: Other options
+        name: other_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Present ancestral sequences
+            name: ancesterout
+            argpos: '21'
+            format: {perl: '($value) ? "1" : "0"', python: '( "0" , "1" )[ value ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: par.dat
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output tree file
+        name: filetree
+        filenames: {perl: '"*.tree"', python: '"*.tree"'}
+    -   _type: OutputProgramParameter
+        prompt: Output alignment file
+        name: fileali
+        filenames: {perl: '"*.ali"', python: '"*.ali"'}
+operations: ['EDAM_operation:0492', 'EDAM_operation:0323']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0084']
+references:
+- {doi: null, label: 'Hein, J.: Unified approach to alignment and phylogenies. Meth.
+        Enzymol. 183:626-645 (1990).', url: null}
+- {doi: null, label: 'Hein, J.: A new method that simultaneously aligns and reconstruct
+        ancestral sequences for any number of homologous sequences, when the phylogeny
+        is given. Mol. Biol. Evol. 6:649-668 (1989).', url: null}
+- {doi: null, label: 'Hein, J.: A tree reconstruction method that is economical in
+        the number of pairwise comparisons used. Mol. Biol. Evol. 6:669-684 (1989).',
+    url: null}
+public_name: treealign
+command: {path: null, value: treealign}

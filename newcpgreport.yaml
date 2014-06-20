@@ -1,0 +1,132 @@
+_type: Program
+name: newcpgreport
+title: newcpgreport
+description: Identify CpG islands in nucleotide sequence(s)
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Window size (value greater than or equal to 1)
+            name: e_window
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -window=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            prompt: Shift increment (value greater than or equal to 1)
+            name: e_shift
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -shift=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Minimum length (value greater than or equal to 1)
+            name: e_minlen
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -minlen=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 200}
+        -   _type: InputProgramParameter
+            prompt: Minimum observed/expected (value from 0. to 10.)
+            name: e_minoe
+            ctrl:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 10. is required
+                test:
+                    value: {'#lte': '10.0'}
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -minoe=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 0.6}
+        -   _type: InputProgramParameter
+            prompt: Minimum percentage (value from 0. to 100.)
+            name: e_minpc
+            ctrl:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100. is required
+                test:
+                    value: {'#lte': '100.0'}
+            simple: true
+            argpos: '6'
+            format: {python: '("", " -minpc=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: FloatType, default: 50.0}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the report file
+            name: e_outfile
+            argpos: '7'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: newcpgreport.e_outfile}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '8'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0430']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/newcpgreport.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: newcpgreport
+command: {path: null, value: newcpgreport}

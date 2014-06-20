@@ -1,0 +1,66 @@
+_type: Program
+name: featcopy
+title: featcopy
+description: Reads and writes a feature table
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: features option
+            name: e_features
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -features=" + str(value))[value is not None]'}
+            mandatory: true
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output feature file (e_outfeat)
+            name: e_outfeat
+            argpos: '2'
+            format: {python: '("" , " -outfeat=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: featcopy.e_outfeat}
+        -   _type: InputProgramParameter
+            prompt: Choose the feature output format
+            name: e_offormat_outfeat
+            argpos: '3'
+            format: {python: '("", " -offormat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '4'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfeat_out option
+            name: e_outfeat_out
+            filenames: {python: e_outfeat}
+operations: ['EDAM_operation:0254']
+topics: ['EDAM_topic:0160', 'EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/featcopy.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: featcopy
+command: {path: null, value: featcopy}

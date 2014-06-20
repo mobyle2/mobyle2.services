@@ -1,0 +1,102 @@
+_type: Program
+name: repeats
+version: '1.1'
+title: repeats
+description: Search repeats in DNA sequence
+authors: G. Benson
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: The data file must conform to the GenBank format.
+        prompt: Sequence File
+        name: seq
+        simple: true
+        argpos: '1'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1936']
+            data_terms: EDAM_data:2977
+    -   _type: InputProgramParameter
+        prompt: Match bonus (input as positive) (Alpha)
+        name: alpha
+        simple: true
+        argpos: '2'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type: {_type: IntegerType, default: 2}
+    -   _type: InputProgramParameter
+        prompt: Mismatch penalty (input as positive) (Beta)
+        name: beta
+        simple: true
+        argpos: '3'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type: {_type: IntegerType, default: 6}
+    -   _type: InputProgramParameter
+        prompt: Indel penalty (input as positive) (Delta)
+        name: delta
+        simple: true
+        argpos: '4'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type: {_type: IntegerType, default: 9}
+    -   _type: InputProgramParameter
+        prompt: Threshold score to report an alignment (Reportmax)
+        name: reportmax
+        simple: true
+        argpos: '5'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type: {_type: IntegerType, default: 30}
+    -   _type: InputProgramParameter
+        prompt: Pattern size (Size)
+        name: Size
+        simple: true
+        argpos: '6'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        comment: A possible repeat is found if *lookcount* characters are repeated
+            at a separation of *size*. Recommended to use values between 3 and 8
+        prompt: Number of characters to match to trigger dynamic programming (Lookcount)
+        name: lookcount
+        simple: true
+        argpos: '7'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        prompt: Patterns with shorter periods are excluded ? (Noshortperiods)
+        name: noshortperiods
+        simple: true
+        argpos: '8'
+        format: {perl: '($value)? " 1 ":" 0"', python: '(" 0" , " 1 ")[ value ]'}
+        type: {_type: BooleanType, default: false}
+outputs: {_type: OutputParagraph}
+comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>The program\
+    \ scans a dna sequence file, looking for tandemly repeated\npatterns where the\
+    \ period of the repeat has a user specified *size* from\n1 to 32 nucleotides.\
+    \  A possible repeat is found if *lookcount*\ncharacters are repeated at a separation\
+    \ of *size*.</html:p><html:p>Example: Suppose size is 7 and lookcount is 3. Then\
+    \ the sequence<html:pre>ACGTGTCCGTA \n                 ^^^   ^^^</html:pre>could\
+    \ be part of a possible repeat of the pattern CGTGTC\nbecause the first 3 characters\
+    \ CGT are repeated at a separation of 7.</html:p><html:p>Once a possible pattern\
+    \ is found, the program uses dynamic programming\nto compute a similarity score\
+    \ of the pattern versus the sequence in\nthe area where the pattern was found.\
+    \  The dynamic programming uses\nweights for single indels rather than gap functions.\
+    \  This is so that\nthe program quickly identifies the repeats rather than producing\
+    \ an\noptimal alignment score.</html:p><html:p>If the similarity score exceeds\
+    \ a threshold, then a consensus pattern is\ncomputed.  This consensus is aligned\
+    \ with the sequence and the\nalignment is displayed.</html:p></html:div>"
+operations: ['EDAM_operation:0237']
+topics: ['EDAM_topic:0157']
+references:
+- {doi: null, label: 'A method for fast database search for all k-nucleotide repeats,
+        by Gary Benson and Michael S. Waterman, Nucleic Acids Research (1994) Vol.
+        22, No. 22, pp 4828-4836.', url: null}
+public_name: repeats
+command: {path: null, value: repeats}

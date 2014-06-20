@@ -1,0 +1,548 @@
+_type: Program
+name: saxs_merge
+title: saxs_merge
+description: Statistical merge of SAXS curves
+authors: Yannick Spill
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Required parameters
+        name: required
+        children:
+        -   _type: InputProgramParameter
+            prompt: stop after the given step
+            name: stop
+            simple: true
+            argpos: '200'
+            format: {perl: '(defined $value and $value ne $vdef)? " --stop=$value
+                    " : ""', python: '( "" , " --stop="+value )[value is not None
+                    and value != vdef ]'}
+            type:
+                _type: StringType
+                default: merging
+                options:
+                - {label: clean up, value: cleanup}
+                - {label: fitting, value: fitting}
+                - {label: rescaling, value: rescaling}
+                - {label: classification, value: classification}
+                - {label: merging, value: merging}
+        -   _type: InputProgramParameter
+            prompt: Cleanup step comes after rescaling step (default isFalse)
+            name: postpone_cleanup
+            simple: true
+            format: {perl: '( $value)? " --postpone_cleanup ": ""', python: '( ""
+                    , " --postpone_cleanup ")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_1
+            simple: true
+            argpos: '10'
+            format: {perl: '(defined value)? "$value=$nb_expe_1" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_1))[value is not None]'}
+            mandatory: true
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_1
+            simple: true
+            argpos: '11'
+            precond:
+                SAXS_1: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_2
+            simple: true
+            argpos: '20'
+            format: {perl: '(defined value)? "$value=$nb_expe_2" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_2))[value is not None]'}
+            mandatory: true
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_2
+            simple: true
+            argpos: '21'
+            precond:
+                SAXS_2: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_3
+            simple: true
+            argpos: '30'
+            format: {perl: '(defined value)? "$value=$nb_expe_3" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_3))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_3
+            simple: true
+            argpos: '31'
+            precond:
+                SAXS_3: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_4
+            simple: true
+            argpos: '40'
+            format: {perl: '(defined value)? "$value=$nb_expe_4" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_4))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_4
+            simple: true
+            argpos: '41'
+            precond:
+                SAXS_4: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_5
+            simple: true
+            argpos: '50'
+            format: {perl: '(defined value)? "$value=$nb_expe_5"" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_5))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_5
+            simple: true
+            argpos: '51'
+            precond:
+                SAXS_5: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_6
+            argpos: '60'
+            format: {perl: '(defined value)? "$value=$nb_expe_6" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_6))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_6
+            argpos: '61'
+            precond:
+                SAXS_6: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_7
+            argpos: '70'
+            format: {perl: '(defined value)? "$value=$nb_expe_7" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_7))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_7
+            argpos: '71'
+            precond:
+                SAXS_7: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_8
+            argpos: '80'
+            format: {perl: '(defined value)? "$value=$nb_expe_8" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_8))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_8
+            argpos: '81'
+            precond:
+                SAXS_8: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_9
+            argpos: '90'
+            format: {perl: '(defined value)? "$value=$nb_expe_9" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_9))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_9
+            argpos: '91'
+            precond:
+                SAXS_9: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            prompt: SAXS curves
+            name: SAXS_10
+            argpos: '100'
+            format: {perl: '(defined value)? "$value=$nb_expe_10"" : ""', python: '(
+                    "" , " %s=%d "%(value , nb_expe_10))[value is not None]'}
+        -   _type: InputProgramParameter
+            prompt: number of recordings
+            name: nb_expe_10
+            argpos: '101'
+            precond:
+                SAXS_10: {'#ne': None}
+            type: {_type: IntegerType, default: 10}
+    -   _type: InputParagraph
+        prompt: Advanced parameters
+        name: advanced
+        children:
+        -   _type: InputParagraph
+            prompt: General
+            name: advanced_general
+            children:
+            -   _type: InputProgramParameter
+                prompt: First line of output files is a header
+                name: general_header
+                format: {perl: '($value)? " --header "":""', python: '( "" , " --header
+                        ")[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: Output data files for parsed input files as well.
+                name: allfiles
+                format: {perl: '($value)? " --allfiles "":""', python: '( "" , " --allfiles
+                        ")[ value ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml"><html:ul><html:li>'sparse'
+                    is for q,I,err columns</html:li><html:li>'normal' adds eorigin,
+                    eoriname and eextrapol (default)</html:li><html:li>'full' outputs
+                    all flag</html:li></html:ul></html:div>
+                prompt: Set the output level
+                name: outlevel
+                format: {perl: '(defined $value and $value neq $vdef) " --outlevel=$value"":""',
+                    python: '( "" , " --outlevel="+value)[ value is not None and value
+                        != vdef]'}
+                type:
+                    _type: StringType
+                    default: normal
+                    options:
+                    - {label: sparse, value: sparse}
+                    - {label: normal, value: normal}
+                    - {label: full, value: full}
+        -   _type: InputParagraph
+            comment: "Discard or keep SAXS curves' points based on their SNR.\n  \
+                \                   Points with an error of zero are discarded as\
+                \ well"
+            prompt: Cleanup (Step 1)
+            name: advanced_cleanup
+            children:
+            -   _type: InputProgramParameter
+                prompt: type I error (default 1e-7)
+                name: aalpha
+                format: {perl: '(defined $value and value != $vdef )" --aalpha=$value":""',
+                    python: '( "" , " --aalpha="+str(value))[ value is not None and
+                        value != vdef]'}
+                type: {_type: FloatType, default: 1.0e-07}
+        -   _type: InputParagraph
+            comment: Estimate the mean function and the noise level of each SAXS curve.
+            prompt: Fitting (Step 2)
+            name: advanced_fitting
+            children:
+            -   _type: InputProgramParameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">Which
+                    mean parameters are optimized.<html:ul><html:li>One of Flat (the
+                    offset parameter A is optimized)</html:li><html:li>Simple (default,
+                    optimizes A, G and Rg)</html:li><html:li>Generalized (optimizes
+                    G, Rg and d)</html:li><html:li>Full (optimizes G, Rg, d and s)</html:li></html:ul></html:div>
+                prompt: boptimize
+                name: boptimize
+                format: {perl: '(defined $value and value neq $vdef)? " --boptimize=$value
+                        ": ""', python: '("" , " --boptimize="+str(value))[value is
+                        not None and value != vdef]'}
+                type:
+                    _type: StringType
+                    default: Simple
+                    options:
+                    - {label: Flat, value: Flat}
+                    - {label: Simple, value: Simple}
+                    - {label: Generalized, value: Generalized}
+                    - {label: Full, value: Full}
+            -   _type: InputProgramParameter
+                comment: "Perform model comparison, which allows to choose a\n   \
+                    \                      mean function that does not overfit the\
+                    \ data. If\n                         bcomp is given, boptimize\
+                    \ is taken to be the most\n                         complex model.\
+                    \ (Default: don't perform it.)"
+                prompt: Perform model comparison
+                name: bcomp
+                format: {perl: '(defined $value)? " --bcomp ": ""', python: '( ""
+                        , " --bcomp ")[ value is not None and value != vdef ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                name: blimit_fitting
+                format: {perl: '" --blimit_fitting=$value "', python: '" --blimit_fitting=%d
+                        "%(value)'}
+                hidden: true
+                type: {_type: IntegerType, default: 2000}
+            -   _type: InputProgramParameter
+                name: blimit_hessian
+                format: {perl: '" --blimit_hessian=80 "', python: '" --blimit_hessian=80
+                        "'}
+                hidden: true
+                type: {_type: IntegerType}
+        -   _type: InputParagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+                curve.
+            prompt: Rescaling (Step 3)
+            name: advanced_rescaling
+            children:
+            -   _type: InputProgramParameter
+                prompt: Use the normal model instead of the lognormal model to calculate
+                    gamma
+                name: cnormal
+                format: {perl: '(value?) " --cnormal ": ""', python: '( "" , " --cnormal
+                        ")[value]'}
+                type: {_type: BooleanType, default: false}
+        -   _type: InputParagraph
+            comment: Classify the mean curves by comparing them using a two-sided
+                two-sample student t test
+            prompt: Classification (Step 4)
+            name: advanced_classification
+            children:
+            -   _type: InputProgramParameter
+                prompt: type I error (default 0.05)
+                name: dalpha
+                format: {perl: '(defined $value and $value != $vdef) " --dalpha=$value
+                        " : ""', python: '( "" , " --dalpha="+str(value) )[ value
+                        is not None and value != vdef]'}
+                type: {_type: FloatType, default: 0.05}
+        -   _type: InputParagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+            prompt: Merging (Step 5)
+            name: advanced_merging
+            children:
+            -   _type: InputProgramParameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">Which
+                    mean parameters are optimized.<html:ul><html:li>One of Flat (the
+                    offset parameter A is optimized)</html:li><html:li>Simple (optimizes
+                    A, G and Rg)</html:li><html:li>Generalized (default, optimizes
+                    G, Rg and d)</html:li><html:li>Full (optimizes G, Rg, d and s)</html:li></html:ul></html:div>
+                prompt: eoptimize
+                name: eoptimize
+                format: {perl: '(defined $value and value neq $vdef)? " --eoptimize=$value
+                        ": ""', python: '("" , " --eoptimize="+str(value))[value is
+                        not None and value != vdef]'}
+                type:
+                    _type: StringType
+                    default: Generalized
+                    options:
+                    - {label: Flat, value: Flat}
+                    - {label: Simple, value: Simple}
+                    - {label: Generalized, value: Generalized}
+                    - {label: Full, value: Full}
+            -   _type: InputProgramParameter
+                comment: "Perform model comparison, which allows to choose a\n   \
+                    \                      mean function that does not overfit the\
+                    \ data. If\n                         ecomp is given, eoptimize\
+                    \ is taken to be the most\n                         complex model.\
+                    \ (Default: don't perform it.)"
+                prompt: Perform model comparison
+                name: ecomp
+                format: {perl: '(defined $value)? " --ecomp ": ""', python: '( ""
+                        , " --ecomp ")[ value is not None and value != vdef ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                name: elimit_fitting
+                format: {perl: '" --elimit_fitting=$value "', python: '" --elimit_fitting=%d
+                        "%(value)'}
+                hidden: true
+                type: {_type: IntegerType, default: 2000}
+            -   _type: InputProgramParameter
+                name: elimit_hessian
+                format: {perl: '" --elimit_hessian=80 "', python: '" --elimit_hessian=80
+                        "'}
+                hidden: true
+                type: {_type: IntegerType}
+            -   _type: InputProgramParameter
+                prompt: Don't extrapolate at all, even at low angle.
+                name: enoextrapolate
+                format: {perl: '(value?) " --enoextrapolate ": ""', python: '( ""
+                        , " --enoextrapolate ")[value]'}
+                type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Expert parameters
+        name: expert
+        children:
+        -   _type: InputParagraph
+            comment: "Discard or keep SAXS curves' points based on their SNR.\n  \
+                \                   Points with an error of zero are discarded as\
+                \ well"
+            prompt: Cleanup (Step 1)
+            name: expert_cleanup
+            children:
+            -   _type: InputProgramParameter
+                prompt: when a value after CUT is discarded, the rest of the curve
+                    is discarded as well (default is 0.1)
+                name: acutof
+                format: {perl: '(defined $value and $value != $vdef)? " --acutoff=$value
+                        " : ""', python: '( "" , " --acutoff="+str(value))[ value
+                        is not None and value != vdef]'}
+                type: {_type: FloatType, default: 0.1}
+        -   _type: InputParagraph
+            comment: Estimate the mean function and the noise level of each SAXS curve.
+            prompt: Fitting (Step 2)
+            name: expert_fitting
+            children:
+            -   _type: InputProgramParameter
+                prompt: "Average over all possible parameters instead of just\n  \
+                    \                      taking the most probable set of parameters."
+                name: baverage
+                format: {perl: '(defined $value and $value != $vdef)? " --baverage
+                        ": ""', python: '( "" , " --baverage ")[ value is not None
+                        and value!= vdef ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                prompt: Initial value for d
+                name: bd
+                format: {perl: '(defined $value and $value != $vdef)? " --bd=$value":""',
+                    python: '( "", " --bd="+str(value))[ value is not None and value
+                        != vdef ]'}
+                type: {_type: FloatType, default: 4.0}
+            -   _type: InputProgramParameter
+                prompt: Initial value for s
+                name: bs
+                format: {perl: '(defined $value and $value != $vdef)? " --bs=$value":""',
+                    python: '( "", " --bs="+str(value))[ value is not None and value
+                        != vdef ]'}
+                type: {_type: FloatType, default: 0.0}
+            -   _type: InputProgramParameter
+                prompt: Initial value for Rg
+                name: bRg
+                format: {perl: '(defined $value and $value != $vdef)? " --bRg=$value":""',
+                    python: '( "", " --bRg="+str(value))[ value is not None and value
+                        != vdef ]'}
+                type: {_type: FloatType, default: 10.0}
+        -   _type: InputParagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+            prompt: Rescaling (Step 3)
+            name: expert_rescaling
+            children:
+            -   _type: InputProgramParameter
+                prompt: Define which input curve the other curves will be recaled
+                    to.
+                name: creference
+                format: {perl: '(defined $value and $value != vdef) " --creference=$value"
+                        : ""', python: '( "" , " --creference="+str(value))[value
+                        is not None and value != vdef]'}
+                type:
+                    _type: StringType
+                    default: last
+                    options:
+                    - {label: last, value: last}
+                    - {label: first, value: first}
+            -   _type: InputProgramParameter
+                prompt: Number of points to use to compute gamma (default 200)
+                name: cnpoints
+                format: {perl: '(defined $value and $value != vdef)? " --cnpoints=$value
+                        ":""', python: '( "", " --cnpoints="+str(value))[value is
+                        not None and value != vdef]'}
+                type: {_type: IntegerType, default: 200}
+        -   _type: InputParagraph
+            comment: Collect compatible data and produce best estimate of mean function.
+            prompt: Merging (Step 5)
+            name: expert_merging
+            children:
+            -   _type: InputProgramParameter
+                prompt: "Average over all possible parameters instead of just\n  \
+                    \                      taking the most probable set of parameters."
+                name: eaverage
+                format: {perl: '(defined $value and $value != $vdef)? " --eaverage
+                        ": ""', python: '( "" , " --eaverage ")[ value is not None
+                        and value!= vdef ]'}
+                type: {_type: BooleanType, default: false}
+            -   _type: InputProgramParameter
+                comment: "Example: if NUM=50 and the highest acceptable data\n   \
+                    \                        point is at q=0.3, the mean will be estimated\
+                    \ up to q=0.45.\n                           Default is 0 (just\
+                    \ extrapolate at low angle)."
+                prompt: Extrapolate NUM percent outside of the curve's bounds.
+                name: eextrapolate
+                format: {perl: '(defined $value and $value != $vdef)? " --eextrapolate=$value":""',
+                    python: '( "", " --eextrapolate="+str(value))[value is not None
+                        and value != vdef]'}
+                type: {_type: IntegerType, default: 0}
+            -   _type: InputProgramParameter
+                comment: "Negative values signify to take the same q values as\n \
+                    \                          the first data file. In that case extrapolation\
+                    \ flags are\n                           ignored, and extrapolation\
+                    \ is performed when the\n                           data file's\
+                    \ q values fall outside of the range of\n                    \
+                    \       accepted data points.(Default is NUM=200 points)"
+                prompt: Number of points to output for the mean function.
+                name: enpoints
+                format: {perl: '(defined $value and $value != vdef)? " --enpoints=$value":""',
+                    python: '( "", " --enpoints="+str(value))[value is not None and
+                        value != vdef]'}
+                type: {_type: IntegerType, default: 200}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output
+        name: sparse_output
+        precond: {outlevel: sparse}
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Report
+            name: sparse_summary
+            filenames: {perl: '"summary.txt"', python: '"summary.txt"'}
+        -   _type: OutputProgramParameter
+            comment: "selection de donn\xE9es d'entr\xE9es 3 cols q i err"
+            prompt: Merged data
+            name: sparse_merge
+            filenames: {perl: '"data_merged.dat"', python: '"data_merged.dat"'}
+        -   _type: OutputProgramParameter
+            comment: interpolation 3 cols q i err
+            prompt: Interpolation
+            name: sparse_mean
+            filenames: {perl: '"mean_merged.dat"', python: '"mean_merged.dat"'}
+    -   _type: OutputParagraph
+        prompt: Output
+        name: normal_output
+        precond: {outlevel: normal}
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Report
+            name: normal_summary
+            filenames: {perl: '"summary.txt"', python: '"summary.txt"'}
+        -   _type: OutputProgramParameter
+            comment: "selection de donn\xE9es d'entr\xE9es q i err eorigin eoriname\
+                \ eextrapol"
+            prompt: Merged data
+            name: normal_merge
+            filenames: {perl: '"data_merged.dat"', python: '"data_merged.dat"'}
+        -   _type: OutputProgramParameter
+            comment: interpolation q i err eorigin eoriname eextrapol
+            prompt: Interpolation
+            name: normal_mean
+            filenames: {perl: '"mean_merged.dat"', python: '"mean_merged.dat"'}
+    -   _type: OutputParagraph
+        prompt: Output
+        name: full_output
+        precond: {outlevel: full}
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Report
+            name: full_summary
+            filenames: {perl: '"summary.txt"', python: '"summary.txt"'}
+        -   _type: OutputProgramParameter
+            comment: q i err eorigin eoriname eextrapol
+            prompt: Merged data
+            name: full_merge
+            filenames: {perl: '"data_merged.dat"', python: '"data_merged.dat"'}
+        -   _type: OutputProgramParameter
+            comment: q i err eorigin eoriname eextrapol
+            prompt: Interpolation
+            name: full_mean
+            filenames: {perl: '"mean_merged.dat"', python: '"mean_merged.dat"'}
+    -   _type: OutputParagraph
+        prompt: Output
+        name: all_files_output
+        precond: allfiles
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Merged data
+            name: all_file_data
+            filenames: {perl: '"data_*"', python: '"data_*"'}
+        -   _type: OutputProgramParameter
+            prompt: Interpolation
+            name: all_files_mean
+            filenames: {perl: '"mean_*"', python: '"mean_*"'}
+operations: ['EDAM_operation:0536']
+topics: ['EDAM_topic:1317']
+public_name: saxs_merge
+command: {path: null, value: saxs_merge.py}

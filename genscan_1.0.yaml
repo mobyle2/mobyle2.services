@@ -1,0 +1,139 @@
+_type: Program
+name: genscan
+version: '1.0'
+title: GENSCAN
+description: Gene Identification
+authors: C. Burge
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: DNA Sequence File
+        name: seq
+        simple: true
+        argpos: '2'
+        format: {perl: '" $value"', python: '" " + str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2977
+    -   _type: InputProgramParameter
+        comment: Currently available parameter files are:HumanIso.smat for human/vertebrate
+            sequences (also Drosophila)Arabidopsis.smat for Arabidopsis thaliana sequencesMaize.smat
+            for Zea mays sequences
+        prompt: Organism
+        name: organism
+        simple: true
+        argpos: '1'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: StringType
+            default: 'null'
+            options:
+            - {label: Choose an organism, value: 'null'}
+            - {label: Arabidopsis, value: Arabidopsis.smat}
+            - {label: HumanIso, value: HumanIso.smat}
+            - {label: Maize, value: Maize.smat}
+    -   _type: InputParagraph
+        prompt: Output parameters
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            comment: Add some extra explanatory information to the text output. This
+                information may be helpful the first few times you run the program
+                but will soon become tiresome (that's why its optional).
+            prompt: Verbose output (-v)
+            name: verbose
+            argpos: '3'
+            format: {perl: '($value) ? " -v" : ""', python: '("" , " -v")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Print predicted coding sequences (-cds)
+            name: cds
+            argpos: '3'
+            format: {perl: '($value) ? " -cds" : ""', python: '("" , " -cds")[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: 'The default output of the program is the optimal ''parse'' of
+                the sequence, i.e. the highest probability gene structure(s) which
+                is present: the exons in this optimal parse are referred to as ''optimal
+                exons'' and are always printed out by GENSCAN.Suboptimal exons, on
+                the other hand, are defined as potential exons which have probability
+                above a certian threshold but which are not contained in the optimal
+                parse of the sequence.Suboptimal exons have a variety of potential
+                uses.First, suboptimal exons sometimes correspond to real exons which
+                were missed for whatever reason by the optimal parse of the sequence.Second,
+                regions of a prediction which contain multiple overlapping and/or
+                incompatible optimal and suboptimal exons may in some cases indicate
+                alternatively spliced regions of a gene (Burge & Karlin, in preparation).'
+            prompt: Identify suboptimal exons (-subopt)?
+            name: subopt
+            argpos: '3'
+            format: {perl: '($value and defined $cutoff ) ? " -subopt $cutoff" : ""',
+                python: '("" , " -subopt " + str( cutoff ))[ value and cutoff is not
+                    None]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: The cutoff is the probability cutoff used to determine which
+                potential exons qualify as suboptimal exons.This argument should be
+                a number between 0.01 and 0.99.For most applications, a cutoff value
+                of about 0.10 is recommended.Setting the value much lower than 0.10
+                will often lead to an explosion in the number of suboptimal exons,
+                most of which will probably not be useful.On the other hand, if the
+                value is set much higher than 0.10, then potentially interesting suboptimal
+                exons may be missed.
+            prompt: Cutoff value for suboptimal exons
+            name: cutoff
+            argpos: '3'
+            precond: subopt
+            mandatory: true
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Create Postscript output (-ps)
+            name: ps
+            argpos: '3'
+            format: {perl: '($value) ? (defined $scale) ? " -ps $psfname $scale" :
+                    " -ps $psfname" : ""', python: '( "" , (" -ps " + str( psfname
+                    ), " -ps " + str( psfname ) + " " + str( scale ))[scale is not
+                    None] )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Scale for PostScript output
+            name: scale
+            precond: ps
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Filename for PostScript output
+            name: psfname
+            precond: ps
+            mandatory: true
+            type: {_type: StringType, default: genscan.ps}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output parameters
+        name: output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: PostScript output
+            name: psFile
+            filenames: {perl: $psfname, python: str( psfname )}
+            precond: ps
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0109']
+references:
+- {doi: null, label: 'Burge, C., Karlin, S. (1997) Prediction of complete gene structures
+        in human genomic DNA. J. Mol. Biol. 268, 78-94.', url: null}
+- {doi: null, label: 'Burge, C., Karlin, S. (1997) Gene structure, exon prediction,
+        and alternative splicing. (in preparation).', url: null}
+- {doi: null, label: 'Burge, C. (1997) Identification of genes in human genomic DNA.
+        PhD thesis, Stanford University, Stanford, CA.', url: null}
+- {doi: null, label: 'Burset, M., Guigo, R. (1996) Evaluation of gene structure prediction
+        programs. Genomics 34, 353-367.', url: null}
+homepage_links: ['http://genes.mit.edu/GENSCANinfo.html']
+public_name: genscan
+command: {path: null, value: genscan}

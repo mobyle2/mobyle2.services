@@ -1,0 +1,137 @@
+_type: Program
+name: melting
+version: 4.1f
+title: MELTING
+description: enthalpy, entropy and melting temperature
+authors: N. Le Novere
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: melting
+        argpos: '0'
+        format: {perl: '"melting -q -v"', python: '"melting -q -v"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Hybridisation type (-H)
+        name: hybridation_type
+        simple: true
+        argpos: '1'
+        format: {perl: '" -H$value"', python: '" -H" + str(value)'}
+        mandatory: true
+        type:
+            _type: StringType
+            default: 'null'
+            options:
+            - {label: Choose an hybidation type, value: 'null'}
+            - {label: Dna/Dna, value: dnadna}
+            - {label: Dna/Rna, value: dnarna}
+            - {label: Rna/Rna, value: rnarna}
+    -   _type: InputProgramParameter
+        prompt: Nearest Neighbor parameters set (-A)
+        name: nnfile
+        simple: true
+        argpos: '1'
+        format: {perl: '(defined $value and $value ne $vdef) ? " -A$value" : ""',
+            python: '( "" , " -A" + str(value) )[ value is not None and value != vdef]'}
+        mandatory: true
+        type:
+            _type: StringType
+            default: default
+            options:
+            - {label: Default, value: default}
+            - {label: Allawi et al 1997, value: all97a.nn}
+            - {label: Breslauer et al 1986, value: bre86a.nn}
+            - {label: Freier et al 1986, value: fre86a.nn}
+            - {label: SantaLucia et al 1996, value: san96a.nn}
+            - {label: Sugimoto et al 1995, value: sug95a.nn}
+            - {label: Sugimoto et al 1996, value: sug96a.nn}
+            - {label: Xia et al 1998, value: xia98a.nn}
+    -   _type: InputProgramParameter
+        prompt: Sequence string (-S)
+        name: sequence
+        simple: true
+        argpos: '1'
+        format: {perl: '" -S$value"', python: '" -S" + str(value)'}
+        mandatory: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Complementary sequence (-C)
+        name: complement_string
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -C$value" : ""', python: '( "" , " -C"
+                + str(value) )[ value is not None ]'}
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        comment: Value must be greater than 0.0 and lower than 10.0
+        prompt: Salt concentration (-N)
+        name: salt_concentration
+        simple: true
+        argpos: '1'
+        format: {perl: '" -N$value"', python: '" -N" + str(value)'}
+        mandatory: true
+        type: {_type: FloatType}
+    -   _type: InputProgramParameter
+        comment: Value must be greater than 0.0 and lower than 0.1
+        prompt: Nucleic acid concentration in excess (-P)
+        name: nucacid_concentration
+        simple: true
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -P$value" : ""', python: '("", " -P"
+                + str(value))[value is not None]'}
+        mandatory: true
+        type: {_type: FloatType}
+    -   _type: InputProgramParameter
+        prompt: Nucleic acid correction factor (-F)
+        name: correction_factor
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -F$value" : ""', python: '( "" , " -F"
+                + str(value) )[ value is not None ]'}
+        type: {_type: FloatType}
+    -   _type: InputProgramParameter
+        prompt: Salt correction (-K)
+        name: salt_correction
+        argpos: '1'
+        format: {perl: '(defined $value) ? " -K$value" : ""', python: '( "" , " -K"
+                + str(value) )[ value is not None ]'}
+        type:
+            _type: StringType
+            default: 'null'
+            options:
+            - {label: null, value: 'null'}
+            - {label: Wetmur 1991, value: wet91a}
+            - {label: SantaLucia et al. 1996, value: san96a}
+            - {label: SantaLucia 1998, value: san98a}
+    -   _type: InputProgramParameter
+        prompt: Force approximative temperature computation (-x)
+        name: approx
+        argpos: '1'
+        format: {perl: '($value) ? " -x" : ""', python: '( "" , " -x" )[ value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Use parameters for dangling ends (dnadnade.nn) (-D)?
+        name: dangling_ends
+        argpos: '1'
+        format: {perl: '($value) ? " -Ddnadnade.nn " : ""', python: '( "" , " -Ddnadnade.nn
+                " )[ value ]'}
+        type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Use parameters for mismatches (dnadnamm.nn) (-M)?
+        name: mismatches
+        argpos: '1'
+        format: {perl: '($value) ? " -Mdnadnamm.nn " : ""', python: '( "" , " -Mdnadnamm.nn
+                " )[ value ]'}
+        type: {_type: BooleanType, default: false}
+outputs: {_type: OutputParagraph}
+operations: ['EDAM_operation:0455']
+topics: ['EDAM_topic:0077']
+references:
+- {doi: null, label: 'Nicolas Le Novere (2001), MELTING, computing the melting temperature
+        of nucleic acid duplex. Bioinformatics 17(12), 1226-1227', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/melting/melting.pdf']
+homepage_links: ['http://www.ebi.ac.uk/~lenov/meltinghome.html']
+public_name: melting
+command: {path: null, value: null}
+source_links: ['http://www.ebi.ac.uk/~lenov/SOFTWARES/']

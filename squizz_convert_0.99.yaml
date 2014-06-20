@@ -1,0 +1,182 @@
+_type: Program
+name: squizz_convert
+version: '0.99'
+title: SQUIZZ
+description: Sequence/Alignment format converter
+authors: N. Joly
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Sequence section
+        name: seq
+        precond:
+            '#or':
+            - {'#not': infile_aln}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        -   _type: InputProgramParameter
+            prompt: Input
+            name: infile_seq
+            simple: true
+            argpos: '2'
+            format: {perl: '" ($value)"', python: '" "+str(value)'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1942', 'EDAM_format:1948', 'EDAM_format:1948',
+                    'EDAM_format:1957', 'EDAM_format:2188']
+                data_terms: EDAM_data:2044
+        -   _type: InputProgramParameter
+            prompt: Convert sequence into sequence format (-c)
+            name: convert_seq
+            simple: true
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -S -c $value" : ""', python: '("",
+                    " -S -c "+str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: EMBL, value: EMBL}
+                - {label: FASTA, value: FASTA}
+                - {label: GCG, value: GCG}
+                - {label: GDE, value: GDE}
+                - {label: GENBANK, value: GENBANK}
+                - {label: IG, value: IG}
+                - {label: NBRF, value: NBRF}
+                - {label: PIR, value: PIR}
+                - {label: RAW, value: RAW}
+                - {label: SWISSPROT, value: SWISSPROT}
+    -   _type: InputParagraph
+        prompt: Alignment section
+        name: aln
+        precond:
+            '#or':
+            - {'#not': infile_seq}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        -   _type: InputProgramParameter
+            prompt: Input
+            name: infile_aln
+            simple: true
+            argpos: '2'
+            format: {perl: '" $value"', python: '" "+str(value)'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1982', 'EDAM_format:1955', 'EDAM_format:1956',
+                    'EDAM_format:1993', 'EDAM_format:1912', 'EDAM_format:1961', 'EDAM_format:2200',
+                    'EDAM_format:1991']
+                data_terms: EDAM_data:0863
+        -   _type: InputProgramParameter
+            prompt: Convert alignment into alignment format (-c)
+            name: convert_aln
+            simple: true
+            argpos: '1'
+            format: {perl: '(defined $value) ? "-A -c $value" : ""', python: '("",
+                    " -A -c "+str(value))[value is not None]'}
+            precond:
+                '#or':
+                -   convert_seq2: {'#eq': None}
+                -   '#and':
+                    -   convert_aln: {'#ne': None}
+                    -   convert_seq2: {'#ne': None}
+            mandatory: true
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: CLUSTAL, value: CLUSTAL}
+                - {label: FASTA, value: FASTA}
+                - {label: MEGA, value: MEGA}
+                - {label: MSF, value: MSF}
+                - {label: NEXUS, value: NEXUS}
+                - {label: PHYLIP Interleaved, value: PHYLIPI}
+                - {label: PHYLIP Sequential, value: PHYLIPS}
+                - {label: STOCKHOLM, value: STOCKHOLM}
+        -   _type: InputProgramParameter
+            prompt: Convert alignment into sequence format (-c)
+            name: convert_seq2
+            simple: true
+            argpos: '1'
+            format: {perl: '(defined $value) ? " -c $value" : ""', python: '("", "
+                    -c "+str(value))[value is not None]'}
+            precond:
+                '#or':
+                -   convert_aln: {'#eq': None}
+                -   '#and':
+                    -   convert_aln: {'#ne': None}
+                    -   convert_seq2: {'#ne': None}
+            mandatory: true
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: EMBL, value: EMBL}
+                - {label: FASTA, value: FASTA}
+                - {label: GCG, value: GCG}
+                - {label: GDE, value: GDE}
+                - {label: GENBANK, value: GENBANK}
+                - {label: IG, value: IG}
+                - {label: NBRF, value: NBRF}
+                - {label: PIR, value: PIR}
+                - {label: RAW, value: RAW}
+                - {label: SWISSPROT, value: SWISSPROT}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Sequence section
+        name: seq
+        precond:
+            '#or':
+            - {'#not': infile_aln}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Sequence(s) file
+            name: seq_outfile
+            filenames: {perl: '"squizz_convert.out"', python: '"squizz_convert.out"'}
+            precond:
+                infile_seq: {'#ne': None}
+            output_type: stdout
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+    -   _type: OutputParagraph
+        prompt: Alignment section
+        name: aln
+        precond:
+            '#or':
+            - {'#not': infile_seq}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Alignment file
+            name: aln_outfile
+            filenames: {perl: '"squizz_convert.out"', python: '"squizz_convert.out"'}
+            precond:
+                '#and':
+                -   infile_aln: {'#ne': None}
+                -   convert_aln: {'#ne': None}
+            output_type: stdout
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0863'}
+        -   _type: OutputProgramParameter
+            prompt: Sequence(s) file
+            name: seq2_outfile
+            filenames: {perl: '"squizz_convert.out"', python: '"squizz_convert.out"'}
+            precond:
+                '#and':
+                -   infile_aln: {'#ne': None}
+                -   convert_seq2: {'#ne': None}
+            output_type: stdout
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+operations: ['EDAM_operation:0335']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/squizz/seqfmt.html', 'http://bioweb2.pasteur.fr/docs/squizz/alifmt.html']
+public_name: squizz_convert
+command: {path: null, value: squizz}

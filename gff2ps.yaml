@@ -1,0 +1,246 @@
+_type: Program
+name: gff2ps
+title: gff2ps
+description: Produces PostScript graphical output from GFF-files
+authors: Josep Francesc ABRIL FERRANDO, Roderic GUIGO SERRA
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: GFF file
+        name: gff_file
+        simple: true
+        argpos: '100'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+    -   _type: InputParagraph
+        prompt: Output Options
+        name: output_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Modify page size (-s)
+            name: page_size
+            format: {perl: '(defined $value and $value ne $vdef)? " -s $value" : ""',
+                python: '( "" , " -s "+str(value) )[ value is not None and value !=
+                    vdef]'}
+            type: {_type: StringType, default: a4}
+        -   _type: InputProgramParameter
+            prompt: Switches page orientation to Portrait (default is Landscape) (-p)
+            name: orientation
+            format: {perl: '($value)? " -p" : ""', python: '( "" , " -p" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Sets how many pages are needed to split your output (-P)
+            name: split
+            format: {perl: '(defined $value and $value != $vdef)? " -P $value" : ""',
+                python: '( "" , " -P " +str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Zoom first nucleotide (default is sequence origin) (-S)
+            name: zoom_first
+            format: {perl: '(defined $value)? " -S $value" : ""', python: '( "" ,
+                    " -S " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Zoom last nucleotide (default is sequence length) (-E)
+            name: zoom_last
+            format: {perl: '(defined $value)? " -E $value" : ""', python: '( "" ,
+                    " -E " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Sets blocks per page (-B)
+            name: blocks
+            format: {perl: '(defined $value and $value != $vdef)? " -B $value" : ""',
+                python: '( "" , " -B " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Sets nucleotides per line (default is the largest sequence position
+                from input gff-files) (-N)
+            name: nuc_per_line
+            format: {perl: '(defined $value)? " -N $value" : ""', python: '( "" ,
+                    " -N " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Blocks from left to right and from top to bottom (default is top
+                to bottom first) (-b)
+            name: blocks_from_left_to_right
+            format: {perl: '($value)? " -b" : ""', python: '( "" , " -b" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Switch off Header (Title area) (-L)
+            name: no_headers
+            format: {perl: '($value)? " -L" : ""', python: '( "" , " -L" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Defining title (default is input gff filename) (-T)
+            name: set_title
+            format: {perl: '(defined $value)? " -T $value" : ""', python: '( "" ,
+                    " -T " + str(value) )[ value is not None ]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: Does not show page numbering (-l)
+            name: no_page_nb
+            format: {perl: '($value)? " -l" : ""', python: '( "" , " -l" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Does not show date (-O)
+            name: no_date
+            format: {perl: '($value)? " -O" : ""', python: '( "" , " -O" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Does not show time (-o)
+            name: no_time
+            format: {perl: '($value)? " -o" : ""', python: '( "" , " -o" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Switch off CopyRight line on plot (-a)
+            name: no_copyright
+            format: {perl: '($value)? " -a" : ""', python: '( "" , " -a" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Color Options
+        name: color_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Sets color for FOREGROUND (-G)
+            name: fg_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -G $value" : ""',
+                python: '( "" , " -G " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: black}
+        -   _type: InputProgramParameter
+            prompt: Sets color for BACKGROUND (-g)
+            name: bg_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -g $value" : ""',
+                python: '( "" , " -g " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: white}
+        -   _type: InputProgramParameter
+            prompt: Sets color for frame 0 (-0)
+            name: f0_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -0 $value" : ""',
+                python: '( "" , " -0 " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: blue}
+        -   _type: InputProgramParameter
+            prompt: Sets color for frame 1 (-1)
+            name: f1_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -1 $value" : ""',
+                python: '( "" , " -1 " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: red}
+        -   _type: InputProgramParameter
+            prompt: Sets color for frame 2 (-2)
+            name: f2_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -2 $value" : ""',
+                python: '( "" , " -2 " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: green}
+        -   _type: InputProgramParameter
+            prompt: Sets color for frame . (-3)
+            name: f_color_name
+            format: {perl: '(defined $value and $value ne $vdef)? " -3 $value" : ""',
+                python: '( "" , " -3 " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: StringType, default: orange}
+    -   _type: InputParagraph
+        prompt: Tickmark Options
+        name: tickmark_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Number of major tickmarks per line (-M)
+            name: major_tickmarks
+            format: {perl: '(defined $value and $value != $vdef)? " -M $value" : ""',
+                python: '( "" , " -M " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            comment: Default is nucleotide length for lines divided by major tickmarks
+                number (see option -T).
+            prompt: Major tickmarks scale in nucleotides (-K)
+            name: major_tickmarks_scale
+            format: {perl: '(defined $value)? " -K $value" : ""', python: '( "" ,
+                    " -K " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Number of minor tickmarks between major tickmarks (-m)
+            name: minor_tickmarks
+            format: {perl: '(defined $value and $value != $vdef)? " -m $value" : ""',
+                python: '( "" , " -m " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            comment: Default is major tickmarks size divided by minor tickmarks number
+                (see option -t).
+            prompt: Minor tickmarks scale in nucleotides (-k)
+            name: minor_tickmarks_scale
+            format: {perl: '(defined $value)? " -k $value" : ""', python: '( "" ,
+                    " -k " + str(value) )[ value is not None ]'}
+            type: {_type: IntegerType}
+    -   _type: InputParagraph
+        prompt: Display elements Options
+        name: element_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Switch off displaying forward-strand(Watson) elements (-w)
+            name: no_forward_strand
+            format: {perl: '($value)? " -w" : ""', python: '( "" , " -w" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Switch off displaying reverse-strand(Crick) elements (-c)
+            name: no_reverse_strand
+            format: {perl: '($value)? " -c" : ""', python: '( "" , " -c" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Switch off displaying strand-independent elements (-i)
+            name: no_strand_independent
+            format: {perl: '($value)? " -i" : ""', python: '( "" , " -i" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Switch off labels for element positions (-n)
+            name: no_label
+            format: {perl: '($value)? " -n" : ""', python: '( "" , " -n" )[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Other Options
+        name: other_options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Create a new default customfile (-D)
+            name: default_custom_file
+            format: {perl: '($value)? " -D gff2psrc" : ""', python: '( "" , " -D gff2psrc"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Your custom rc file (-C)
+            name: user_custom_file
+            format: {perl: '(defined $value)? " -C $value" : ""', python: '( "" ,
+                    " -C " + str(value) )[ value is not None ]'}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Postscript output file
+        name: outfile
+        filenames: {perl: '"gff2ps.ps"', python: '"gff2ps.ps"'}
+    -   _type: OutputProgramParameter
+        prompt: Custom output file
+        name: custom_file
+        filenames: {perl: '"gff2psrc"', python: '"gff2psrc"'}
+        precond: default_custom_file
+documentation_links: ['http://genome.imim.es/software/gfftools/GFF2PS.html']
+public_name: gff2ps
+command: {path: null, value: gff2ps}

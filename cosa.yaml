@@ -1,0 +1,72 @@
+_type: Program
+name: cosa
+title: cosa
+description: Clustal ouput structural analysis
+authors: T. Rose
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Alignment
+        name: alig
+        simple: true
+        argpos: '1'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1982']
+            data_terms: EDAM_data:1384
+    -   _type: InputProgramParameter
+        prompt: Position in the sequence multialignment of the structure used as reference
+        name: struct_pos
+        simple: true
+        argpos: '2'
+        format: {perl: '" $value"', python: '" " + str( value )'}
+        mandatory: true
+        type: {_type: IntegerType}
+    -   _type: InputProgramParameter
+        prompt: PDB entry
+        name: pdbin
+        simple: true
+        argpos: '3'
+        format: {perl: '" $value"', python: '" " + str( value )'}
+        mandatory: true
+    -   _type: InputProgramParameter
+        prompt: Name of the output PDB file
+        name: pdbout
+        argpos: '4'
+        format: {perl: '(defined $value) ? " $value" : ""', python: '("", " " + str(
+                value ) )[ value is not None ]'}
+        type: {_type: StringType, default: tmp_clustal.pdb}
+    -   _type: InputProgramParameter
+        prompt: Name of the output result file
+        name: txtout
+        argpos: '5'
+        format: {perl: '(defined $value) ? " $value" : ""', python: '("" , " " + str(
+                value ) )[ value is not None ]'}
+        type: {_type: StringType, default: tmp_stats.txt}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        comment: "PDB file format of the structure used as reference with \n     \
+            \   the residue occurrence in place of B-factor"
+        prompt: PDB with the residue occurrence
+        name: default_pdbout
+        filenames: {perl: $pdbout, python: pdbout}
+    -   _type: OutputProgramParameter
+        comment: Vertical sequence alignment and statistics
+        prompt: Alignment and statistics
+        name: default_txtout
+        filenames: {perl: $txtout, python: txtout}
+comment: This program gives simple statistics about residue conservation from clustal
+    output files.There is the possibility to redirect the residue frequency at every
+    position of the proteinsequence in the PDB file corresponding to one of the identified
+    sequences of the multiple alignment.This frequency or conservation index is put
+    in place of B-factors and allows spectral coloring according tothe index value
+    in most of pdb structure viewers.
+operations: ['EDAM_operation:2506', 'EDAM_operation:0448']
+topics: ['EDAM_topic:0182']
+public_name: cosa
+command: {path: null, value: cosa}

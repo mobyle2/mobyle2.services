@@ -1,0 +1,55 @@
+_type: Program
+name: nw_rename
+version: '1.6'
+title: newick ID mapper
+description: helps out with the 10-character limit of the PHYLIP-PHYML formats
+authors: GNU
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: Put here youre treefile with the short ID in NEWICK format
+        prompt: Tree file (in NEWICK format)
+        name: input_newick
+        simple: true
+        argpos: '1'
+        format: {perl: '" $value"', python: '" " + str( value )'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+    -   _type: InputProgramParameter
+        comment: The file of mapping between long ID and short ID. This file can be
+            generated with fastaRename service.
+        prompt: Labels map
+        name: input_map
+        simple: true
+        argpos: '2'
+        format: {perl: '" $value"', python: '" " + str( value )'}
+        mandatory: true
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Newick tree
+        name: output_tree
+        filenames: {perl: '"nw_rename.out"', python: '"nw_rename.out"'}
+        output_type: stdout
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\">Due to an incompatibility\
+    \ between the PHYLIP format and phyml and morePhyml named rules, \n          \
+    \  the using of long identifier in phyml or morePhyml failed. We proposed the\
+    \ following workaround:<html:ol><html:li>your alignment must be in FASTA format,\
+    \ if it is in other format use squizz_convert to reformat it</html:li><html:li>use\
+    \ fastaRename to generate an alignment with short ID and a file of ID mapping</html:li><html:li>perform\
+    \ your analysis with the alignment with short id</html:li><html:li>replace the\
+    \ short IDs in your tree (in NEWICK format) with nw_rename and the file of IDs\
+    \ mapping generated at the step 1.</html:li></html:ol></html:div>"
+operations: ['EDAM_operation:0335']
+topics: ['EDAM_topic:0220']
+public_name: nw_rename
+command: {path: null, value: nw_rename}

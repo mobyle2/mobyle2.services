@@ -1,0 +1,200 @@
+_type: Program
+name: cif
+version: 0.2.2
+title: CIF
+description: Cut DNA regions in frame
+authors: E. Quevillon, B. Boeda
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Sequence
+            name: sequence
+            simple: true
+            argpos: '1'
+            format: {perl: '" -i $value "', python: '( "" , " -i " + str( value )
+                    + " " )[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:2200']
+                data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Options
+        name: options
+        children:
+        -   _type: InputProgramParameter
+            comment: 'You can choose between:- blunt : Use blunt cutters- cohesive
+                : Use cohesive cutters- klenow  : Use only 5'' enzymes for Klenow
+                fill-in.[Default all three]'
+            prompt: Type of enzymes (-T)
+            name: enztype
+            simple: true
+            format: {perl: '($value) ?"-T $value ": ""', python: '( "" , " -T " +
+                    str( value ) )[value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: blunt + cohesive + klenow, value: '0'}
+                - {label: blunt, value: blunt}
+                - {label: cohesive, value: cohesive}
+                - {label: klenow, value: klenow}
+        -   _type: InputProgramParameter
+            comment: 'Cohesive enzyme strand to use:- 5''- 3''- both : 5'' and 3''
+                (Default value).(No effect if you choose to use blunt enzymes)'
+            prompt: Cohesive enzyme strand (-S)
+            name: strand
+            simple: true
+            format: {perl: '($value) ?"-S $value ": ""', python: '( "" , " -S " +
+                    str( value ) )[value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: 5' + 3', value: '0'}
+                - {label: 5', value: '5'}
+                - {label: 3', value: '3'}
+        -   _type: InputProgramParameter
+            comment: 'Digestion mode:- double: Report couple of enzymes that digest
+                sequence- simple: Report enzyme name that cut more than one time-
+                both: simple + double (Default value).'
+            prompt: Digestion mode (-D)
+            name: digestionmod
+            simple: true
+            format: {perl: '($value) ?"-D $value ": ""', python: '( "" , " -D " +
+                    str( value ) )[value != vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: simple + double, value: '0'}
+                - {label: double, value: double}
+                - {label: simple, value: simple}
+        -   _type: InputProgramParameter
+            comment: Use enzymes with minimum length for DNA recognition site.By default,
+                6.
+            prompt: Minimum length of recognition site (-L)
+            name: Length
+            format: {perl: '($value) ?"-L $value ": ""', python: '( "" , " -L " +
+                    str( value ) )[value is not None and value!=vdef]'}
+            type: {_type: IntegerType, default: 6}
+        -   _type: InputProgramParameter
+            comment: Some cohesive enzymes have variant recognition site like 'GDGCH^C'
+                for Bsp1286I, where:D = not C (A or G or T)H = not G (A or C or T)This
+                option, when set, use of these type of enzymes..By default, this option
+                is off.
+            prompt: Use enzymes with variant recognition site (-V)
+            name: variant
+            format: {perl: '($value) ?"-V": ""', python: '( "" , " -V " )[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "Some cohesive enzymes have variant recognition site like 'GDGCH^C'\
+                \ for Bsp1286I, where:D = not C (A or G or T)H = not G (A or C or\
+                \ T)Thus, using thoses enzymes may produce a cut in frame but the\
+                \ produced ends may not be \n                compatible together regarding\
+                \ DNA sequence.Requires the '[-V | --variant]' option to work. By\
+                \ default, this option is off."
+            prompt: Report digestions in frame without ends compatibilities (-X)
+            name: exotic
+            format: {perl: '($value) ?"-X": ""', python: '( "" , " -X " )[value]'}
+            precond: {variant: '1'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: File with list of compatible cohesive ends.The default list used
+                is given in the program help pages (compatible_cohesive_ends.txt).If
+                you want to give your own list, the format must be as follow:"Enzyme_name:compatEnz1_name,compatEnz2_name,..."
+            prompt: List of compatible cohesive ends (-C)
+            name: compat
+            format: {perl: '($value) ?"-C $value ": ""', python: '( "" , " -C " +
+                    str( value ) )[value is not None]'}
+        -   _type: InputProgramParameter
+            comment: "By default, the program works with a list of enzymes commonly\
+                \ used in laboratory \n          \t\tgiven in the program help pages\
+                \ (paillasse_liste.txt).If you want to give your own list, the format\
+                \ is one enzyme per line."
+            prompt: Enzyme list to work with (-E)
+            name: enzlist
+            format: {perl: '($value) ?"-E $value ": ""', python: '( "" , " -E " +
+                    str( value ) )[value is not None]'}
+    -   _type: InputParagraph
+        prompt: Output parameters
+        name: outputopt
+        children:
+        -   _type: InputProgramParameter
+            comment: "Sometimes, blunt digestion, after linkage, can produce new codon\
+                \ around the cutting site \n            that leads to stop codon.This\
+                \ option displays such digestions with a tag 'stopCodon' in the output\
+                \ line results.NOTE: This option only works if 'blunt' type is set.\
+                \ By default this option is off, thus \n            if such case happened\
+                \ no results are reported for enzymes digestion."
+            prompt: Show stop codon (-P)
+            name: stop
+            format: {perl: '($value) ?"-P": ""', python: '( "" , " -P " )[value]'}
+            precond:
+                '#or':
+                - {enztype: '0'}
+                - {enztype: blunt}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "Enzymes may cut your sequence more than once.This option \n\
+                \            reports the number of time enzyme(s) cut your sequence.\
+                \ [Default off]"
+            prompt: Show cut positions (-N)
+            name: cut_pos
+            simple: true
+            format: {perl: '($value) ?"-N": ""', python: '( "" , " -N " )[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: "Experimental option. [Default off]This option allows, for 'blunt'\
+                \ or 'klenow' analysis to\n            show, in such case, the Amino\
+                \ acid that have been changed due to the ligation between \n     \
+                \       the 2 parts of the DNA after the digestion.It will be shown\
+                \ as OldAA>NewAA (e.g.: G>N)."
+            prompt: Show new generated amino acid (-A)
+            name: mod_aa
+            format: {perl: '($value) ?"-A": ""', python: '( "" , " -A " )[value]'}
+            precond:
+                enztype: {'#ne': cohesive}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: 'Choose the output type that you prefer.- Text output (Default
+                value)- GFF3 output- Image (png): Creates image (png).'
+            prompt: Output style format (-F)
+            name: outputstyle
+            simple: true
+            format: {perl: '($value) ?"-F $value ": ""', python: '( "" , " -F " +
+                    str( value ) )[value != vdef]'}
+            type:
+                _type: StringType
+                default: text
+                options:
+                - {label: Text output, value: text}
+                - {label: GFF3 output, value: gff}
+                - {label: Image (png), value: image}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output image
+        name: img
+        filenames: {perl: '*.png', python: '"*.png"'}
+        precond: {outputstyle: image}
+comment: "cif (for Cut In Frame) is a tool that works with DNA sequences. It is used\
+    \ to digest\n      your sequences with a pool of restriction enzymes and to search\
+    \ which enzymes cut your\n      sequence keeping your reading frame after ligation\
+    \ without any frame shift produced\n      due to the digestion.This helps users\
+    \ to work with a gene of interest to localize potential region(s) that\n     \
+    \ could be removed from the final protein to check if regions have an impact or\
+    \ not on\n      the final gene product. It can also allow to identify vital region(s)\
+    \ for the gene."
+operations: ['EDAM_operation:0431']
+topics: ['EDAM_topic:0160']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/cif/cif.html', 'http://bioweb2.pasteur.fr/docs/cif/compatible_cohesive_ends.txt',
+    'http://bioweb2.pasteur.fr/docs/cif/paillasse_liste.txt']
+public_name: cif
+command: {path: null, value: cif}

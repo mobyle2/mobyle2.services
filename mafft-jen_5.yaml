@@ -1,0 +1,85 @@
+_type: Program
+name: mafft-jen
+version: '5'
+title: 'MAFFT: Accuracy-oriented'
+description: MAFFT is a multiple sequence alignment program for unix-like operating
+    systems. It offers a range of multiple alignment methods.
+authors: Katoh, Misawa, Kuma, Toh, and Miyata
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input
+        name: input_para
+        children:
+        -   _type: InputProgramParameter
+            comment: File must be FASTA format
+            prompt: 'Upload sequences to align:'
+            name: fasta_input
+            simple: true
+            argpos: '5'
+            format: {python: ''' '' + str(value)'}
+            mandatory: true
+    -   _type: InputParagraph
+        prompt: Options
+        name: options_para
+        children:
+        -   _type: InputProgramParameter
+            prompt: 'Select a pairwise alignment algorithm:'
+            name: alg_opt
+            simple: true
+            format: {python: '" --"+( str(vdef) ,str(value) )[value is not None and
+                    value != vdef]'}
+            type:
+                _type: StringType
+                default: globalpair
+                options:
+                - {label: global, value: globalpair}
+                - {label: local, value: localpair}
+                - {label: local with generalized affine gap cost, value: genafpair}
+        -   _type: InputProgramParameter
+            comment: number cycles of iterative refinement are performed.
+            prompt: 'Maximum number of iterations (--maxiterate):'
+            name: max_its
+            simple: true
+            format: {python: ''' --maxiterate '' + ( str(vdef) ,str(value) )[value
+                    is not None and value != vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 1000}
+        -   _type: InputProgramParameter
+            comment: For E-INS-i, the --ep 0 option is recommended to allow large
+                gaps.
+            prompt: Integer
+            name: ep_opt
+            format: {python: '" --ep 0"'}
+            precond: {alg_opt: genafpair}
+            hidden: true
+            type: {_type: IntegerType}
+    -   _type: InputParagraph
+        prompt: Output
+        name: output_para
+        children:
+        -   _type: InputProgramParameter
+            prompt: 'Name for alignment file:'
+            name: result_file
+            simple: true
+            argpos: '6'
+            format: {python: ''' > '' + ( str(vdef) ,str(value) )[value is not None
+                    and value != vdef]'}
+            mandatory: true
+            type: {_type: StringType, default: mafftalign.fa}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output
+        name: output_para
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Sequence
+            name: out_file
+            filenames: {python: str(result_file)}
+public_name: mafft-jen
+command: {path: null, value: mafft}
+env:
+- {name: MAFFT_BINARIES, value: /usr/lib/mafft/lib/mafft}

@@ -1,0 +1,163 @@
+_type: Program
+name: repeatoire
+version: '1.0'
+title: repeatoire
+description: Locating DNA repeats inside of sequenced genome
+authors: Todd Treangen, Aaron Darling and Eduardo PC Rocha
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        comment: Fasta sequence input file
+        prompt: Input sequence
+        name: infile
+        simple: true
+        argpos: '1'
+        format: {perl: '" --sequence=$value"', python: '" --sequence=" + str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2977
+    -   _type: InputParagraph
+        prompt: Main options
+        name: main
+        children:
+        -   _type: InputProgramParameter
+            comment: "Forms the foundation of the repeats families. Smaller values\
+                \ are more sensitive\n        but allow for more noise (less specific),\
+                \ whereas larger values are less sensitive but more specific."
+            prompt: Seed weight
+            name: seedSize
+            simple: true
+            format: {perl: '(defined $value and $value != $vdef) ? " --z=$value" :
+                    ""', python: '( "" , " --z=" + str(value))[ value is not None
+                    and value != vdef ]'}
+            type: {_type: IntegerType, default: 17}
+        -   _type: InputProgramParameter
+            comment: "Often one wants to only analyze repeats in the same orientation.\
+                \ Else, program will include\n            inverted repeats in the\
+                \ output."
+            prompt: Only process seed matches on same strand
+            name: onlydirect
+            simple: true
+            format: {perl: '(defined $value) ? " --onlydirect=1" : ""', python: '(
+                    "" , " --onlydirect=1")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If gapped extension is disabled, output will be the local multiple
+                alignments of the gapped chains.
+            prompt: Perform gapped extension
+            name: extend
+            simple: true
+            format: {perl: '(defined $value and $value != $vdef) ? "" : " --extend=0"',
+                python: '( " --extend=0" , "" )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Optimize for large repeats
+            name: large-repeats
+            simple: true
+            format: {perl: '(defined $value) ? "" : " --large-repeats=0"', python: '(
+                    " --large-repeats=0" , "" )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: To increase specificity when wanting to focus on larger repeats,
+                this option will only return repeat families containing repeats >
+                value
+            prompt: Minimum final repeat length
+            name: minreplen
+            simple: true
+            format: {perl: '(defined $value and $value != $vdef) ? " --minreplen=$value"
+                    : ""', python: '( "" , " --minreplen=" + str(value))[ value is
+                    not None and value != vdef ]'}
+            type: {_type: IntegerType, default: 100}
+        -   _type: InputProgramParameter
+            comment: "Option to increase specificity. If one knows a priori that high\
+                \ copy repeats can be excluded from \n            the analysis, this\
+                \ option can be used to discard all repeat families with more repeat\
+                \ copies than this specified value."
+            prompt: Maximum repeat multiplicity
+            name: maxmulti
+            simple: true
+            format: {perl: '(defined $value and $value != $vdef) ? " --maxmulti=$value"
+                    : ""', python: '( "" , " --maxmulti=" + str(value))[ value is
+                    not None and value != vdef ]'}
+            type: {_type: IntegerType, default: 500}
+        -   _type: InputProgramParameter
+            comment: Similar to maxmulti, this option can be used to discard all repeat
+                families that have fewer copies than this value.
+            prompt: Minimum repeat multiplicity
+            name: minmulti
+            simple: true
+            format: {perl: '(defined $value and $value != $vdef) ? " --minmulti=$value"
+                    : ""', python: '( "" , " --minmulti=" + str(value))[ value is
+                    not None and value != vdef ]'}
+            type: {_type: IntegerType, default: 2}
+        -   _type: InputProgramParameter
+            comment: "By default, the program uses palindromic spaces seed patterns\
+                \ to find seed matches inside of the input\n            sequence.\
+                \ However, this can be turned off, which will use solid seed patterns\
+                \ (no mismatches in the seed matches allowed)."
+            prompt: Use solid/exact seeds
+            name: solid
+            simple: true
+            format: {perl: '(defined $value) ? " --solid=1" : ""', python: '( "" ,
+                    " --solid=1")[ value  ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Expert options
+        name: expert
+        children:
+        -   _type: InputProgramParameter
+            prompt: Allow redundant alignments
+            name: redundant
+            format: {perl: '(defined $value) ? " --allow-redundant=1" : ""', python: '(
+                    "" , " --allow-redundant=1" )[ value  ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Require two hits for gapped extension
+            name: two_hits
+            format: {perl: '(defined $value) ? " --two-hits=1" : ""', python: '( ""
+                    , " --two-hits=1" )[ value  ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Chain seeds
+            name: chain
+            format: {perl: '(defined $value) ? "" : " --chain=0"', python: '( " --chain=0"
+                    , "" )[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: XML format output
+            name: xml
+            format: {perl: '(defined $value) ? " --xml=repeatoire.xml" : ""', python: '(
+                    "" , " --xml=repeatoire.xml" )[ value ]'}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: General results
+        name: gle_output
+        filenames: {perl: '"reps.out"', python: '"reps.out"'}
+    -   _type: OutputProgramParameter
+        prompt: Statistical results
+        name: stat_output
+        filenames: {perl: '"stats.highest"', python: '"stats.highest"'}
+    -   _type: OutputProgramParameter
+        prompt: Xml output
+        name: xml_output
+        filenames: {perl: '"repeatoire.xml"', python: '"repeatoire.xml"'}
+        precond: xml
+operations: ['EDAM_operation:0237']
+topics: ['EDAM_topic:0157']
+references:
+- {doi: null, label: "Todd J. Treangen, Aaron E. Darling, Guillaume Achaz, Mark A.\
+        \ Ragan, Xavier\n       Messeguer, Eduardo P.C. Rocha, \"A Novel Heuristic\
+        \ for Local Multiple Alignment of\n       Interspersed DNA Repeats,\" IEEE/ACM\
+        \ Transactions on Computational Biology and\n       Bioinformatics, vol. 6,\
+        \ no. 2, pp. 180-189", url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/repeatoire/Repeatoire_UserGuide.pdf']
+homepage_links: ['http://wwwabi.snv.jussieu.fr/public/Repeatoire/']
+public_name: repeatoire
+command: {path: null, value: repeatoire}
+source_links: ['http://wwwabi.snv.jussieu.fr/public/Repeatoire/']

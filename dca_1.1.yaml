@@ -1,0 +1,160 @@
+_type: Program
+name: dca
+version: '1.1'
+title: DCA
+description: Divide-and-Conquer Multiple Sequence Alignment
+authors: J. Stoye
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Sequences File
+        name: seq
+        simple: true
+        argpos: '100'
+        format: {perl: '" $value"', python: '" "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Control parameters
+        name: control
+        children:
+        -   _type: InputProgramParameter
+            prompt: Cost matrix (-c)
+            name: cost
+            argpos: '1'
+            format: {perl: '(defined $value and $value ne $vdef)? " -c $value" : ""',
+                python: '( ""  , " -c " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type:
+                _type: StringType
+                default: 'null'
+                options:
+                - {label: 'Default: depends on sequences', value: 'null'}
+                - {label: BLOSUM30, value: blosum30}
+                - {label: BLOSUM45, value: blosum45}
+                - {label: BLOSUM62, value: blosum62}
+                - {label: PAM160, value: pam160}
+                - {label: PAM250, value: pam250}
+                - {label: Unitcost, value: unitcost}
+                - {label: DNA, value: dna}
+                - {label: RNA, value: rna}
+                - {label: DNA/RNA, value: dnarna}
+        -   _type: InputProgramParameter
+            comment: 'Default: free shift'
+            prompt: Penalize end gaps as internal gaps (-g)
+            name: gaps
+            argpos: '1'
+            format: {perl: '($value)? " -g ":""', python: '("" , " -g ")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: 'On: FastDCA (use approximate cut positions); Off: slower, more
+                accurate algorithm (search for exact cut positions)'
+            prompt: Use approximate cut positions (-a)
+            name: approximate
+            argpos: '1'
+            format: {perl: '($value)? " -a":""', python: '("" , " -a")[ value ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Weight intensity (-b)
+            name: intensity
+            argpos: '1'
+            format: {perl: '(defined $value and $value != $vdef)? " -b $value" : ""',
+                python: '( ""  , " -b " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: FloatType, default: 0.0}
+        -   _type: InputProgramParameter
+            comment: '5 ... 100 recommended; small: faster algorithm, maybe worse.'
+            prompt: Recursion stop size (-l)
+            name: recursion
+            argpos: '1'
+            format: {perl: '(defined $value and $value != $vdef)? " -l $value" : ""',
+                python: '( ""  , " -l " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 30}
+        -   _type: InputProgramParameter
+            comment: To correct the alignment in the proximity of division sites,
+                the sequences can be re-aligned inside a window of size w >= 0 placed
+                across each slicing site.
+            prompt: Window size (-w)
+            name: window
+            argpos: '1'
+            format: {perl: '(defined $value and  $value != $vdef)? " -w $value" :
+                    ""', python: '( ""  , " -w " + str(value) )[ value is not None
+                    and value != vdef]'}
+            type: {_type: IntegerType, default: 0}
+    -   _type: InputParagraph
+        prompt: Output parameters
+        name: output
+        children:
+        -   _type: InputProgramParameter
+            name: quiet
+            argpos: '1'
+            format: {perl: '" -q"', python: '" -q"'}
+            hidden: true
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: Output format (-f)
+            name: output_format
+            argpos: '1'
+            format: {perl: '(defined $value and $value ne $vdef)? " -f $value" : ""',
+                python: '( ""  , " -f " + str(value) )[ value is not None and value
+                    != vdef]'}
+            type:
+                _type: StringType
+                default: '2'
+                options:
+                - {label: aln (1), value: '1'}
+                - {label: fasta (2), value: '2'}
+                - {label: nex (3), value: '3'}
+                - {label: dca (4), value: '4'}
+        -   _type: InputProgramParameter
+            prompt: Suppress output about progress of the program (-o)
+            name: suppress_output
+            argpos: '1'
+            format: {perl: '" -o"', python: '" -o"'}
+            hidden: true
+            type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Alignment file
+        name: fasta_outfile
+        filenames: {perl: '"dca.out"', python: '"dca.out"'}
+        precond:
+            '#or':
+            - {output_format: '2'}
+            - {output_format: '3'}
+        output_type: stdout
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0863'}
+    -   _type: OutputProgramParameter
+        prompt: DCA alignment file
+        name: aln_outfile
+        filenames: {perl: '"dca.out"', python: '"dca.out"'}
+        precond:
+            '#or':
+            - {output_format: '1'}
+            - {output_format: '4'}
+        output_type: stdout
+comment: Divide-and-Conquer Multiple Sequence Alignment  (DCA) is a program for producing
+    fast, high quality simultaneous multiple sequence alignments of amino acid, RNA,
+    or DNA sequences. The program is based on the DCA algorithm, a heuristic approach
+    to sum-of-pairs (SP) optimal alignment that has been developed at the FSPM  over
+    the years 1995-97.
+operations: ['EDAM_operation:0492']
+topics: ['EDAM_topic:0182']
+references:
+- {doi: null, label: 'A.W.M. Dress, G. Fullen, S.W. Perrey, A Divide and Conquer Approach
+        to Multiple Alignment, Proceedings of the Third International Conference on
+        Intelligent Systems for Molecular Biology (ISMB 95), AAAI Press, Menlo Park,
+        CA, USA, 107-113, 1995.', url: null}
+- {doi: null, label: 'J. Stoye, Multiple Sequence Alignment with the Divide-and-Conquer
+        Method, Gene 211(2), GC45-GC56, 1998. (Gene-COMBIS)', url: null}
+homepage_links: ['http://bibiserv.techfak.uni-bielefeld.de/dca/']
+public_name: dca
+command: {path: null, value: dca}
+source_links: ['http://bibiserv.techfak.uni-bielefeld.de/download/tools/dca.html']

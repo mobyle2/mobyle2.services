@@ -1,0 +1,416 @@
+_type: Program
+name: remap
+title: remap
+description: Display restriction enzyme binding sites in a nucleotide sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: sequence option
+            name: e_sequence
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2977
+        -   _type: InputProgramParameter
+            prompt: Restriction enzyme methylation data file
+            name: e_mfile
+            argpos: '2'
+            format: {python: '("", " -mfile=" + str(value))[value is not None ]'}
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            comment: "The name 'all' reads in all enzyme names from the REBASE database.\
+                \ You can specify enzymes by giving their names with  commas between\
+                \ then, such as: 'HincII,hinfI,ppiI,hindiii'. \n  The case of the\
+                \ names is not important. You can specify a file of  enzyme names\
+                \ to read in by giving the name of the file holding the  enzyme names\
+                \ with a '@' character in front of it, for example,  '@enz.list'.\
+                \ \n  Blank lines and lines starting with a hash character or '!'\
+                \ are  ignored and all other lines are concatenated together with\
+                \ a comma  character ',' and then treated as the list of enzymes to\
+                \ search  for. \n  An example of a file of enzyme names is: \n  !\
+                \ my enzymes \n  HincII, ppiII \n  ! other enzymes \n  hindiii \n\
+                \  HinfI \n  PpiI"
+            prompt: Comma separated enzyme list
+            name: e_enzymes
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -enzymes=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: StringType, default: all}
+        -   _type: InputProgramParameter
+            comment: This sets the minimum length of the restriction enzyme recognition
+                site. Any enzymes with sites shorter than this will be  ignored.
+            prompt: Minimum recognition site length (value from 2 to 20)
+            name: e_sitelen
+            ctrl:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+            -   message: Value less than or equal to 20 is required
+                test:
+                    value: {'#lte': '20'}
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -sitelen=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: IntegerType, default: 4}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            comment: This sets the minimum number of cuts for any restriction enzyme
+                that will be considered. Any enzymes that cut fewer times  than this
+                will be ignored.
+            prompt: Minimum cuts per re (value from 1 to 1000)
+            name: e_mincuts
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 1000 is required
+                test:
+                    value: {'#lte': '1000'}
+            argpos: '5'
+            format: {python: '("", " -mincuts=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            comment: This sets the maximum number of cuts for any restriction enzyme
+                that will be considered. Any enzymes that cut more times  than this
+                will be ignored.
+            prompt: Maximum cuts per re
+            name: e_maxcuts
+            argpos: '6'
+            format: {python: '("", " -maxcuts=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 2000000000}
+        -   _type: InputProgramParameter
+            comment: If this is set then this forces the values of the mincuts and
+                maxcuts qualifiers to both be 1. Any other value you may have  set
+                them to will be ignored.
+            prompt: Force single site only cuts
+            name: e_single
+            argpos: '7'
+            format: {python: '("", " -single")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This allows those enzymes which cut at the same position on the
+                forward and reverse strands to be considered.
+            prompt: Allow blunt end cutters
+            name: e_blunt
+            argpos: '8'
+            format: {python: '(" -noblunt", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This allows those enzymes which cut at different positions on
+                the forward and reverse strands, leaving an overhang, to be  considered.
+            prompt: Allow sticky end cutters
+            name: e_sticky
+            argpos: '9'
+            format: {python: '(" -nosticky", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This allows those enzymes which have one or more 'N' ambiguity
+                codes in their pattern to be considered
+            prompt: Allow ambiguous matches
+            name: e_ambiguity
+            argpos: '10'
+            format: {python: '(" -noambiguity", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If this is set then this allows searches for restriction enzyme
+                recognition site and cut positions that span the end of the  sequence
+                to be considered.
+            prompt: Allow circular dna
+            name: e_plasmid
+            argpos: '11'
+            format: {python: '("", " -plasmid")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If this is set then RE recognition sites will not match methylated
+                bases.
+            prompt: Use methylation data
+            name: e_methylation
+            argpos: '12'
+            format: {python: '("", " -methylation")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: If this is set, then only those enzymes with a commercial supplier
+                will be searched for. This qualifier is ignored if you  have specified
+                an explicit list of enzymes to search for, rather  than searching
+                through 'all' the enzymes in the REBASE database.  It is assumed that,
+                if you are asking for an explicit enzyme, then  you probably know
+                where to get it from and so all enzymes names  that you have asked
+                to be searched for, and which cut, will be  reported whether or not
+                they have a commercial supplier.
+            prompt: Only enzymes with suppliers
+            name: e_commercial
+            argpos: '13'
+            format: {python: '(" -nocommercial", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Genetic codes
+            name: e_table
+            argpos: '14'
+            format: {python: '("", " -table=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+        -   _type: InputProgramParameter
+            comment: This allows you to specify the frames that are translated. If
+                you are not displaying cut sites on the reverse sense, then the  reverse
+                sense translations will not be displayed even if you have  requested
+                frames 4, 5 or 6. By default, all six frames will be  displayed.
+            prompt: Translation frames (value from 1 to 6)
+            name: e_frame
+            argpos: '15'
+            format: {python: '("", " -frame=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: '6'
+                options:
+                - {label: '1', value: '1'}
+                - {label: '2', value: '2'}
+                - {label: '3', value: '3'}
+                - {label: Forward three frames, value: F}
+                - {label: '-1', value: '-1'}
+                - {label: '-2', value: '-2'}
+                - {label: '-3', value: '-3'}
+                - {label: Reverse three frames, value: R}
+                - {label: All six frames, value: '6'}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '16'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: remap.e_outfile}
+        -   _type: InputProgramParameter
+            comment: This produces lists in the output of the enzymes that cut, those
+                that cut but are excluded because that cut fewer times than  mincut
+                or more times than maxcut and those enzymes that do not  cut.
+            prompt: List the enzymes that cut
+            name: e_cutlist
+            argpos: '17'
+            format: {python: '(" -nocutlist", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This changes the output format to one where the recognition site
+                is indicated by a row of '===' characters and the cut site  is pointed
+                to by a '>' character in the forward sense, or a '<' in  the reverse
+                sense strand.
+            prompt: Display re sites in flat format
+            name: e_flatreformat
+            argpos: '18'
+            format: {python: '("", " -flatreformat")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This limits the reporting of enzymes to just one enzyme from
+                each group of isoschizomers. The enzyme chosen to represent  an isoschizomer
+                group is the prototype indicated in the data file  'embossre.equ',
+                which is created by the program 'rebaseextract'.  If you prefer different
+                prototypes to be used, make a copy of  embossre.equ in your home directory
+                and edit it. If this value is  set to be false then all of the input
+                enzymes will be reported.  You might like to set this to false if
+                you are supplying an  explicit set of enzymes rather than searching
+                'all' of them.
+            prompt: Limits reports to one isoschizomer
+            name: e_limit
+            argpos: '19'
+            format: {python: '(" -nolimit", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This displays the 6-frame translations of the sequence in the
+                output.
+            prompt: Display translation
+            name: e_translation
+            argpos: '20'
+            format: {python: '(" -notranslation", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This displays the cut sites and translation of the reverse sense.
+            prompt: Display cut sites and translation of reverse sense
+            name: e_reverse
+            argpos: '21'
+            format: {python: '(" -noreverse", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: This sets the minimum size of Open Reading Frames (ORFs) to display
+                in the translations. All other translation regions are  masked by
+                changing the amino acids to '-' characters.
+            prompt: Minimum size of orfs (value greater than or equal to 0)
+            name: e_orfminsize
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '22'
+            format: {python: '("", " -orfminsize=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+        -   _type: InputProgramParameter
+            comment: "Regions to put in uppercase. \n If this is left blank, then\
+                \ the sequence case is left alone. \n  A set of regions is specified\
+                \ by a set of pairs of positions. \n  The positions are integers.\
+                \ \n  They are separated by any non-digit, non-alpha character. \n\
+                \  Examples of region specifications are: \n  24-45, 56-78 \n  1:45,\
+                \ 67=99;765..888 \n  1,5,8,10,23,45,57,99"
+            prompt: 'Regions to put in uppercase (eg: 4-57,78-94)'
+            name: e_uppercase
+            argpos: '23'
+            format: {python: '("", " -uppercase=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            comment: "Regions to colour if formatting for HTML. \n If this is left\
+                \ blank, then the sequence is left alone. \n  A set of regions is\
+                \ specified by a set of pairs of positions. \n  The positions are\
+                \ integers. \n  They are followed by any valid HTML font colour. \n\
+                \  Examples of region specifications are: \n  24-45 blue 56-78 orange\
+                \ \n  1-100 green 120-156 red \n  A file of ranges to colour (one\
+                \ range per line) can be specified as  '@filename'."
+            prompt: 'Regions to colour in html (eg: 4-57 red 78-94 green)'
+            name: e_highlight
+            argpos: '24'
+            format: {python: '("", " -highlight=" + str(value))[value is not None]'}
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: Display protein sequences in three-letter code
+            name: e_threeletter
+            argpos: '25'
+            format: {python: '("", " -threeletter")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Number the sequences
+            name: e_number
+            argpos: '26'
+            format: {python: '("", " -number")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Width of sequence to display (value greater than or equal to 1)
+            name: e_width
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '27'
+            format: {python: '("", " -width=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 60}
+        -   _type: InputProgramParameter
+            prompt: Line length of page (0 for indefinite) (value greater than or
+                equal to 0)
+            name: e_length
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '28'
+            format: {python: '("", " -length=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 0}
+        -   _type: InputProgramParameter
+            prompt: Margin around sequence for numbering (value greater than or equal
+                to 0)
+            name: e_margin
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '29'
+            format: {python: '("", " -margin=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 10}
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to display the ID name
+                of the sequence
+            prompt: Display sequence id
+            name: e_name
+            argpos: '30'
+            format: {python: '(" -noname", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Set this to be false if you do not wish to display the description
+                of the sequence
+            prompt: Display description
+            name: e_description
+            argpos: '31'
+            format: {python: '(" -nodescription", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Offset to start numbering the sequence from
+            name: e_offset
+            argpos: '32'
+            format: {python: '("", " -offset=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Use html formatting
+            name: e_html
+            argpos: '33'
+            format: {python: '("", " -html")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '34'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0431', 'EDAM_operation:0575']
+topics: ['EDAM_topic:0100']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/remap.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: remap
+command: {path: null, value: remap}

@@ -1,0 +1,322 @@
+_type: Program
+name: cirdna
+title: cirdna
+description: Draws circular maps of DNA constructs
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: Commands to the cirdna drawing program file
+            name: e_infile
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -infile=" + str(value))[value is not None ]'}
+            mandatory: true
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Maximum number of groups (value greater than or equal to 1)
+            name: e_maxgroups
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '2'
+            format: {python: '("", " -maxgroups=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 20}
+        -   _type: InputProgramParameter
+            prompt: Maximum number of labels (value greater than or equal to 1)
+            name: e_maxlabels
+            ctrl:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            argpos: '3'
+            format: {python: '("", " -maxlabels=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 10000}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Draw a ruler
+            name: e_ruler
+            argpos: '4'
+            format: {python: '(" -noruler", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Type of blocks
+            name: e_blocktype
+            simple: true
+            argpos: '5'
+            format: {python: '("", " -blocktype=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: Filled
+                options:
+                - {label: Open blocks, value: Open}
+                - {label: Filled blocks, value: Filled}
+                - {label: Black border, value: Outline}
+        -   _type: InputProgramParameter
+            prompt: Position in degrees of the molecule's origin on the circle (value
+                from 0 to 360)
+            name: e_originangle
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            -   message: Value less than or equal to 360 is required
+                test:
+                    value: {'#lte': '360'}
+            argpos: '6'
+            format: {python: '("", " -originangle=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 90.0}
+        -   _type: InputProgramParameter
+            prompt: Ticks inside or outside the circle
+            name: e_posticks
+            simple: true
+            argpos: '7'
+            format: {python: '("", " -posticks=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: '2'
+                options:
+                - {label: In, value: '1'}
+                - {label: Out, value: '2'}
+        -   _type: InputProgramParameter
+            prompt: Text inside or outside the blocks
+            name: e_posblocks
+            simple: true
+            argpos: '8'
+            format: {python: '("", " -posblocks=" + str(value))[value is not None
+                    and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: '1'
+                options:
+                - {label: In, value: '1'}
+                - {label: Out, value: '2'}
+        -   _type: InputProgramParameter
+            prompt: Horizontal junctions between blocks
+            name: e_intersymbol
+            argpos: '9'
+            format: {python: '(" -nointersymbol", "")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Colour of junctions between blocks (enter a colour number) (value
+                from 0 to 15)
+            name: e_intercolour
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            -   message: Value less than or equal to 15 is required
+                test:
+                    value: {'#lte': '15'}
+            argpos: '10'
+            format: {python: '("", " -intercolour=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Horizontal junctions between ticks
+            name: e_interticks
+            argpos: '11'
+            format: {python: '("", " -interticks")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Interval between ticks in the ruler (value greater than or equal
+                to 0)
+            name: e_gapsize
+            ctrl:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            argpos: '12'
+            format: {python: '("", " -gapsize=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 500}
+        -   _type: InputProgramParameter
+            prompt: Vertical lines at the ruler's ticks
+            name: e_ticklines
+            argpos: '13'
+            format: {python: '("", " -ticklines")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            comment: Height of text. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Text scale factor (value greater than or equal to 0.0)
+            name: e_textheight
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '14'
+            format: {python: '("", " -textheight=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Length of text. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Length of text multiplier (value greater than or equal to 0.0)
+            name: e_textlength
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '15'
+            format: {python: '("", " -textlength=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Height of ticks. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Height of ticks multiplier (value greater than or equal to 0.0)
+            name: e_tickheight
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '16'
+            format: {python: '("", " -tickheight=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Height of blocks. Enter a number <1.0 or >1.0 to decrease or
+                increase the size, respectively
+            prompt: Height of blocks multiplier (value greater than or equal to 0.0)
+            name: e_blockheight
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '17'
+            format: {python: '("", " -blockheight=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Height of range ends. Enter a number <1.0 or >1.0 to decrease
+                or increase the size, respectively
+            prompt: Height of range ends multiplier (value greater than or equal to
+                0.0)
+            name: e_rangeheight
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '18'
+            format: {python: '("", " -rangeheight=" + str(value))[value is not None
+                    and value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Space between groups. Enter a number <1.0 or >1.0 to decrease
+                or increase the size, respectively
+            prompt: Space between groups multiplier (value greater than or equal to
+                0.0)
+            name: e_gapgroup
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '19'
+            format: {python: '("", " -gapgroup=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            comment: Space between text and ticks, blocks, and ranges. Enter a number
+                <1.0 or >1.0 to decrease or increase the size,  respectively
+            prompt: Space between text and ticks, blocks, and ranges multiplier (value
+                greater than or equal to 0.0)
+            name: e_postext
+            ctrl:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            argpos: '20'
+            format: {python: '("", " -postext=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: FloatType, default: 1.0}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graphout output format
+            name: e_graphout
+            simple: true
+            argpos: '21'
+            format: {python: '(" -graphout=" + str(vdef), " -graphout=" + str(value))[value
+                    is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: e_goutfile
+            argpos: '22'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: cirdna_graph}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '23'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_png
+            filenames: {python: '"*.png"'}
+            precond: {e_graphout: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond: {e_graphout: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                - {e_graphout: ps}
+                - {e_graphout: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond: {e_graphout: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond: {e_graphout: data}
+operations: ['EDAM_operation:0578']
+topics: ['EDAM_topic:0092', 'EDAM_topic:0096']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cirdna.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: cirdna
+command: {path: null, value: cirdna}

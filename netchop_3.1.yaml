@@ -1,0 +1,76 @@
+_type: Program
+name: netchop
+version: '3.1'
+title: netChop
+description: predict cleavage sites for human proteasome.
+authors: Morten Nielsen, mniel@cbs.dtu.dk
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: netchop
+        format: {perl: '"netChop "', python: '"netChop "'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        prompt: Input Sequence
+        name: sequence
+        simple: true
+        argpos: '50'
+        format: {perl: '" $value"', python: '" " + str( value )'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:2200']
+            data_terms: EDAM_data:2044
+    -   _type: InputProgramParameter
+        comment: "netchop has  been  trained using  a  novel  sequence  encoding scheme,\
+            \ \n       and an improved neural network training strategy. \n      \
+            \ The netchop 3.0 version has two different network  methods  that  can\
+            \  be\n       used for prediction.  Cterm-3.0 and 20S-3.0."
+        prompt: Prediction method (-v).
+        name: Method
+        argpos: '10'
+        format: {perl: '(defined $value and $value ne $vdef)? " -v $value": ""', python: '(
+                "" , " -v "+ value )[ value is not None and value != vdef ]'}
+        type:
+            _type: StringType
+            default: '0'
+            options:
+            - {label: Cterm-3.0, value: '0'}
+            - {label: 20S-3.0, value: '1'}
+    -   _type: InputProgramParameter
+        prompt: Use value as threshold for cleavage sites (-t).
+        name: threshold
+        argpos: '20'
+        format: {perl: '(defined $value and $value ne $vdef)? " -t $value": ""', python: '(
+                "" , " -t "+str(value) )[value is not None and value != vdef]'}
+        type: {_type: FloatType, default: 0.5}
+    -   _type: InputProgramParameter
+        prompt: Use short format for output (-s).
+        name: short_output
+        argpos: '30'
+        format: {perl: '($value)? " -s": ""', python: '( ""," -s ")[ bool( value )
+                ]'}
+        type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: netChop report.
+        name: results
+        filenames: {perl: '"netchop.out"', python: '"netchop.out"'}
+        output_type: stdout
+operations: ['EDAM_operation:3087', 'EDAM_operation:0422']
+topics: ['EDAM_topic:748']
+references:
+- {doi: null, label: "The role of the proteasome in generating cytotoxic T cell epitopes:\n\
+        \                 Insights obtained from improved predictions of proteasomal\
+        \ cleavage.\n                 M. Nielsen, C. Lundegaard, S. Brunak, O. Lund,\
+        \ and C. Kesmir.\n                 Immunogenetics., 57(1-2):33-41, 2005.",
+    url: null}
+documentation_links: ['http://www.cbs.dtu.dk/services/NetChop/']
+public_name: netchop
+command: {path: null, value: null}
+source_links: ['http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?netchop']

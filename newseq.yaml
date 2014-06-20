@@ -1,0 +1,110 @@
+_type: Program
+name: newseq
+title: newseq
+description: Create a sequence file from a typed-in sequence
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            comment: The name of of the sequence should be a single word that you
+                will use to identify the sequence. It should have no (or few)  punctuation
+                characters in it.
+            prompt: Name of the sequence
+            name: e_name
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -name=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            comment: Enter any description of the sequence that you require.
+            prompt: Description of the sequence
+            name: e_description
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -description=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: StringType}
+        -   _type: InputProgramParameter
+            prompt: Type of sequence
+            name: e_type
+            simple: true
+            argpos: '3'
+            format: {python: '("", " -type=" + str(value))[value is not None and value!=vdef]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: N
+                options:
+                - {label: Nucleic, value: N}
+                - {label: Protein, value: P}
+        -   _type: InputProgramParameter
+            comment: "The sequence itself. \n Because of the limitation of the operating\
+                \ system, you will only  be able to type in a short sequence of (typically)\
+                \ 250 characters,  or so. \n  The keyboard will beep at you when you\
+                \ have reached this limit and  you will not be able to press the RETURN/ENTER\
+                \ key until you have  deleted a few characters."
+            prompt: Enter the sequence
+            name: e_sequence
+            simple: true
+            argpos: '4'
+            format: {python: '("", " -sequence=" + str(value))[value is not None]'}
+            mandatory: true
+            type: {_type: StringType}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Name of the output sequence file (e_outseq)
+            name: e_outseq
+            argpos: '5'
+            format: {python: '("" , " -outseq=" + str(value))[value is not None]'}
+            type: {_type: StringType, default: newseq.e_outseq}
+        -   _type: InputProgramParameter
+            prompt: Choose the sequence output format
+            name: e_osformat_outseq
+            argpos: '6'
+            format: {python: '("", " -osformat=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type:
+                _type: StringType
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Gff, value: GFF}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '7'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: outseq_out option
+            name: e_outseq_out
+            filenames: {python: e_outseq}
+            type: {_type: FormattedType, data_terms: 'EDAM_data:2044'}
+operations: ['EDAM_operation:0230']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/newseq.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: newseq
+command: {path: null, value: newseq}

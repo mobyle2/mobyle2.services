@@ -1,0 +1,350 @@
+_type: Program
+name: drawtree
+title: drawtree
+description: Plots an unrooted tree diagram
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        name: drawtree
+        argpos: '0'
+        format: {perl: '"drawtree <drawtree.params"', python: '"drawtree <drawtree.params"'}
+        command: true
+        hidden: true
+        type: {_type: StringType}
+    -   _type: InputProgramParameter
+        comment: Tree in Newick format.
+        prompt: Tree File (intree)
+        name: treefile
+        simple: true
+        argpos: '-10'
+        format: {perl: '"ln -s $treefile intree && "', python: '"ln -s "+str( treefile
+                ) + " intree && "'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+    -   _type: InputProgramParameter
+        name: screen_type
+        argpos: '-1'
+        format: {perl: '"0\\n"', python: '"0\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: drawtree.params
+    -   _type: InputParagraph
+        prompt: Drawtree options
+        name: options
+        children:
+        -   _type: InputProgramParameter
+            prompt: Which plotter or printer will the tree be drawn on
+            name: plotter
+            simple: true
+            argpos: '2'
+            format: {perl: '(defined $value and $value ne $vdef) ? "P\\n$value\\n"
+                    : ""', python: '("" , "P\n" + str(value) + "\n")[ value is not
+                    None and value != vdef ]'}
+            mandatory: true
+            type:
+                _type: StringType
+                default: L
+                options:
+                - {label: PostScript printer file format (L), value: L}
+                - {label: PICT format (M), value: M}
+                - {label: HP Laserjet PCL file format (J), value: J}
+                - {label: MS-Windows Bitmap (W), value: W}
+                - {label: TeKtronix 4010 graphics terminal (K), value: K}
+                - {label: Hewlett-Packard pen plotter (H), value: H}
+                - {label: DEC ReGIS graphics (D), value: D}
+                - {label: Houston Instruments plotter (B), value: B}
+                - {label: Epson MX-80 dot-matrix printer (E), value: E}
+                - {label: Prowriter/Imagewriter dot-matrix printer (C), value: C}
+                - {label: Okidata dot-matrix printer (O), value: O}
+                - {label: Toshiba 24-pin dot-matrix printer (T), value: T}
+                - {label: PCX file format (P), value: P}
+                - {label: X Bitmap format (X), value: X}
+                - {label: FIG 2.0 format (F), value: F}
+                - {label: Idraw drawing program format (A), value: A}
+                - {label: VRML Virtual Reality Markup Language file (Z), value: Z}
+                - {label: POVRAY 3D rendering program file (V), value: V}
+                - {label: Rayshade 3D rendering program file (R), value: R}
+            paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: Bitmap options
+            name: bitmap_options
+            precond:
+                plotter:
+                    '#in': [X, W]
+            children:
+            -   _type: InputProgramParameter
+                prompt: X resolution (in pixels)
+                name: xres
+                argpos: '3'
+                format: {perl: '"$value\\n"', python: str( value ) + "\n"}
+                mandatory: true
+                type: {_type: IntegerType, default: 500}
+                paramfile: drawtree.params
+            -   _type: InputProgramParameter
+                prompt: Y resolution (in pixels)
+                name: xyres
+                argpos: '4'
+                format: {perl: '"$value\\n"', python: str( value ) + "\n"}
+                mandatory: true
+                type: {_type: IntegerType, default: 500}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: Laserjet options
+            name: laserjet_options
+            precond: {plotter: J}
+            children:
+            -   _type: InputProgramParameter
+                prompt: Laserjet resolution
+                name: laserjet_resolution
+                argpos: '3'
+                format: {perl: '"$value\\n"', python: str(value) + "\n"}
+                mandatory: true
+                type:
+                    _type: StringType
+                    default: '3'
+                    options:
+                    - {label: 75 DPI (1), value: '1'}
+                    - {label: 150 DPI (2), value: '2'}
+                    - {label: 300 DPI (3), value: '3'}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: Paintbrush options
+            name: pcx_options
+            precond: {plotter: P}
+            children:
+            -   _type: InputProgramParameter
+                prompt: Paintbrush PCX resolution
+                name: pcx_resolution
+                argpos: '3'
+                format: {perl: '"$value\\n"', python: str(value) + "\n"}
+                mandatory: true
+                type:
+                    _type: StringType
+                    default: '3'
+                    options:
+                    - {label: EGA 640 X 350 (1), value: '1'}
+                    - {label: VGA 800 X 600 (2), value: '2'}
+                    - {label: VGA 1024 X 768 (3), value: '3'}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: POVRAY options
+            name: pov_options
+            precond: {plotter: V}
+            children:
+            -   _type: InputProgramParameter
+                name: pov_validate
+                argpos: '2000'
+                format: {perl: '"Y\\n"', python: '"Y\n"'}
+                hidden: true
+                type: {_type: StringType}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: PostScript options
+            name: ps_options
+            precond: {plotter: L}
+            children:
+            -   _type: InputProgramParameter
+                prompt: Font (F)
+                name: font
+                argpos: '5'
+                format: {perl: '(defined $value and $value ne $vdef) ? "F\\n$value\\n"
+                        : ""', python: '("", "F\n"+str(value)+"\n")[value is not None
+                        and value != vdef]'}
+                type:
+                    _type: StringType
+                    default: Times-Roman
+                    options:
+                    - {label: Courier, value: Courier}
+                    - {label: Helvetica, value: Helvetica}
+                    - {label: Helvetica-Bold, value: Helvetica-Bold}
+                    - {label: Helvetica-BoldOblique, value: Helvetica-BoldOblique}
+                    - {label: Helvetica-Oblique, value: Helvetica-Oblique}
+                    - {label: Hershey, value: Hershey}
+                    - {label: Times, value: Times}
+                    - {label: Times-Bold, value: Times-Bold}
+                    - {label: Times-BoldItalic, value: Times-BoldItalic}
+                    - {label: Times-Italic, value: Times-Italic}
+                    - {label: Times-Roman, value: Times-Roman}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: VRML options
+            name: vrml_options
+            precond: {plotter: Z}
+            children:
+            -   _type: InputProgramParameter
+                name: vrml_validate
+                argpos: '2000'
+                format: {perl: '"Y\\n"', python: '"Y\n"'}
+                hidden: true
+                type: {_type: StringType}
+                paramfile: drawtree.params
+        -   _type: InputParagraph
+            prompt: Rayshade options
+            name: ray_options
+            precond: {plotter: R}
+            children:
+            -   _type: InputProgramParameter
+                name: ray_validate
+                argpos: '2000'
+                format: {perl: '"Y\\n"', python: '"Y\n"'}
+                hidden: true
+                type: {_type: StringType}
+                paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            name: preview
+            argpos: '1'
+            format: {perl: '"V\\nN\\n"', python: '"V\nN\n"'}
+            hidden: true
+            type: {_type: StringType}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Use branch lengths (B)
+            name: branch_lengths
+            argpos: '5'
+            format: {perl: '($value) ? "" : "B\\n"', python: '("B\n" , "")[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Angle of labels (L)
+            name: angle
+            argpos: '5'
+            type: {_type: StringType, default: M}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: 'Fixed angle: Are the labels to be plotted vertically (90), horizontally
+                (0), or downwards (-90)  (L)?'
+            name: fixed_angle
+            argpos: '7'
+            format: {perl: '(defined $value and $value != $vdef) ? "L\\nF\\n$value\\n"
+                    : ""', python: '( "" , "L\nF\n"+ str( value ) +"\n")[ value is
+                    not None and value != vdef ]'}
+            precond:
+                '#or':
+                - {angle: ''}
+                - {angle: F}
+            type: {_type: FloatType, default: 0.0}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Rotation of tree (in degrees from 360 to -360) (R)
+            name: rotation
+            argpos: '5'
+            format: {perl: '(defined $value and $value != $vdef) ? "R\\n$value\\n"
+                    : ""', python: '("" , "R\n" +str( value ) +"\n" )[ value is not
+                    None and value != vdef]'}
+            type: {_type: FloatType, default: 0.0}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Angle of arc for tree (in degrees from 0 to 360)  (A)
+            name: arc
+            argpos: '5'
+            format: {perl: '(defined $value and $value != $vdef) ? "A\\n$value\\n"
+                    : ""', python: '( "" , "A\n" + str( value ) +"\n" )[ value is
+                    not None and value != vdef]'}
+            type: {_type: FloatType, default: 0.0}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Iterate to improve tree (I)
+            name: iterate
+            argpos: '5'
+            type: {_type: StringType, default: E}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            comment: 'Default value: Automatically rescaled'
+            prompt: Scale of branch length (S)
+            name: scale
+            argpos: '5'
+            format: {perl: '(defined $value) ? "S\\n$value\\n" : ""', python: '( ""
+                    , "S\n"+ str( value )+ "\n")[ value is not None ]'}
+            type: {_type: FloatType}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Try to avoid label overlap (D)
+            name: label_overlap
+            argpos: '5'
+            format: {perl: '($value) ? "D\\n" : ""', python: '( "" , "D\n" )[ value
+                    ]'}
+            precond:
+                iterate: {'#ne': N}
+            type: {_type: BooleanType, default: false}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Horizontal margins (M)
+            name: horizontal_margins
+            argpos: '10'
+            format: {perl: '(defined $value and $value != $vdef) ? "M\\n$value\\n$vertical_margins\\n"
+                    : ""', python: '("" , "M\n" + str( value ) + "\n" + str(vertical_margins
+                    ) + "\n")[ value is not None and value != vdef ]'}
+            type: {_type: FloatType, default: 1.73}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Vertical margins (M)
+            name: vertical_margins
+            argpos: '9'
+            format: {perl: '""', python: '""'}
+            type: {_type: FloatType, default: 2.24}
+            paramfile: drawtree.params
+        -   _type: InputProgramParameter
+            prompt: Relative character height (C)
+            name: character_height
+            argpos: '5'
+            format: {perl: '(defined $value and $value != $vdef) ? "C\\n$value\\n"
+                    : ""', python: '("", "C\n" + str( value ) + "\n" )[ value is not
+                    None and value != vdef ]'}
+            type: {_type: FloatType, default: 0.3333}
+            paramfile: drawtree.params
+    -   _type: InputProgramParameter
+        name: confirm
+        argpos: '1000'
+        format: {perl: '"Y\\n"', python: '"Y\n"'}
+        hidden: true
+        type: {_type: StringType}
+        paramfile: drawtree.params
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Graphic tree file
+        name: plotfile
+        filenames: {perl: '"plotfile"', python: '"plotfile"'}
+        precond:
+            plotter:
+                '#nin': [L, M, W, X]
+    -   _type: OutputProgramParameter
+        prompt: Graphic tree file ( postscript format )
+        name: psfile
+        filenames: {perl: '"plotfile.ps"', python: '"plotfile.ps"'}
+        precond: {plotter: L}
+    -   _type: OutputProgramParameter
+        prompt: Graphic tree file ( pict format )
+        name: pictfile
+        filenames: {perl: '"plotfile.pict"', python: '"plotfile.pict"'}
+        precond: {plotter: M}
+    -   _type: OutputProgramParameter
+        prompt: Graphic tree file ( xbm format )
+        name: xbmfile
+        filenames: {perl: '"plotfile.xbm"', python: '"plotfile.xbm"'}
+        precond: {plotter: X}
+    -   _type: OutputProgramParameter
+        prompt: Graphic tree file ( bmp format )
+        name: bmpfile
+        filenames: {perl: '"plotfile.bmp"', python: '"plotfile.bmp"'}
+        precond: {plotter: W}
+comment: 'DRAWTREE interactively plots an unrooted tree diagram, with many options
+
+    including orientation of tree and branches, label sizes and angles, margin
+
+    sizes.  Particularly if you can use your computer screen to
+
+    preview the plot, you can very effectively adjust the details of the plotting
+
+    to get just the kind of plot you want.'
+operations: ['EDAM_operation:0567']
+topics: ['EDAM_topics:0092', 'EDAM_topics:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/drawtree.html']
+public_name: drawtree
+command: {path: null, value: null}

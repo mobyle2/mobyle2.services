@@ -1,0 +1,204 @@
+_type: Program
+name: phyml
+version: '3.0'
+title: PHYML
+description: A simple, fast, and accurate algorithm to estimate large phylogenies
+    by maximum likelihood
+authors: S. Guindon and O. Gascuel
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputProgramParameter
+        prompt: Sequence Alignment
+        name: alignment
+        simple: true
+        format: {perl: '"-i $value"', python: '" -i "+str(value)'}
+        mandatory: true
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1955']
+            data_terms: EDAM_data:0863
+    -   _type: InputProgramParameter
+        prompt: Data type (-d)
+        name: seqtype
+        simple: true
+        format: {perl: '(defined $value) ? " -d $value" : ""', python: '( "" , " -d
+                " + str(value) )[ value is not None ]'}
+        type:
+            _type: StringType
+            default: nt
+            options:
+            - {label: DNA (nt), value: nt}
+            - {label: Amino-Acids (aa), value: aa}
+    -   _type: InputParagraph
+        prompt: Input Options
+        name: inputopt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Number of data sets to analyse (-n)
+            name: datasets
+            format: {perl: '(defined $value and $value != $vdef) ? " -n $value" :
+                    ""', python: '("", " -n "+str(value))[value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Number of bootstraps sets to analyse (only works with one data
+                set to analyse) (-b)
+            name: bootstrap_sets
+            simple: true
+            format: {perl: '(defined $value) ? " -b $value" : ""', python: '( "" ,
+                    " -b " + str(value) )[ value is not None]'}
+            precond: {datasets: '1'}
+            type: {_type: IntegerType}
+    -   _type: InputParagraph
+        prompt: Control Options
+        name: control_opt
+        children:
+        -   _type: InputProgramParameter
+            prompt: Nucleotide substitution model (-m)
+            name: ntmodel
+            format: {perl: '($value ne $vdef) ? " -m $value" : ""', python: '("",
+                    " -m "+str(value))[value != vdef]'}
+            precond: {seqtype: nt}
+            type:
+                _type: StringType
+                default: HKY85
+                options:
+                - {label: HKY85, value: HKY85}
+                - {label: JC69, value: JC69}
+                - {label: K80, value: K80}
+                - {label: F81, value: F81}
+                - {label: F84, value: F84}
+                - {label: TN93, value: TN93}
+                - {label: GTR, value: GTR}
+        -   _type: InputProgramParameter
+            prompt: Amino-acid substitution model (-m)
+            name: aamodel
+            format: {perl: '($value ne $vdef) ? " -m $value" : ""', python: '("",
+                    " -m "+str(value))[value != vdef]'}
+            precond: {seqtype: aa}
+            type:
+                _type: StringType
+                default: WAG
+                options:
+                - {label: WAG, value: WAG}
+                - {label: JTT, value: JTT}
+                - {label: MtREV, value: MtREV}
+                - {label: Dayhoff, value: Dayhoff}
+                - {label: DCMut, value: DCMut}
+                - {label: RtREV, value: RtREV}
+                - {label: CpREV, value: CpREV}
+                - {label: VT, value: VT}
+                - {label: Blosum62, value: Blosum62}
+                - {label: MtMam, value: MtMam}
+                - {label: MtArt, value: MtArt}
+                - {label: HIVw, value: HIVw}
+                - {label: HIVb, value: HIVb}
+        -   _type: InputProgramParameter
+            prompt: Estimated transition/transversion ratio for DNA sequences? (-t)
+            name: tstvratio1
+            format: {perl: '($value) ? " -t e" : ""', python: '( ""  , " -t e")[ value
+                    ]'}
+            precond: {seqtype: nt}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User transition/transversion ratio for DNA sequences? (-t)
+            name: tstvratio2
+            format: {perl: '(defined $value) ? " -t $value" : ""', python: '( ""  ,
+                    " -t "+str(value))[ value is not None ]'}
+            precond:
+                '#and':
+                - {seqtype: nt}
+                - {'#not': tstvratio1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Estimated proportion of invariable sites? (-v)
+            name: propinvar1
+            format: {perl: '($value) ? " -v e" : ""', python: '( ""  , " -v e")[ value
+                    ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User proportion of invariable sites? (-v)
+            name: propinvar2
+            format: {perl: '(defined $value) ? " -v $value" : ""', python: '( ""  ,
+                    " -v "+str(value))[value is not None]'}
+            precond: {'#not': propinvar1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Number of relative substitution rate categories (-c)
+            name: nbsubstcat
+            format: {perl: '(defined $value and $value != $vdef) ? " -c $value" :
+                    ""', python: '("", " -c "+str(value))[value is not None and value
+                    != vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Estimated Gamma distribution parameter? (-a)
+            name: gamma1
+            format: {perl: '($value) ? " -a e" : ""', python: '("", " -a e")[value]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: User gamma distribution parameter? (-a)
+            name: gamma2
+            format: {perl: '(defined $value) ? " -a $value" : ""', python: '("", "
+                    -a "+str(value))[value is not None]'}
+            precond: {'#not': gamma1}
+            type: {_type: FloatType}
+        -   _type: InputProgramParameter
+            prompt: Tree topology search operation (-s)
+            name: move
+            format: {perl: '($value ne $vdef) ? " -s $value" : ""', python: '("",
+                    " -s "+str(value))[value != vdef]'}
+            type:
+                _type: StringType
+                default: NNI
+                options:
+                - {label: NNI, value: NNI}
+                - {label: NNI+SPR, value: NNI+SPR}
+                - {label: SPR, value: SPR}
+        -   _type: InputProgramParameter
+            prompt: Starting tree filename (u)
+            name: usertreefile
+            format: {perl: '(defined $value) ? " -u $value" : ""', python: '("", "
+                    -u "+str(value))[value is not None]'}
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1910']
+                data_terms: EDAM_data:0872
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Output file
+        name: outfile
+        filenames: {perl: '"*_phyml_stats.txt"', python: '"*_phyml_stats.txt"'}
+    -   _type: OutputProgramParameter
+        prompt: Output tree
+        name: outtree
+        filenames: {perl: '"*_phyml_tree.txt"', python: '"*_phyml_tree.txt"'}
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+    -   _type: OutputProgramParameter
+        prompt: Bootstrap output file
+        name: boot_outfile
+        filenames: {perl: '"*_phyml_boot_stats.txt"', python: '"*_phyml_boot_stats.txt"'}
+    -   _type: OutputProgramParameter
+        prompt: Bootstrap output trees
+        name: boot_outtree
+        filenames: {perl: '"*_phyml_boot_trees.txt"', python: '"*_phyml_boot_trees.txt"'}
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+operations: ['EDAM_operation:0547']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'Guindon, S. and Gascuel, O. (2003) A simple, fast and accurate
+        algorithm to estimate large phylogenies by maximum likelihood Syst. Biol.,
+        52, 696-704', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phyml/phyml_manual_2008.pdf']
+homepage_links: ['http://code.google.com/p/phyml']
+public_name: phyml
+command: {path: null, value: phyml}
+source_links: ['http://code.google.com/p/phyml']

@@ -1,0 +1,160 @@
+_type: Program
+name: freak
+title: freak
+description: Generate residue/base frequency table or plot
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        prompt: Input section
+        name: e_input
+        children:
+        -   _type: InputProgramParameter
+            prompt: seqall option
+            name: e_seqall
+            simple: true
+            argpos: '1'
+            format: {python: '("", " -seqall=" + str(value))[value is not None]'}
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188', 'EDAM_format:2305']
+                data_terms: EDAM_data:2044
+    -   _type: InputParagraph
+        prompt: Required section
+        name: e_required
+        children:
+        -   _type: InputProgramParameter
+            prompt: Residue letters
+            name: e_letters
+            simple: true
+            argpos: '2'
+            format: {python: '("", " -letters=" + str(value))[value is not None and
+                    value!=vdef]'}
+            mandatory: true
+            type: {_type: StringType, default: gc}
+    -   _type: InputParagraph
+        prompt: Additional section
+        name: e_additional
+        children:
+        -   _type: InputProgramParameter
+            prompt: Stepping value
+            name: e_step
+            argpos: '3'
+            format: {python: '("", " -step=" + str(value))[value is not None and value!=vdef]'}
+            type: {_type: IntegerType, default: 1}
+        -   _type: InputProgramParameter
+            prompt: Averaging window
+            name: e_window
+            argpos: '4'
+            format: {python: '("", " -window=" + str(value))[value is not None and
+                    value!=vdef]'}
+            type: {_type: IntegerType, default: 30}
+    -   _type: InputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: InputProgramParameter
+            prompt: Produce graphic
+            name: e_plot
+            argpos: '5'
+            format: {python: '("", " -plot")[ bool(value) ]'}
+            type: {_type: BooleanType, default: false}
+        -   _type: InputProgramParameter
+            prompt: Choose the e_graph output format
+            name: e_graph
+            argpos: '6'
+            format: {python: '(" -graph=" + str(vdef), " -graph=" + str(value))[value
+                    is not None and value!=vdef]'}
+            precond: e_plot
+            type:
+                _type: StringType
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        -   _type: InputProgramParameter
+            prompt: Name of the output graph
+            name: xy_goutfile
+            argpos: '7'
+            format: {python: '("" , " -goutfile=" + str(value))[value is not None]'}
+            precond: e_plot
+            type: {_type: StringType, default: freak_xygraph}
+        -   _type: InputProgramParameter
+            prompt: Name of the output file (e_outfile)
+            name: e_outfile
+            argpos: '8'
+            format: {python: '("" , " -outfile=" + str(value))[value is not None]'}
+            precond: {'#not': e_plot}
+            type: {_type: StringType, default: freak.e_outfile}
+    -   _type: InputProgramParameter
+        prompt: Turn off any prompting
+        name: auto
+        argpos: '9'
+        format: {python: '" -auto -stdout"'}
+        hidden: true
+        type: {_type: StringType}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputParagraph
+        prompt: Output section
+        name: e_output
+        children:
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_png
+            filenames: {python: '"*.png"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: png}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_gif
+            filenames: {python: '"*.gif"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: gif}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_ps
+            filenames: {python: '"*.ps"'}
+            precond:
+                '#or':
+                -   '#and':
+                    - e_plot
+                    - {e_graph: ps}
+                - {e_graph: cps}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_meta
+            filenames: {python: '"*.meta"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: meta}
+        -   _type: OutputProgramParameter
+            prompt: Graph file
+            name: xy_outgraph_data
+            filenames: {python: '"*.dat"'}
+            precond:
+                '#and':
+                - e_plot
+                - {e_graph: data}
+        -   _type: OutputProgramParameter
+            prompt: outfile_out option
+            name: e_outfile_out
+            filenames: {python: e_outfile}
+operations: ['EDAM_operation:0236']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/freak.html', 'http://emboss.sourceforge.net/docs/themes']
+public_name: freak
+command: {path: null, value: freak}

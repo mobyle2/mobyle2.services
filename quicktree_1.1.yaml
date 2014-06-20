@@ -1,0 +1,127 @@
+_type: Program
+name: quicktree
+version: '1.1'
+title: QuickTree
+description: Rapid reconstruction of phylogenies by the Neighbor-Joining method
+authors: Kevin Howe, Alex Bateman, Richard Durbin
+inputs:
+    _type: InputParagraph
+    children:
+    -   _type: InputParagraph
+        comment: You must enter either a distance matrix or a alignment.
+        prompt: Input file
+        name: inpufile
+        children:
+        -   _type: InputProgramParameter
+            prompt: Alignment file (-in a)
+            name: aligfile
+            argpos: '10'
+            format: {perl: '(defined $value) ? " -in a $value" : ""', python: '( ""
+                    , " -in a " + str(value) )[ value is not None ]'}
+            precond:
+                '#or':
+                -   distfile: {'#eq': None}
+                -   '#and': [distfile, aligfile]
+            mandatory: true
+            type:
+                _type: FormattedType
+                format_terms: ['EDAM_format:1961']
+                data_terms: EDAM_data:0863
+        -   _type: InputProgramParameter
+            comment: "Give a file containing a distance matrix\n      obtained by\
+                \ distance matrix programs like prodist or\n      dnadist, ..."
+            prompt: or Distance matrix (-in m)
+            name: distfile
+            argpos: '10'
+            format: {perl: '(defined $value) ? " -in m $value" : ""', python: '( ""
+                    , " -in m " + str(value) )[ value is not None ]'}
+            precond:
+                aligfile: {'#eq': None}
+            mandatory: true
+            type: {_type: FormattedType, data_terms: 'EDAM_data:0870'}
+    -   _type: InputProgramParameter
+        prompt: Output (-out)
+        name: out
+        argpos: '3'
+        format: {perl: '(defined $value and $value ne $vdef) ? " -out $value" : ""',
+            python: '( "" , " -out " + str(value) )[ value is not None and value !=
+                vdef]'}
+        type:
+            _type: StringType
+            default: t
+            options:
+            - {label: Distance matrix in Phylip format(m), value: m}
+            - {label: Tree in New Hampshire format (t), value: t}
+    -   _type: InputParagraph
+        prompt: Tree output options
+        name: treeopt
+        precond:
+            out: {'#ne': m}
+        children:
+        -   _type: InputProgramParameter
+            comment: Bootstrapping is not available for a matrix output
+            prompt: Use the UPGMA method to construct the tree (-upgma)
+            name: upgma
+            argpos: '3'
+            format: {perl: '($value) ? " -upgma" : ""', python: '( "" , " -upgma"
+                    )[ value ]'}
+            type: {_type: BooleanType, default: false}
+    -   _type: InputParagraph
+        prompt: Alignment options
+        name: aligopt
+        children:
+        -   _type: InputProgramParameter
+            comment: Bootstrapping is not available for a matrix output
+            prompt: Calculate bootstrap values with n iterations (-boot)
+            name: boot
+            argpos: '3'
+            format: {perl: '(defined $value) ? " -boot $value" : ""', python: '( ""
+                    , " -boot " + str(value))[ value is not None ]'}
+            precond:
+                '#and':
+                -   distfile: {'#eq': None}
+                -   out: {'#ne': m}
+            type: {_type: IntegerType}
+        -   _type: InputProgramParameter
+            prompt: Use the kimura translation for pairwise distances (-kimura)
+            name: kimura
+            argpos: '3'
+            format: {perl: '($value) ? " -kimura" : ""', python: '( "" , " -kimura"
+                    )[ value ]'}
+            precond:
+                aligfile: {'#ne': None}
+            type: {_type: BooleanType, default: false}
+outputs:
+    _type: OutputParagraph
+    children:
+    -   _type: OutputProgramParameter
+        prompt: Tree file
+        name: treefile
+        filenames: {perl: '"quicktree.out"', python: '"quicktree.out"'}
+        precond:
+            out: {'#ne': m}
+        output_type: stdout
+        type:
+            _type: FormattedType
+            format_terms: ['EDAM_format:1910']
+            data_terms: EDAM_data:0872
+    -   _type: OutputProgramParameter
+        prompt: Distance matrix
+        name: distoutfile
+        filenames: {perl: '"quicktree.out"', python: '"quicktree.out"'}
+        precond: {out: m}
+        output_type: stdout
+        type: {_type: FormattedType, data_terms: 'EDAM_data:0870'}
+comment: "QuickTree is an efficient implementation of\n\t  the Neighbor-Joining algorithm,\
+    \ capable of reconstructing\n\t  phylogenies from huge alignments in time less\
+    \ than the age of\n\t  the universe."
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Kevin Howe, Alex Bateman and Richard Durbin (2002).\n\tQuickTree:\
+        \ building huge Neighbour-Joining trees of protein\n\tsequences. Bioinformatics\
+        \ 18(11):1546-1547.", url: null}
+homepage_links: ['http://www.sanger.ac.uk/Software/analysis/quicktree/']
+public_name: quicktree
+command: {path: null, value: quicktree}
+source_links: ['http://www.sanger.ac.uk/Software/analysis/quicktree/']
