@@ -1,0 +1,189 @@
+!mobyle/program
+name: smile
+version: '1.47'
+title: SMILE
+description: Inference of structured signals in multiple sequences
+authors: L. Marsan, J. Allali
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"smile smile.params"'
+        name: smile
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: This file must contain at least two sequences, as you cannot detect
+            motifs which are common to several sequences in one sequence!
+        prompt: Sequences File
+        format: '"FASTA file\t\t\t" + str(value) + "\n"'
+        simple: true
+        argpos: 1
+        paramfile: smile.params
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Alphabet
+        format: '"Alphabet file\t\t\t/path/to/smile/alphabet/dir/" + str(value) +
+            "\n"'
+        simple: true
+        argpos: 2
+        paramfile: smile.params
+        mandatory: true
+        name: alphabet
+        command: false
+        type: !mobyle/stringtype
+            default: dna.alphabet
+            options:
+            - {label: DNA, value: dna.alphabet}
+            - {label: Degenerated DNA, value: dnadeg.alphabet}
+            - {label: 'Protein (Zvelebil Barton Taylor Sternberg, JMolBiol 195 (1987)',
+                value: aa-barton.alphabet}
+            - {label: Protein (Smith and Smith 1990), value: aa-smiths.alphabet}
+    - !mobyle/inputprogramparameter
+        prompt: Maximum number of N in a motif for degenerated DNA or protein alphabet.
+        format: '"Composition in *\t\t" + str(value)+"\n"'
+        simple: true
+        argpos: 3
+        paramfile: smile.params
+        name: how_many_N
+        precond:
+            alphabet: {'#ne': dna.alphabet}
+        command: false
+        type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparameter
+        prompt: Maximum number of purine (R) in a motif for degenerated DNA
+        format: '"Composition in AG\t\t" + str(value)+"\n"'
+        simple: true
+        argpos: 3
+        paramfile: smile.params
+        name: how_many_R
+        precond: {alphabet: dnadeg.alphabet}
+        command: false
+        type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparameter
+        prompt: Maximum number of pyrimidine (Y) in a motif for degenerated DNA
+        format: '"Composition in CT\t\t" + str(value)+"\n"'
+        simple: true
+        argpos: 3
+        paramfile: smile.params
+        mandatory: true
+        name: how_many_Y
+        precond: {alphabet: dnadeg.alphabet}
+        command: false
+        type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparameter
+        comment: The  percentage of sequences where at least one occurrence of a motif
+            must appear to make it valid. 100 means that a motif must have occurrences
+            in every sequences.
+        prompt: Minimum percentage of sequences containing a motif (quorum)
+        format: '"Quorum\t\t\t\t" + str(value)+"\n"'
+        argpos: 10
+        paramfile: smile.params
+        mandatory: true
+        name: quorum
+        command: false
+        type: !mobyle/integertype {default: 50}
+    - !mobyle/inputprogramparameter
+        comment: 'The minimal length of the whole motif, i.e. the sum of minimal lengths
+            of each  box. Warning:  the  length  of  the gaps between boxes mustn''t
+            me taken into account. The total minimal length may differ of the sum
+            of boxs''s minimal length:  you  can,  for instance, infer motifs made
+            of two boxes, with min length of boxes equals to 4 and a total min length
+            equals to 10.'
+        prompt: Total min length
+        format: '"Total min length\t\t" + str(value)+"\n"'
+        simple: true
+        argpos: 11
+        paramfile: smile.params
+        mandatory: true
+        name: minlen
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Same explanation as "Total min length". Excepted that a 0 length
+            means "infinity"
+        prompt: Total max length
+        format: ( "" , "Total max length\t\t" + str(value)+"\n" )[ value is not None
+            ]
+        argpos: 12
+        paramfile: smile.params
+        name: maxlen
+        command: false
+        type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparameter
+        comment: Total maximum number of substitutions for the motif.
+        prompt: Total substitutions
+        format: '"Total substitutions\t\t" + str(value)+"\n"'
+        simple: true
+        argpos: 13
+        paramfile: smile.params
+        mandatory: true
+        name: subst
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: The  number of boxes that compose the motifs to infer. Imposed 1
+            for xml.
+        format: '"Boxes\t\t\t\t1\n"'
+        argpos: 20
+        paramfile: smile.params
+        name: boxes
+        command: false
+        hidden: true
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: The number of shufflings of the original sequences to realize for
+            the evaluation  of the statistical significance of the motifs found.
+        prompt: Number of shufflings
+        format: ( "" , "Shufflings\t\t\t"+ str(value)+"\n")[value is not None]
+        argpos: 100
+        paramfile: smile.params
+        name: shuffling
+        command: false
+        type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparameter
+        comment: Length of the words to conserve during shufflings (usually 2).
+        prompt: Length of the words to conserve during shufflings
+        format: ("" , "Size k-mer\t\t\t"+ str(value)+"\n")[value is not None]
+        argpos: 100
+        paramfile: smile.params
+        name: kmer
+        command: false
+        type: !mobyle/integertype {default: 2}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Result file, filenames: '"smile.result"',
+        argpos: 1, name: result}
+    - !mobyle/outputprogramparameter {prompt: Shuffle result file, filenames: '"smile.result.shuffle"',
+        name: shufflefiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"smile.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"smile.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: smile is a program that was primarily made to extract promoter sequences
+    from sequences. The interest of this program is to infer simultaneously several
+    motifs (calledboxes) that respects distance constraints. The user has to select
+    criterias. In a first step of extraction, all signals respecting these criterias
+    are found.  In a second step, they are all statistically evaluated,  aiming  to  detect  the
+    ones that are exceptionally represented in the original sequences.
+references:
+- {doi: null, label: 'Marsan L, Sagot MF (2001). Algorithms for extracting structured
+        motifs using a suffix-tree with application to promoter and regulatory site
+        consensus identification. J. of Computational Biology, 7:345-360.', url: null}
+homepage_links: ['http://www-igm.univ-mlv.fr/~marsan/smile_english.html']
+env: {}
+source_links: ['http://www-igm.univ-mlv.fr/~marsan/smile_english.html']

@@ -1,0 +1,197 @@
+!mobyle/program
+name: digest
+title: digest
+description: Reports on protein proteolytic enzyme or reagent cleavage sites
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Seqall option
+            format: ("", " -seqall=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: seqall
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter {comment: Molecular weight data for amino
+                acids, prompt: Molecular weights data file, format: '("", " -mwdata="
+                + str(value))[value is not None ]', argpos: 2, name: mwdata, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Enzymes and reagents
+            format: ("", " -menu=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: menu
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Trypsin, value: '1'}
+                - {label: Lys-c, value: '2'}
+                - {label: Arg-c, value: '3'}
+                - {label: Asp-n, value: '4'}
+                - {label: V8-bicarb, value: '5'}
+                - {label: V8-phosph, value: '6'}
+                - {label: Chymotrypsin, value: '7'}
+                - {label: Cnbr, value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Use monoisotopic weights
+            format: ("", " -mono")[ bool(value) ]
+            argpos: 4
+            name: mono
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Trypsin will not normally cut after 'KR' if they are followed
+                by any of  'KRIFLP'. Lys-C will not normally cut  after 'K' if it
+                is followed by 'P'.  Arg-C will not normally cut after 'R'  if it
+                is followed by 'P'. V8-bicarb  will not normally cut after 'E' if
+                it  is followed by any of 'KREP'.  V8-phosph will not normally cut
+                after  'DE' if they are followed by 'P'.  Chymotrypsin will not normally
+                cut  after 'FYWLM' if they are followed by  'P'. Specifying unfavoured
+                shows  these unfavoured cuts as well as the  favoured ones.
+            prompt: Allow unfavoured cuts
+            format: ("", " -unfavoured")[ bool(value) ]
+            argpos: 5
+            name: unfavoured
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allows semi-specific and non-specific digestion. This option
+                is  particularly useful for generating  lists of peptide sequences
+                for  protein identification using  mass-spectrometry.
+            prompt: Allow ragging
+            format: ("", " -ragging")[ bool(value) ]
+            argpos: 6
+            name: ragging
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Ragging value (value from 1 to 4)
+            format: ("", " -termini=" + str(value))[value is not None and value!=vdef]
+            argpos: 7
+            name: termini
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: None, value: '1'}
+                - {label: Nterm, value: '2'}
+                - {label: Cterm, value: '3'}
+                - {label: Nterm or cterm, value: '4'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Used for partial digestion. Shows all cuts from favoured cut
+                sites plus  1..3, 2..4, 3..5 etc but not (e.g.)  2..5. Overlaps are
+                therefore  fragments with exactly one potential  cut site within it.
+            prompt: Show overlapping partials
+            format: ("", " -overlap")[ bool(value) ]
+            argpos: 8
+            name: overlap
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: As for overlap but fragments containing more than one potential  cut
+                site are included.
+            prompt: Show all partials
+            format: ("", " -allpartials")[ bool(value) ]
+            argpos: 9
+            name: allpartials
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 10
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: digest.report}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the report output format
+            format: ("", " -rformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 11
+            name: rformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: SEQTABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 12
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"digest.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"digest.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0422']
+topics: ['EDAM_topic:0141']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/digest.html', 'http://emboss.sourceforge.net/docs/themes']
+command: digest
+env: {}

@@ -1,0 +1,856 @@
+!mobyle/program
+name: jackhmmer
+title: JACKHMMER
+description: Iteratively search protein sequence(s) against a protein database
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Query sequence(s)
+        format: '" "+str(value)'
+        simple: true
+        argpos: 13
+        mandatory: true
+        name: qsequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparameter
+        prompt: Choose a protein sequence database
+        format: '" "+str(value)'
+        simple: true
+        argpos: 14
+        mandatory: true
+        name: db
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a database, value: 'null'}
+            - {label: 'uniprot: Universal Protein Resource', value: uniprot}
+            - {label: 'uniprot_sprot: Universal Protein Resource (SwissProt part)',
+                value: uniprot_sprot}
+            - {label: 'uniprot_trembl: Universal Protein Resource (TrEmbl part)',
+                value: uniprot_trembl}
+            - {label: 'nrprot: NCBI non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                value: nrprot}
+            - {label: 'nrprot_month: NCBI month non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                value: nrprot_month}
+            - {label: 'genpept: Genbank translations (last rel. + upd.)', value: genpept}
+            - {label: 'genpept_new: genpept updates', value: genpept_new}
+            - {label: 'gpbct: genpept bacteries', value: gpbct}
+            - {label: 'gppri: primates', value: gppri}
+            - {label: 'gpmam: other mammals', value: gpmam}
+            - {label: 'gprod: rodents', value: gprod}
+            - {label: 'gpvrt: other vertebrates', value: gpvrt}
+            - {label: 'gpinv: invertebrates', value: gpinv}
+            - {label: 'gppln: plants (including yeast)', value: gppln}
+            - {label: 'gpvrl: virus', value: gpvrl}
+            - {label: 'gpphg: phages', value: gpphg}
+            - {label: 'gpsts: STS', value: gpsts}
+            - {label: 'gpsyn: synthetic', value: gpsyn}
+            - {label: 'gppat: patented', value: gppat}
+            - {label: 'gpuna: unatotated', value: gpuna}
+            - {label: 'gphtg: GS (high throughput Genomic Sequencing)', value: gphtg}
+            - {label: 'sbase: annotated domains sequences', value: sbase}
+    - !mobyle/inputprogramparameter
+        comment: 'Set the maximum number of iterations (default is 5). If =1, the
+            result
+
+            is equivalent to a phmmer search.'
+        prompt: Maximum number of iterations (-N)
+        format: ("", " -N " + str(value)) [ value != vdef]
+        argpos: 1
+        name: n_it
+        command: false
+        type: !mobyle/integertype {default: 5}
+    - !mobyle/inputprogramparagraph
+        comment: 'By default, output for each iteration appears on stdout in a somewhat
+            human readable, somewhat parseable
+
+            format. These options allow redirecting that output or saving additional
+            kinds of output to files, including
+
+            checkpoint files for each iteration.'
+        prompt: Directing output
+        name: output
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Direct the main "human-readable" output to a file instead of
+                the default stdout.
+            prompt: Direct output to file (-o)
+            format: ("", " -o jackhmmer.output") [ value != vdef]
+            name: outfile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'After the final iteration, save an annotated multiple alignment
+                of all hits satisfying
+
+                inclusion thresholds (also including the original query) to a file
+                (Stockholm format).'
+            prompt: Save multiple alignment of hits to file (-A)
+            format: ("", " -A jackhmmer.align") [ value != vdef]
+            name: aligfile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'After the final iteration, save a tabular summary of top sequence
+                hits to a file in a
+
+                readily parseable, columnar, whitespace-delimited format.'
+            prompt: Save parseable table of per-sequence hits to file (--tblout)
+            format: ("", " --tblout jackhmmer.tblout") [ value != vdef]
+            name: seqtab
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'After the final iteration, save a tabular summary of top domain
+                hits to a file in a
+
+                readily parseable, columnar, whitespace-delimited format.'
+            prompt: Save parseable table of per-domain hits to file (--domtblout)
+            format: ("", " --domtblout jackhmmer.domtblout") [ value != vdef]
+            name: domaintab
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'At the start of each iteration, checkpoint the query HMM, saving
+                it to a file named
+
+                phmmer-n.hmm where n is the iteration number (from 1..N).'
+            prompt: Save HMM checkpoints (--chkhmm)
+            format: ("", " --chkhmm jackhmmer") [ value != vdef]
+            name: chkhmm
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'At the end of each iteration, checkpoint an alignment of all
+                domains satisfying
+
+                inclusion thresholds (e.g. what will become the query HMM for the
+                next iteration),
+
+                saving it to a file named phmmer-n.sto in Stockholm format, where
+                n is the iteration number (from 1..N).'
+            prompt: Save alignment checkpoints (--chkali)
+            format: ("", " --chkali jackhmmer") [ value != vdef]
+            name: chkali
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Use accessions instead of names in the main output, where available
+                for profiles and/or sequences.
+            prompt: Prefer accessions over names in output (--acc)
+            format: ("", " --acc") [ value != vdef]
+            name: acc
+            command: false
+            hidden: true
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Omit the alignment section from the main output. This can greatly
+                reduce the output volume.
+            prompt: Don't output alignments, so output is smaller (--noali)
+            format: ("", " --noali") [ value != vdef]
+            name: noali
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Unlimit the length of each line in the main output. The default
+                is a limit of 120
+
+                characters per line, which helps in displaying the output cleanly
+                on terminals and
+
+                in editors, but can truncate target profile description lines.'
+            prompt: Unlimit ASCII text output line width (--notextw)
+            format: ("", " --notextw" ) [ value  != vdef]
+            name: notextw
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Max width of ASCII text output lines (--textw)
+            format: ("", " --textw " + str(value) ) [ value != vdef]
+            name: textw
+            precond: {notextw: '0'}
+            command: false
+            type: !mobyle/integertype {default: 120}
+    - !mobyle/inputprogramparagraph
+        comment: 'By default, the first iteration uses a search model constructed
+            from a single query sequence. This model
+
+            is constructed using a standard 20x20 substitution matrix for residue
+            probabilities, and two additional parameters
+
+            for position-independent gap open and gap extend probabilities. These
+            options allow the default
+
+            single-sequence scoring parameters to be changed.'
+        prompt: Controlling single sequence scoring in first iteration
+        name: scoringsys
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set the gap open probability for a single sequence query model.
+                This probability has to be >= 0 and <0.5. Default value = 0.02.
+            prompt: Gap open probability (--popen)
+            format: ("", " --popen " + str(value)) [ value != vdef]
+            name: popen
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+        - !mobyle/inputprogramparameter
+            comment: 'Set the gap extend probability for a single sequence query model.
+                This probability has to be >= 0 and <1. Default value: 0.4.'
+            prompt: Gap extend probability (--pextend)
+            format: ("", " --pextend " + str(value)) [ value != vdef]
+            name: pextend
+            command: false
+            type: !mobyle/floattype {default: 0.4}
+        - !mobyle/inputprogramparameter
+            comment: To obtain residue alignment probabilities from a substitution
+                matrix. The default score matrix is BLOSUM62
+            prompt: Substitution score matrix (--mxfile)
+            format: ("", " --mxfile " + str(value)) [ value != vdef]
+            name: matrix
+            command: false
+            type: !mobyle/stringtype
+                default: BLOSUM62
+                options:
+                - {label: BLOSUM62, value: BLOSUM62}
+                - {label: BLOSUM30, value: BLOSUM30}
+                - {label: BLOSUM35, value: BLOSUM35}
+                - {label: BLOSUM40, value: BLOSUM40}
+                - {label: BLOSUM45, value: BLOSUM45}
+                - {label: BLOSUM50, value: BLOSUM50}
+                - {label: BLOSUM55, value: BLOSUM55}
+                - {label: BLOSUM60, value: BLOSUM60}
+                - {label: BLOSUM65, value: BLOSUM65}
+                - {label: BLOSUM70, value: BLOSUM70}
+                - {label: BLOSUM75, value: BLOSUM75}
+                - {label: BLOSUM80, value: BLOSUM80}
+                - {label: BLOSUM85, value: BLOSUM85}
+                - {label: BLOSUM90, value: BLOSUM90}
+                - {label: PAM10, value: PAM10}
+                - {label: PAM20, value: PAM20}
+                - {label: PAM30, value: PAM30}
+                - {label: PAM40, value: PAM40}
+                - {label: PAM50, value: PAM50}
+                - {label: PAM60, value: PAM60}
+                - {label: PAM70, value: PAM70}
+                - {label: PAM80, value: PAM80}
+                - {label: PAM90, value: PAM90}
+                - {label: PAM100, value: PAM100}
+                - {label: PAM110, value: PAM110}
+                - {label: PAM120, value: PAM120}
+                - {label: PAM130, value: PAM130}
+                - {label: PAM140, value: PAM140}
+                - {label: PAM150, value: PAM150}
+                - {label: PAM160, value: PAM160}
+                - {label: PAM170, value: PAM170}
+                - {label: PAM180, value: PAM180}
+                - {label: PAM190, value: PAM190}
+                - {label: PAM200, value: PAM200}
+                - {label: PAM210, value: PAM210}
+                - {label: PAM220, value: PAM220}
+                - {label: PAM230, value: PAM230}
+                - {label: PAM240, value: PAM240}
+                - {label: PAM250, value: PAM250}
+                - {label: PAM260, value: PAM260}
+                - {label: PAM270, value: PAM270}
+                - {label: PAM280, value: PAM280}
+                - {label: PAM290, value: PAM290}
+                - {label: PAM300, value: PAM300}
+                - {label: PAM310, value: PAM310}
+                - {label: PAM320, value: PAM320}
+                - {label: PAM330, value: PAM330}
+                - {label: PAM340, value: PAM340}
+                - {label: PAM350, value: PAM350}
+                - {label: PAM360, value: PAM360}
+                - {label: PAM370, value: PAM370}
+                - {label: PAM380, value: PAM380}
+                - {label: PAM390, value: PAM390}
+                - {label: PAM400, value: PAM400}
+    - !mobyle/inputprogramparagraph
+        comment: '"Reporting" thresholds control which hits are reported in output
+            files (the main output, --tblout, and --
+
+            domtblout). In each iteration, sequence hits and domain hits are ranked
+            by statistical significance (E-value) and output is
+
+            generated in two sections called "per-target" and "per-domain" output.The
+            following options allow you to change the default E-value reporting thresholds,
+            or to use bit score thresholds instead.'
+        prompt: Controlling significance thresholds for reporting
+        name: report
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Report sequences <= this E-value threshold in per-sequence output.
+                [Default value: 10].'
+            prompt: 'Thresholds for Sequences:  E-value (-E)'
+            format: ("", " -E " + str(value)) [ value != vdef]
+            name: e_threshold
+            precond:
+                s_threshold: {'#eq': None}
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Use a bit score threshold for per-sequence output instead of
+                an E-value threshold
+
+                (any setting of -E is ignored). Report sequences with a bit score
+                of >= this score threshold in output. By
+
+                default this option is unset.'
+            prompt: Score (-T)
+            format: ("", " -T " + str(value)) [ value is not None]
+            name: s_threshold
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Report domains with conditional E-values < or = this E-value
+                threshold in per-domain output, in addition
+
+                to the top-scoring domain per significant sequence hit.[Default value:
+                10]'
+            prompt: 'Thresholds for Domains: E-value (--domE)'
+            format: ("", " --domE " + str(value)) [ value is not None and value !=
+                vdef]
+            name: d_e_threshold
+            precond:
+                d_s_threshold: {'#eq': None}
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Use a bit score threshold for per-domain output instead of an
+                E-value threshold
+
+                (any setting of --domE is ignored). Report domains with a bit score
+                of >= this score threshold in per-domain output,
+
+                in addition to the top-scoring domain per significant sequence hit.
+                By default this option is unset.'
+            prompt: Score (--domT)
+            format: ("", " --domT " + str(value)) [ value is not None]
+            name: d_s_threshold
+            command: false
+            type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        comment: "Inclusion thresholds control which hits are included in the final\
+            \ multiple alignment (if the -A option is used) \nand which hits actually\
+            \ get used in the next iteration."
+        prompt: Controlling significance thresholds for inclusion in next round
+        name: inclusion_A
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Include sequences with E-values <= this E-value threshold in
+                subsequent iteration or final alignment
+
+                output (-A option). The default is 0.001.'
+            prompt: 'Thresholds for Sequences:  E-value (--incE)'
+            format: ("", " --incE " + str(value)) [ value is not None and value !=
+                vdef]
+            name: a_e_threshold
+            precond:
+                a_s_threshold: {'#eq': None}
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            comment: 'Use a bit score threshold for per-sequence inclusion instead
+                of an E-value threshold
+
+                (any setting of --incE is ignored). Include sequences with a bit score
+                of >= this score threshold. By default this option is unset.'
+            prompt: Score (--incT)
+            format: ("", " --incT " + str(value)) [ value is not None]
+            name: a_s_threshold
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Include domains with conditional E-values <= this E-value threshold
+                in subsequent iteration or final
+
+                alignment output (-A option), in addition to the top-scoring domain
+                per significant sequence hit. The default is 0.001.'
+            prompt: 'Thresholds for Domains: E-value (--incdomE)'
+            format: ("", " --incdomE " + str(value)) [ value is not None and value
+                != vdef]
+            name: a_d_e_threshold
+            precond:
+                a_d_s_threshold: {'#eq': None}
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            comment: 'Use a bit score threshold for per-domain inclusion instead of
+                an E-value threshold
+
+                (any setting of --incdomE is ignored). Include domains with a bit
+                score of > = this score threshold. By default this option is unset.'
+            prompt: Score (--incdomT)
+            format: ("", " --incdomT " + str(value)) [ value is not None]
+            name: a_d_s_threshold
+            command: false
+            type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        comment: "HMMER3 searches are accelerated in a three-step filter pipeline:-\
+            \ the MSV filter (the fastest and most approximate),- the Viterbi filter,-\
+            \ and the Forward filter (full Forward scoring algorithm, slowest but\
+            \ most accurate),+ There is also a \"bias filter\" step between MSV and\
+            \ Viterbi.Targets that pass all the steps in the acceleration pipeline\
+            \ are then subjected to \"postprocessing\" (domain identification\nand\
+            \ scoring using the Forward/Backward algorithm).Essentially the only free\
+            \ parameters that control\nHMMER's heuristic filters are the P-value thresholds\
+            \ controlling the expected fraction of non-homologous\nsequences that\
+            \ pass the filters.- Setting the default thresholds higher will pass a\
+            \ higher proportion of non-homologous\nsequence, increasing sensitivity\
+            \ at the expense of speed,- Setting lower P-value thresholds will pass\
+            \ a smaller proportion, decreasing \nsensitivity and increasing speed,-\
+            \ Setting a filter's P-value threshold to 1.0 means it will passing all\
+            \ sequences, and effectively disables the filter.Changing filter thresholds\
+            \ only removes or includes targets from consideration; it does not alter\
+            \ bit\nscores, E-values, or alignments, all of which are determined solely\
+            \ in \"postprocessing\"."
+        prompt: Controlling acceleration heuristics
+        name: heuristic
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Maximum sensitivity. Turn off all filters, including the bias
+                filter, and run full Forward/
+
+                Backward postprocessing on every target. This increases sensitivity
+                slightly, at a large cost in speed.'
+            prompt: Turn all heuristic filters off (less speed, more power) (--max)
+            format: ("", " --max") [ value  != vdef]
+            name: max
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'First filter threshold; set the P-value threshold for the MSV
+                filter step. The default is
+
+                0.02, meaning that roughly 2% of the highest scoring non-homologous
+                targets are expected to pass the filter.'
+            prompt: 'Stage 1 (MSV) threshold: (--F1)'
+            format: ("", " --F1 " + str(value) ) [ value != vdef]
+            name: F1
+            precond: {max: '0'}
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+        - !mobyle/inputprogramparameter
+            comment: 'Second filter threshold; set the P-value threshold for the Viterbi
+                filter step. The
+
+                default is 0.001.'
+            prompt: 'Stage 2 (Vit) threshold: (--F2)'
+            format: ("", " --F2 " + str(value) ) [ value != vdef]
+            name: F2
+            precond: {max: '0'}
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            comment: 'Third filter threshold; set the P-value threshold for the Forward
+                filter step. The
+
+                default is 1e-5.'
+            prompt: 'Stage 3 (Fwd) threshold: (--F3)'
+            format: ("", " --F3 " + str(value) ) [ value != vdef]
+            name: F3
+            precond: {max: '0'}
+            command: false
+            type: !mobyle/floattype {default: 1.0e-05}
+        - !mobyle/inputprogramparameter
+            comment: "Turn off the bias filter increases sensitivity somewhat, but\
+                \ can come at a\nhigh cost in speed, especially if the query has biased\
+                \ residue composition (such as a repetitive sequence region, \nor\
+                \ if it is a membrane protein with large regions of hydrophobicity).Without\
+                \ the bias filter, too many sequences may pass the filter\nwith biased\
+                \ queries, leading to slower than expected performance as the computationally\n\
+                intensive Forward/Backward algorithms shoulder an abnormally heavy\
+                \ load."
+            prompt: Turn off composition bias filter (--nobias)
+            format: ("", " --nobias" ) [ value != vdef]
+            name: nobias
+            precond: {max: '0'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        comment: 'These options control how consensus columns are defined in multiple
+            alignments when building profiles. By
+
+            default, jackhmmer always includes your original query sequence in the
+            alignment result at every iteration,
+
+            and consensus positions are defined by that query sequence: that is, a
+            default jackhmmer profile is always
+
+            the same length as your original query, at every iteration.'
+        prompt: Controlling profile construction (later iteration)
+        name: model_constr
+        argpos: 7
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Define consensus columns as those that have a fraction >= symfrac\
+                \ of residues\nas consensus/opposed to gaps. (See below for the --symfrac\
+                \ option.) This option may have undesirable effects in jackhmmer,\
+                \ \nbecause a profile could iteratively walk in sequence space away\
+                \ from your original query, leaving few or no consensus\ncolumns corresponding\
+                \ to its residues."
+            prompt: Quickly and heuristically determine the architecture of the model
+                (--fast)
+            format: ("", " --fast" ) [ value != vdef]
+            name: fast
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Define the residue fraction threshold necessary to define a\
+                \ consensus column\nwhen using the --fast option. The default is 0.5.\
+                \ The symbol fraction in each column is calculated after taking \n\
+                relative sequence weighting into account, and ignoring gap characters\
+                \ corresponding to ends of sequence fragments (as opposed\nto internal\
+                \ insertions/deletions).- Setting this to 1.0 means that every alignment\
+                \ column\nwill be assigned as consensus, which may be useful in some\
+                \ cases.- Setting it to 0.0 is a bad idea, because no columns will\
+                \ be assigned as consensus, and\nyou will get a model of zero length."
+            prompt: Symbol fraction controlling --fast construction (--symfrac)
+            format: ("", " --symfrac " + str(value) ) [ value != vdef]
+            name: symfrac
+            precond: {fast: '1'}
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+        - !mobyle/inputprogramparameter
+            comment: "We only want to count terminal gaps as deletions if the aligned\
+                \ sequence is known\nto be full-length, not if it is a fragment (for\
+                \ instance, because only part of it was sequenced). \nHMMER uses a\
+                \ simple rule to infer fragments: if the sequence length is less than\
+                \ a fraction threshold times the mean \nsequence length of all the\
+                \ sequences in the alignment, then the sequence is handled as a fragment.\
+                \ The default is 0.5."
+            prompt: Threshold to tag sequence as a fragment (--fragthresh)
+            format: ("", " --fragthresh " + str(value) ) [ value != vdef]
+            name: fragthresh
+            precond: {fast: '1'}
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+    - !mobyle/inputprogramparagraph
+        comment: 'Whenever a profile is built from a multiple alignment, HMMER uses
+            an ad hoc sequence weighting algorithm
+
+            to downweight closely related sequences and upweight distantly related
+            ones. This has the effect of making
+
+            models less biased by uneven phylogenetic representation.After relative
+            weights are determined, they are normalized to sum to a total effective
+            sequence number
+
+            (eff_nseq). This number may be the actual number of sequences in the alignment,
+            but it is almost always smaller than that.'
+        prompt: Controlling relative weights and effective sequence number in models
+            after first iteration
+        name: w_option
+        argpos: 8
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "These option controls which ad hoc sequence weighting algorithm\
+                \ gets used:- Use the Henikoff position-based sequence weighting scheme\
+                \ [Henikoff and Henikoff,\nJ. Mol. Biol. 243:574, 1994]. This is the\
+                \ default.- Use the Gerstein/Sonnhammer/Chothia weighting algorithm\
+                \ [Gerstein et al, J. Mol.\nBiol. 235:1067, 1994].- Use the same clustering\
+                \ scheme that was used to weight data in calculating BLOSUM\nsubsitution\
+                \ matrices [Henikoff and Henikoff, Proc. Natl. Acad. Sci 89:10915,1992].\
+                \ Sequences are single-linkage clustered \nat an identity threshold\
+                \ (default 0.62; see --wid option) and within each cluster of c sequences,\
+                \ each sequence gets relative\nweight 1/c.- No relative weights. All\
+                \ sequences are assigned uniform weight."
+            prompt: Relative weights in models
+            format: ("", " --" + str(value) ) [ value != vdef]
+            name: wmodel
+            command: false
+            type: !mobyle/stringtype
+                default: wpb
+                options:
+                - {label: Henikoff position-based weights (--wpb), value: wpb}
+                - {label: Gerstein/Sonnhammer/Chothia tree weights (--wgsc), value: wgsc}
+                - {label: Henikoff simple filter weights (--wblosum), value: wblosum}
+                - {label: Don't do any relative weighting (--wnone), value: wnone}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the identity threshold used by single-linkage clustering
+                when using --wblosum.
+
+                Invalid with any other weighting scheme. Default is 0.62.'
+            prompt: Set identity cutoff in case of Henikoff simple filter weights
+                (--wblosum) selection (--wid)
+            format: ("", " --wid " + str(value) ) [ value != vdef]
+            name: wid
+            precond: {wmodel: wblosum}
+            command: false
+            type: !mobyle/floattype {default: 0.62}
+        - !mobyle/inputprogramparameter
+            comment: "Choice between:- eent: Adjust effective sequence number to achieve\
+                \ a specific relative entropy per position\n(see --ere). This is the\
+                \ default. This method reduces the effective sequence number to reduce\
+                \ the information content \n(relative entropy, or average expected\
+                \ score on true homologs) per consensus position.- eclust: Set effective\
+                \ sequence number to the number of single-linkage clusters at a specific\n\
+                identity threshold (see --eid). This option is not recommended; it\
+                \ is for experiments evaluating how much better --eent is.- enone:\
+                \ Turn off effective sequence number determination and just use the\
+                \ actual number\nof sequences. One reason you might want to do this\
+                \ is to try to maximize the relative entropy/position of your model,\
+                \ \nwhich may be useful for short models."
+            prompt: Effective sequence number in models
+            format: ("", " --" + str(value) ) [ value != vdef]
+            name: seqnum_model
+            command: false
+            type: !mobyle/stringtype
+                default: eent
+                options:
+                - {label: Adjust effective sequence number to achieve relative entropy
+                        target (--eent), value: eent}
+                - {label: Effective sequence number is the number of single linkage
+                        clusters (--eclust), value: eclust}
+                - {label: 'No effective sequence number weighting: just use nseq (--enone)',
+                    value: enone}
+        - !mobyle/inputprogramparameter
+            prompt: Effective sequence number for all model (--eset)
+            format: ("", " --eset " + str(value) ) [ value != vdef]
+            name: eff_snum
+            precond:
+                seqnum_model: {'#ne': enone}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Set the minimum relative entropy/position target. Requires --eent.
+                Default
+
+                depends on the sequence alphabet; for protein sequences, it is 0.59
+                bits/position.'
+            prompt: Minimum relative entropy/position target for --eent (--ere)
+            format: ("", " --ere " + str(value) ) [ value is not None]
+            name: ere
+            precond:
+                '#and':
+                - {seqnum_model: eent}
+                - {'#not': eff_snum}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the minimum relative entropy contributed by an entire model\
+                \ alignment, over\nits whole length. This has the effect of making\
+                \ short models have higher relative entropy per position \nthan --ere\
+                \ alone would give. The default is 45.0 bits."
+            prompt: Sigma parameter for --eent (--esigma)
+            format: ( "" , " --esigma " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: esigma
+            precond:
+                '#and':
+                - {seqnum_model: eent}
+                - {'#not': eff_snum}
+            command: false
+            type: !mobyle/floattype {default: 45.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the fractional pairwise identity cutoff used by single
+                linkage clustering with the
+
+                --eclust option. The default is 0.62.'
+            prompt: Fractional Identity cutoff for --eclust (--eid)
+            format: ("", " --eid " + str(value) ) [ value != vdef ]
+            name: eid
+            precond:
+                '#and':
+                - {seqnum_model: eclust}
+                - {'#not': eff_snum}
+            command: false
+            type: !mobyle/floattype {default: 0.62}
+    - !mobyle/inputprogramparagraph
+        comment: 'Estimating the location parameters for the expected score distributions
+            for MSV filter scores, Viterbi filter
+
+            scores, and Forward scores requires three short random sequence simulations.'
+        prompt: Controlling E-value calibration for Stage 1 - MSV Gumbel mu fit
+        name: MSV
+        argpos: 9
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Sets the sequence length in simulation that estimates the location\
+                \ parameter mu\n    for MSV filter E-values. Default is 200."
+            prompt: Length of sequences (--EmL)
+            format: ("", " --EmL " + str(value) ) [ value != vdef]
+            name: eml
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the number of sequences in simulation that estimates the
+                location parameter
+
+                mu for MSV filter E-values. Default is 200.'
+            prompt: Number of sequences (--EmN)
+            format: ("", " --EmN " + str(value) ) [ value != vdef]
+            name: emn
+            command: false
+            type: !mobyle/integertype {default: 200}
+    - !mobyle/inputprogramparagraph
+        comment: "Estimating the location parameters for the expected score distributions\
+            \ for MSV filter scores, Viterbi filter\n  scores, and Forward scores\
+            \ requires three short random sequence simulations."
+        prompt: Controlling E-value calibration for Stage 2 - Viterbi Gumbel mu fit
+        name: Ecalibration2
+        argpos: 10
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the sequence length in simulation that estimates the location
+                parameter mu
+
+                for Viterbi filter E-values. Default is 200.'
+            prompt: Length of sequences (--EvL)
+            format: ("", " --EvL " + str(value) ) [ value != vdef]
+            name: evl
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the number of sequences in simulation that estimates the
+                location parameter
+
+                mu for Viterbi filter E-values. Default is 200.'
+            prompt: Number of sequences (--EvN)
+            format: ("", " --EvN " + str(value) ) [ value != vdef]
+            name: evn
+            command: false
+            type: !mobyle/integertype {default: 200}
+    - !mobyle/inputprogramparagraph
+        comment: "Estimating the location parameters for the expected score distributions\
+            \ for MSV filter scores, Viterbi filter\n  scores, and Forward scores\
+            \ requires three short random sequence simulations."
+        prompt: Controlling E-value calibration for Stage 3 - Forward exponential
+            tail tau fit
+        name: Ecalibration3
+        argpos: 11
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the sequence length in simulation that estimates the location
+                parameter tau
+
+                for Forward E-values. Default is 100.'
+            prompt: Length of sequences (--EfL)
+            format: ("", " --EfL " + str(value) ) [ value != vdef]
+            name: efl
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the number of sequences in simulation that estimates the
+                location parameter
+
+                tau for Forward E-values. Default is 200.'
+            prompt: Number of sequences (--EfN)
+            format: ("", " --EfN " + str(value) ) [ value != vdef]
+            name: efn
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the tail mass fraction to fit in the simulation that estimates\
+                \ the location parameter\n  tau for Forward evalues. Default is 0.04."
+            prompt: Tail mass (--Eft)
+            format: ("", " --Eft " + str(value) ) [ value != vdef]
+            name: eft
+            command: false
+            type: !mobyle/floattype {default: 0.04}
+    - !mobyle/inputprogramparagraph
+        prompt: Expert options
+        name: other
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Turn off the "null2" score corrections for biased composition.
+            prompt: Turn off biased composition score corrections (--nonull2)
+            format: ("", " --nonull2" ) [ value != vdef]
+            name: nonull
+            precond: {max: '0'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Assert that the total number of targets in your searches is\
+                \ this number, for the purposes of\n  per-sequence E-value calculations,\
+                \ rather than the actual number of targets seen."
+            prompt: Number of comparisons done, for E-value calculation (-Z)
+            format: ("", " -Z " + str(value)) [ value is not None]
+            name: z
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Assert that the total number of targets in your searches is\
+                \ this number, for the purposes\n  of per-domain conditional E-value\
+                \ calculations, rather than the number of targets that passed the\
+                \ reporting thresholds."
+            prompt: Number of significant sequences, for domain E-value calculation
+                (--domZ)
+            format: ("", " --domZ " + str(value)) [ value is not None]
+            name: d_z
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Seed the random number generator with this, an integer >= 0.\
+                \ The default seed is 42.If >0, any stochastic simulations will be\
+                \ reproducible; the same command will give the\n  same results.If\
+                \ = 0, the random number generator is seeded arbitrarily, and\n  stochastic\
+                \ simulations will vary from run to run of the same command."
+            prompt: Set Random Number Generator seed to (--seed)
+            format: ("", " --seed " + str(value) ) [ value != vdef]
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 42}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: '"*.output"'
+        name: out_file
+        precond: {outfile: '1'}
+    - !mobyle/outputprogramparameter
+        prompt: Alignment file
+        filenames: '"*.align"'
+        name: ali_file
+        precond: {aligfile: '1'}
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1961']
+            data_terms: ['EDAM_data:1384']
+    - !mobyle/outputprogramparameter
+        prompt: Parseable table of per-sequence hits
+        filenames: '"*.tblout"'
+        name: seq_file
+        precond: {seqtab: '1'}
+    - !mobyle/outputprogramparameter
+        prompt: Parseable table of per-domain hits
+        filenames: '"*.domtblout"'
+        name: dom_file
+        precond: {domaintab: '1'}
+    - !mobyle/outputprogramparameter
+        prompt: HMM checkpoints files
+        filenames: '"*.hmm"'
+        name: chkhmm_file
+        precond: {chkhmm: '1'}
+    - !mobyle/outputprogramparameter
+        prompt: Alignment checkpoints files
+        filenames: '"*.sto"'
+        name: chkali_file
+        precond: {chkali: '1'}
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1961']
+            data_terms: ['EDAM_data:1384']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"jackhmmer.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"jackhmmer.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: jackhmmer
+env: {}

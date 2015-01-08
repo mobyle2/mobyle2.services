@@ -1,0 +1,130 @@
+!mobyle/program
+name: oddcomp
+title: oddcomp
+description: Identify proteins with specified sequence word composition
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter
+            comment: This is a file in the format of the output produced by 'compseq'
+                that is used to set the minimum frequencies of words in  this analysis.
+            prompt: Program compseq output file
+            format: ("", " -infile=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: infile
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set this option on (Y) if you want the window size to be set
+                to the length of the current protein. Otherwise, leave this  option
+                unset, in which case you'll be prompted for a window size  to use.
+            prompt: Set window size to length of current protein
+            format: ("", " -fullwindow")[ bool(value) ]
+            argpos: 3
+            name: fullwindow
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This is the size of window in which to count. \n Thus if you\
+                \ want to count frequencies in a 40 aa stretch you  should enter 40\
+                \ here."
+            prompt: Window size to consider (e.g. 30 aa) (value greater than or equal
+                to 10)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: window
+            precond: {'#not': fullwindow}
+            command: false
+            type: !mobyle/integertype {default: 30}
+            ctrls:
+            -   message: Value greater than or equal to 10 is required
+                test:
+                    value: {'#gte': '10'}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The amino acid code B represents Asparagine or Aspartic acid\
+                \ and the code Z represents Glutamine or Glutamic acid. \n  These\
+                \ are not commonly used codes and you may wish not to count  words\
+                \ containing them, just noting them in the count of 'Other'  words."
+            prompt: Ignore the amino acids b and z and just count them as 'other'
+            format: (" -noignorebz", "")[ bool(value) ]
+            argpos: 5
+            name: ignorebz
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This is the results file.
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 6
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.oddcomp}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 7
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"oddcomp.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"oddcomp.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0378']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/oddcomp.html', 'http://emboss.sourceforge.net/docs/themes']
+command: oddcomp
+env: {}

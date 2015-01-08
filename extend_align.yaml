@@ -1,0 +1,68 @@
+!mobyle/program
+name: extend_align
+title: concatenate several alignments from several files
+description: This tool concatenates multiple MSAs.
+authors: "N\xE9ron, B."
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:ol><html:li>by\
+            \ sequence order: in this case the ids of sequences could be different.\n\
+            \             and the id of each sequence in the resulting alignment is\
+            \ the concatenation of the respective sequence id \n             (All\
+            \ Alignments MUST have the same number of sequences)</html:li><html:li>by\
+            \ sequence id: in this case the extension is made based on the sequence\
+            \ ids.</html:li></html:ol></html:div>"
+        prompt: method to extend the alignment
+        format: ( "" , " --id ")[value is not None and value != vdef]
+        argpos: 5
+        name: extend_method
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: by order, value: 'null'}
+            - {label: by id, value: id}
+    - !mobyle/inputprogramparameter {prompt: alignment, format: '" -i " + value +
+            " fasta"', simple: true, argpos: 10, mandatory: true, name: fasta_align,
+        command: false}
+    - !mobyle/inputprogramparameter
+        prompt: sequence linker
+        format: ("", " -l " + str( value ) )[value is not None]
+        argpos: 100
+        name: linker
+        command: false
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: concatenated alignment
+        filenames: '"extend_align.out"'
+        name: concatenated_alignment
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"extend_align.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>for instance</html:p>fisrt\
+    \ alignment<html:pre>&gt;seq1\n            aaaaggg\n            &gt;seq2\n   \
+    \         aaaa--g\n            &gt;seq3\n            aa--ggg</html:pre>second\
+    \ alignment<html:pre>&gt;seq1\n            ccccttt\n            &gt;seq2\n   \
+    \         cccc--t\n            &gt;seq3\n            cc--ttt</html:pre>the resulting\
+    \ alignment if the linker is \"---\" will be:<html:pre>&gt;seq1\n            aaaaggg---ccccttt\n\
+    \            &gt;seq2\n            aaaa--g---cccc--t\n            &gt;seq3\n \
+    \           aa--ggg---cc--ttt</html:pre>two methods can be used to extend the\
+    \ aligenmt:<html:ol><html:li>by sequence order: in this case the ids of sequences\
+    \ could be different.\n             and the id of each sequence in the resulting\
+    \ alignment is the concatenation of the respective sequence id \n            \
+    \ (All Alignments MUST have the same number of sequences)</html:li><html:li>by\
+    \ sequence id: in this case the extension is made based on the sequence ids.</html:li></html:ol></html:div>"
+operations: ['EDAM_operation:2122']
+topics: ['EDAM_topic:0220']
+command: extend_align
+env: {}

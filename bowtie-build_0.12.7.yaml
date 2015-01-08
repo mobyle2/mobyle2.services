@@ -1,0 +1,248 @@
+!mobyle/program
+name: bowtie-build
+version: 0.12.7
+title: 'Bowtie: build'
+description: The Bowtie index is based on the FM Index of Ferragina and Manzini, which
+    in turn is based on the Burrows-Wheeler transform. The algorithm used to build
+    the index is based on the [blockwise algorithm] of Karkkainen.
+authors: Langmead B. & Trapnell C.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            comment: comma-separated list of files with ref sequences
+            prompt: 'Upload reference sequence:'
+            format: '" " + str(value)'
+            simple: true
+            argpos: 25
+            mandatory: true
+            name: ref_seqfile
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: To be queried using bowtie -C.
+            prompt: Build a colorspace index (-C/--color)
+            format: ('',' -C ')[value]
+            simple: true
+            name: build_colorspace
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Build both letter- and color-space indexes (-B)
+            format: ('',' -B ')[value]
+            name: build_both
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Disable use of the difference-cover sample. Suffix sorting becomes
+                quadratic-time in the worst case (where the worst case is an extremely
+                repetitive reference). Default: off.'
+            prompt: Disable diff-cover [algorithm becomes quadratic] (--nodc)
+            format: ('',' --nodc')[value]
+            name: disable_diff_cover
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Do not build the NAME.3.ebwt and NAME.4.ebwt portions of the
+                index, which contain a bitpacked version of the reference sequences
+                and are used for paired-end alignment.
+            prompt: Don't build .3/.4.ebwt (packed reference) portion (-r/--noref)
+            format: ('',' -r ')[value]
+            name: donotbuild_3_4_ebwt
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Build only the NAME.3.ebwt and NAME.4.ebwt portions of the index,
+                which contain a bitpacked version of the reference sequences and are
+                used for paired-end alignment.
+            prompt: Just build .3/.4.ebwt (packed reference) portion (-3/--justref)
+            format: ('',' -3 ')[value]
+            name: justbuild_3_4_ebwt
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'SA is sampled every 2^offRate BWT chars [default: 5]. To map
+                alignments back to positions on the reference sequences, it''s necessary
+                to annotate ("mark") some or all of the Burrows-Wheeler rows with
+                their corresponding location on the genome. -o/--offrate governs how
+                many rows get marked: the indexer will mark every 2^<int> rows. Marking
+                more rows makes reference-position lookups faster, but requires more
+                memory to hold the annotations at runtime. The default is 5 (every
+                32nd row is marked; for human genome, annotations occupy about 340
+                megabytes).'
+            prompt: 'SA sample offrate: (-o/--offrate)'
+            format: ("", " -o " + str(value))[value is not None and value != vdef]
+            name: SA_sampled
+            command: false
+            type: !mobyle/integertype {default: 5}
+        - !mobyle/inputprogramparameter
+            comment: The ftab is the lookup table used to calculate an initial Burrows-Wheeler
+                range with respect to the first <int> characters of the query. A larger
+                <int> yields a larger lookup table but faster query times. The ftab
+                has size 4^(<int>+1) bytes. The default setting is 10 (ftab is 4MB).
+            prompt: Number of characters consumed in initial lookup (-t/--ftabchars)
+            format: ("", " -t " + str(value))[value is not None and value != vdef]
+            name: num_chars_consumed
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: Convert Ns in the reference sequence to As before building the
+                index. By default, Ns are simply excluded from the index and bowtie
+                will not report alignments that overlap them.
+            prompt: Convert Ns in reference to As (--ntoa)
+            format: ('',' -n ')[value]
+            name: convert_ns_ref_as
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Use <int> as the seed for pseudo-random number generator.
+            prompt: Seed for random number generator (--seed)
+            format: ("", " --seed " + str(value))[value is not None]
+            name: seed_random_number
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced Options
+        name: AdvancedOptions
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Disable the default behavior whereby bowtie-build automatically
+                selects values for the --bmax, --dcv and --packed parameters according
+                to available memory. Instead, user may specify values for those parameters.
+                If memory is exhausted during indexing, an error message will be printed;
+                it is up to the user to try new parameters.
+            prompt: Disable automatic -p/--bmax/--dcv memory-fitting (-a/--noauto)
+            format: ('',' -a')[value]
+            name: memory_fitting
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Use a packed (2-bits-per-nucleotide) representation for DNA
+                strings. This saves memory but makes indexing 2-3 times slower. Default:
+                off. This is configured automatically by default; use -a/--noauto
+                to configure manually.'
+            prompt: Use packed strings internally; slower, uses less memory. (-p/--packed)
+            format: ('',' -p')[value]
+            name: packed_strings
+            precond: {memory_fitting: '1'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The maximum number of suffixes allowed in a block. Allowing more
+                suffixes per block makes indexing faster, but increases peak memory
+                usage. Setting this option overrides any previous setting for --bmax,
+                or --bmaxdivn. Default (in terms of the --bmaxdivn parameter) is --bmaxdivn
+                4. This is configured automatically by default; use -a/--noauto to
+                configure manually.
+            prompt: Max bucket size for blockwise suffix-array builder (--bmax)
+            format: ('', ' -bmax ' + str(value))[value is not None]
+            name: max_bucket_size
+            precond: {memory_fitting: '1'}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: 'The maximum number of suffixes allowed in a block, expressed
+                as a fraction of the length of the reference. Setting this option
+                overrides any previous setting for --bmax, or --bmaxdivn. Default:
+                --bmaxdivn 4. This is configured automatically by default; use -a/--noauto
+                to configure manually.'
+            prompt: 'Max bucket size as divisor of ref len [default: 4] (--bmaxdivn)'
+            format: ( "" , " --bmaxdivn " +str(value) )[value is not None and value
+                != vdef]
+            name: fraction_reference
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            comment: 'Use <int> as the period for the difference-cover sample. A larger
+                period yields less memory overhead, but may make suffix sorting slower,
+                especially if repeats are present. Must be a power of 2 no greater
+                than 4096. Default: 1024. This is configured automatically by default;
+                use -a/--noauto to configure manually.'
+            prompt: 'Diff-cover period for blockwise [default: 1024] (--dcv)'
+            format: ('', ' --dcv ' + str(value))[value is not None and value != vdef]
+            name: difference_cover
+            precond: {memory_fitting: '1'}
+            command: false
+            type: !mobyle/integertype {default: 1024}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_params
+        children:
+        - !mobyle/inputprogramparameter
+            comment: write Ebwt data to files with this basename
+            prompt: 'Ebwt file name:'
+            format: '" " + ( str(vdef) ,str(value) )[value is not None and value !=
+                vdef]'
+            simple: true
+            argpos: 30
+            mandatory: true
+            name: ebwt_base
+            command: false
+            type: !mobyle/stringtype {default: my_bowtie}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output_params
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) +".1.ebwt"
+            name: Ebwt_file_one
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) +".2.ebwt"
+            name: Ebwt_file_two
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) +".3.ebwt"
+            name: Ebwt_file_three
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) +".4.ebwt"
+            name: Ebwt_file_four
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) +".rev.1.ebwt"
+            name: Ebwt_file_rev
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: str(ebwt_base) + ".rev.2.ebwt"
+            name: Ebwt_file_rev_two
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"bowtie-build.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"bowtie-build.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0227']
+topics: ['EDAM_topic:0102', 'EDAM_topic:0196']
+command: bowtie-build
+env: {}

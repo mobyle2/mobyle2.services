@@ -1,0 +1,121 @@
+!mobyle/program
+name: pasteseq
+title: pasteseq
+description: Insert one sequence into another
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Asequence option
+            format: ("", " -asequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: asequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Sequence to insert
+            format: ("", " -bsequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: bsequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The position in the main input sequence to insert after. \n\
+                \ To insert before the start use the position 0."
+            prompt: Position to insert after (value greater than or equal to 0)
+            format: ("", " -pos=" + str(value))[value is not None]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: pos
+            command: false
+            type: !mobyle/integertype {}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 4
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: pasteseq.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pasteseq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pasteseq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0232']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/pasteseq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: pasteseq
+env: {}

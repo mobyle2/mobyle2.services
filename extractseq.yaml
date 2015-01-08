@@ -1,0 +1,123 @@
+!mobyle/program
+name: extractseq
+title: extractseq
+description: Extract regions from a sequence
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Regions to extract. \n A set of regions is specified by a set\
+                \ of pairs of positions. \n  The positions are integers. \n  They\
+                \ are separated by any non-digit, non-alpha character. \n  Examples\
+                \ of region specifications are: \n  24-45, 56-78 \n  1:45, 67=99;765..888\
+                \ \n  1,5,8,10,23,45,57,99"
+            prompt: 'Regions to extract (eg: 4-57,78-94)'
+            format: ("", " -regions=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: regions
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'If this is set true then each specified region is written out
+                as a separate sequence. The name of the sequence is created  from
+                the name of the original sequence with the start and end  positions
+                of the range appended with underscore characters between  them, eg:
+                XYZ region 2 to 34 is written as: XYZ_2_34'
+            prompt: Write regions to separate sequences
+            format: ("", " -separate")[ bool(value) ]
+            argpos: 3
+            name: separate
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 4
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: extractseq.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"extractseq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"extractseq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0369']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/extractseq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: extractseq
+env: {}

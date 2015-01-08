@@ -1,0 +1,162 @@
+!mobyle/program
+name: combat
+version: '1.0'
+title: COMBAT
+description: Comparison of coding DNA
+authors: Pedersen, Lyngso,Hein
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"cat " + str(sequence2) + " " + str(sequence1) + " >> sequence.data
+            && combat combat.params > distance.out && combine sequence.data combat.aln"'
+        argpos: 0
+        name: combat
+        precond:
+            '#and':
+            -   sequence1: {'#ne': None}
+            -   sequence2: {'#ne': None}
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: Sequences must describe an integer number of codon, i.e. the length
+            of sequence must be a multiple of three.
+        prompt: First Sequence
+        format: '''>inputfile\n"sequence.data"\n'''
+        simple: true
+        argpos: 1
+        paramfile: combat.params
+        mandatory: true
+        name: sequence1
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        comment: Sequences must describe an integer number of codon, i.e. the length
+            of sequence must be a multiple of three.
+        prompt: Second Sequence
+        simple: true
+        mandatory: true
+        name: sequence2
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Amino-acid distance matrix
+        format: '">distance matrix\n\"/path/to/combat/matrix" + str(value) + ''"\n'''
+        argpos: 3
+        paramfile: combat.params
+        mandatory: true
+        name: protein_distance_matrix
+        command: false
+        type: !mobyle/stringtype
+            default: Blosum62_distance.m
+            options:
+            - {label: PAM60, value: PAM60_distance.m}
+            - {label: PAM120, value: PAM120_distance.m}
+            - {label: PAM250, value: PAM250_distance.m.m}
+            - {label: PAM350, value: PAM350_distance.m}
+            - {label: Blosum30, value: Blosum30_distance.m}
+            - {label: Blosum62, value: Blosum62_distance.m}
+            - {label: Blosum90, value: Blosum90_distance.m}
+    - !mobyle/inputprogramparameter
+        prompt: Nucleotid distance matrix
+        format: '">nucleotide matrix\n\"/path/to/combat/matrix" + str(value) + ''"\n'''
+        argpos: 4
+        paramfile: combat.params
+        mandatory: true
+        name: nucleotide_distance_matrix
+        command: false
+        type: !mobyle/stringtype
+            default: nucleotide_distance1.m
+            options:
+            - {label: Matrix 1, value: nucleotide_distance1.m}
+            - {label: Matrix 2, value: nucleotide_distance2.m}
+            - {label: Matrix 3, value: nucleotide_distance3.m}
+    - !mobyle/inputprogramparameter
+        prompt: Gap open cost for protein
+        format: '">gap functions\nprotein:        " + str(value)'
+        simple: true
+        argpos: 5
+        paramfile: combat.params
+        mandatory: true
+        name: protein_gap_open
+        command: false
+        type: !mobyle/integertype {default: 20}
+    - !mobyle/inputprogramparameter
+        prompt: Gap extension cost for protein
+        format: '" + " + str(value) + "*k\n"'
+        simple: true
+        argpos: 6
+        paramfile: combat.params
+        mandatory: true
+        name: protein_gap_ext
+        command: false
+        type: !mobyle/integertype {default: 8}
+    - !mobyle/inputprogramparameter
+        prompt: Gap open cost for dna
+        format: '"dna:        " + str(value)'
+        simple: true
+        argpos: 7
+        paramfile: combat.params
+        mandatory: true
+        name: dna_gap_open
+        command: false
+        type: !mobyle/integertype {default: 8}
+    - !mobyle/inputprogramparameter
+        prompt: Gap extension cost for dna
+        format: '" + " + str(value) + "*k"'
+        simple: true
+        argpos: 8
+        paramfile: combat.params
+        mandatory: true
+        name: dna_gap_ext
+        command: false
+        type: !mobyle/integertype {default: 2}
+    - !mobyle/inputprogramparameter
+        format: '" && gnuplot <gnuplot.params"'
+        argpos: 100
+        name: gnuplot_call
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '''set xtics 12,5.,1000\nset ytics 12,5.,1000\nset grid\nset terminal
+            postscript\nset output "combat.ps"\nplot "combat.aln" with lines\n'''
+        argpos: 1
+        paramfile: gnuplot.params
+        name: gnuplot_commands
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: '"combat.aln"',
+        argpos: 2, name: output_aln}
+    - !mobyle/outputprogramparameter
+        prompt: Alignment file
+        filenames: '"combat.out"'
+        name: combat_out
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter {prompt: Distance file, filenames: '"distance.out"',
+        name: distance_files}
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"combat.ps"',
+        name: ps_files}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"combat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Christian N. S. Pedersen, Rune B. Lyngso and Jotun Hein. Comparison
+        of coding DNA in Proceedings of the 9th Annual Symposium of Combinatorial
+        Pattern Matching (CPM), 1998.', url: null}
+homepage_links: ['http://www.daimi.au.dk/~cstorm/combat/']
+env: {}
+source_links: ['http://www.daimi.au.dk/~cstorm/combat/']

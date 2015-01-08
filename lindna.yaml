@@ -1,0 +1,312 @@
+!mobyle/program
+name: lindna
+title: lindna
+description: Draws linear maps of DNA constructs
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter {prompt: Commands to the lindna drawing program
+                file, format: '("", " -infile=" + str(value))[value is not None ]',
+            simple: true, argpos: 1, mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Maximum number of groups (value greater than or equal to 1)
+            format: ("", " -maxgroups=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: maxgroups
+            command: false
+            type: !mobyle/integertype {default: 20}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum number of labels (value greater than or equal to 1)
+            format: ("", " -maxlabels=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: maxlabels
+            command: false
+            type: !mobyle/integertype {default: 10000}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Draw a ruler
+            format: (" -noruler", "")[ bool(value) ]
+            argpos: 4
+            name: ruler
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Type of blocks
+            format: ("", " -blocktype=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: blocktype
+            command: false
+            type: !mobyle/stringtype
+                default: Filled
+                options:
+                - {label: Open blocks, value: Open}
+                - {label: Filled blocks, value: Filled}
+                - {label: Black border, value: Outline}
+        - !mobyle/inputprogramparameter
+            prompt: Type of junctions between blocks
+            format: ("", " -intersymbol=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: intersymbol
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Straight, value: '1'}
+                - {label: Up, value: '2'}
+                - {label: Down, value: '3'}
+                - {label: 'No', value: '4'}
+        - !mobyle/inputprogramparameter
+            prompt: Colour of junctions between blocks (enter a colour number) (value
+                from 0 to 15)
+            format: ("", " -intercolour=" + str(value))[value is not None and value!=vdef]
+            argpos: 7
+            name: intercolour
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            -   message: Value less than or equal to 15 is required
+                test:
+                    value: {'#lte': '15'}
+        - !mobyle/inputprogramparameter
+            prompt: Horizontal junctions between ticks
+            format: ("", " -interticks")[ bool(value) ]
+            argpos: 8
+            name: interticks
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Interval between ticks in the ruler (value greater than or equal
+                to 0)
+            format: ("", " -gapsize=" + str(value))[value is not None and value!=vdef]
+            argpos: 9
+            name: gapsize
+            command: false
+            type: !mobyle/integertype {default: 500}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Vertical lines at the ruler's ticks
+            format: ("", " -ticklines")[ bool(value) ]
+            argpos: 10
+            name: ticklines
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Height of text. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Height of text multiplier (value greater than or equal to 0.0)
+            format: ("", " -textheight=" + str(value))[value is not None and value!=vdef]
+            argpos: 11
+            name: textheight
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Length of text. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Length of text multiplier (value greater than or equal to 0.0)
+            format: ("", " -textlength=" + str(value))[value is not None and value!=vdef]
+            argpos: 12
+            name: textlength
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Width of left margin. This is the region left to the groups where
+                the names of the groups are displayed. Enter a number <1.0  or >1.0
+                to decrease or increase the size, respectively
+            prompt: Width of left margin multiplier (value greater than or equal to
+                0.0)
+            format: ("", " -margin=" + str(value))[value is not None and value!=vdef]
+            argpos: 13
+            name: margin
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Height of ticks. Enter a number <1.0 or >1.0 to decrease or increase
+                the size, respectively
+            prompt: Height of ticks multiplier (value greater than or equal to 0.0)
+            format: ("", " -tickheight=" + str(value))[value is not None and value!=vdef]
+            argpos: 14
+            name: tickheight
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Height of blocks. Enter a number <1.0 or >1.0 to decrease or
+                increase the size, respectively
+            prompt: Height of blocks multilpier (value greater than or equal to 0.0)
+            format: ("", " -blockheight=" + str(value))[value is not None and value!=vdef]
+            argpos: 15
+            name: blockheight
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Height of range ends. Enter a number <1.0 or >1.0 to decrease
+                or increase the size, respectively
+            prompt: Height of range ends multiplier (value greater than or equal to
+                0.0)
+            format: ("", " -rangeheight=" + str(value))[value is not None and value!=vdef]
+            argpos: 16
+            name: rangeheight
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Space between groups. Enter a number <1.0 or >1.0 to decrease
+                or increase the size, respectively
+            prompt: Space between groups mutliplier (value greater than or equal to
+                0.0)
+            format: ("", " -gapgroup=" + str(value))[value is not None and value!=vdef]
+            argpos: 17
+            name: gapgroup
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            comment: Space between text and ticks, blocks, and ranges. Enter a number
+                <1.0 or >1.0 to decrease or increase the size,  respectively
+            prompt: Space between text and ticks, blocks, and ranges multiplier (value
+                greater than or equal to 0.0)
+            format: ("", " -postext=" + str(value))[value is not None and value!=vdef]
+            argpos: 18
+            name: postext
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graphout output format
+            format: (" -graphout=" + str(vdef), " -graphout=" + str(value))[value
+                is not None and value!=vdef]
+            simple: true
+            argpos: 19
+            mandatory: true
+            name: graphout
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 20
+            name: goutfile
+            command: false
+            type: !mobyle/stringtype {default: lindna_graph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 21
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: outgraph_png
+            precond: {graphout: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: outgraph_gif
+            precond: {graphout: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: outgraph_ps
+            precond:
+                '#or':
+                - {graphout: ps}
+                - {graphout: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: outgraph_meta
+            precond: {graphout: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: outgraph_data
+            precond: {graphout: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"lindna.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"lindna.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0577']
+topics: ['EDAM_topic:0092', 'EDAM_topic:0096']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/lindna.html', 'http://emboss.sourceforge.net/docs/themes']
+command: lindna
+env: {}

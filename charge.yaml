@@ -1,0 +1,165 @@
+!mobyle/program
+name: charge
+title: charge
+description: Draw a protein charge plot
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Seqall option
+            format: ("", " -seqall=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: seqall
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter {prompt: Amino acids properties and molecular
+                weight data file, format: '("", " -aadata=" + str(value))[value is
+                not None ]', argpos: 2, name: aadata, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Window length (value greater than or equal to 1)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 5}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Produce graphic
+            format: ("", " -plot")[ bool(value) ]
+            argpos: 4
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 5
+            name: graph
+            precond: plot
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 6
+            name: xy_goutfile
+            precond: plot
+            command: false
+            type: !mobyle/stringtype {default: charge_xygraph}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 7
+            name: outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype {default: charge.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 8
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond:
+                '#and':
+                - plot
+                - {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond:
+                '#and':
+                - plot
+                - {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                -   '#and':
+                    - plot
+                    - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond:
+                '#and':
+                - plot
+                - {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond:
+                '#and':
+                - plot
+                - {graph: data}
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"charge.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"charge.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0405']
+topics: ['EDAM_topic:0137']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/charge.html', 'http://emboss.sourceforge.net/docs/themes']
+command: charge
+env: {}

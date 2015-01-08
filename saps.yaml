@@ -1,0 +1,130 @@
+!mobyle/program
+name: saps
+title: SAPS
+description: Statistical Analysis of Protein Sequences
+authors: V. Brendel
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Protein sequence(s) File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1927']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use this specie for quantile comparisons (-s)
+            format: ( ""  , " -s " + str(value) )[ value is not None and value !=
+                vdef]
+            name: specie
+            command: false
+            type: !mobyle/stringtype
+                default: swp23s
+                options:
+                - {label: Bacillus subtilis (BACSU), value: BACSU}
+                - {label: Drosophila melanogaster (DROME), value: DROME}
+                - {label: Human (HUMAN), value: HUMAN}
+                - {label: Rat (RAT), value: RAT}
+                - {label: Saccharomyces cerevisiae (YEAST), value: YEAST}
+                - {label: Chicken (CHICK), value: CHICK}
+                - {label: Escherichia coli (ECOLI), value: ECOLI}
+                - {label: Mouse (MOUSE), value: MOUSE}
+                - {label: Frog (XENLA), value: XENLA}
+                - {label: Random sample of proteins from SWISS-PROT 23.0 (swp23s),
+                    value: swp23s}
+        - !mobyle/inputprogramparameter
+            comment: By default, SAPS treats only lysine (K) and arginine (R) as positively
+                charged residues. If the command line flag -H is set, then histidine
+                (H) is also treated as positively charged in all parts of the program
+                involving the charge alphabet.
+            prompt: Count H as positive charge (-H)
+            format: ("" , " -H")[ value ]
+            name: H_positive
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Clusters of particular amino acid types may be evaluated by
+                means of the same tests that are used to detect clustering of charged
+                residues (binomial model and scoring statistics). These tests are
+                invoked by setting this flag; for example, to test (separately) for
+                clusters of alanine (A) and serine (S), set this parameter to AS.
+                The binomial test is also programmed for certain combinations of amino
+                acids: AG (flag -a a), PEST (flag -a p), QP (flag -a q), ST (flag
+                -a s).'
+            prompt: Analyze spacings of amino acids X, Y, .... (-a)
+            format: ("" , " -a " + str(value))[ value is not None ]
+            name: analyze
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The output will come with documentation that annotates each part
+                of the program; this flag should be set when SAPS is used for the
+                first time as it provides helpful explanations with respect to the
+                statistics being used and the layout of the output.
+            prompt: Generate documented output (-d)
+            format: ("" , " -d")[ value ]
+            name: documented
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This flag specifies terse output that is limited to the analysis
+                of the charge distribution and of high scoring segments.
+            prompt: Generate terse output (-t)
+            format: ("" , " -t")[ value ]
+            name: terse
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Generate verbose output (-v)
+            format: ("" , " -v")[ value ]
+            name: verbose
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This flag is used in conjunction with the analysis of sets of
+                proteins ; if specified, the file saps.table is appended with computer-readable
+                lines describing the input files and their significant features.
+            prompt: Append computer-readable table summary output (-T)
+            format: ("" , " -T")[ value ]
+            name: table
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Summary table output, filenames: '"*.table"',
+        name: tablefile, precond: table}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"saps.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"saps.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0250']
+topics: ['EDAM_topic:0123']
+references:
+- {doi: null, label: 'Brendel, V., Bucher, P., Nourbakhsh, I., Blaisdell, B.E., Karlin,
+        S. (1992) Methods and algorithms for statistical analysis of protein sequences.
+        Proc. Natl. Acad. Sci. USA 89: 2002-2006.', url: null}
+command: saps
+env: {}

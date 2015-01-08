@@ -1,0 +1,759 @@
+!mobyle/program
+name: puzzle
+version: '5.2'
+title: Tree-Puzzle
+description: Maximum likelihood analysis for nucleotide, amino-acid and two state
+    data
+authors: Heiko A. Schmidt, Korbinian Strimmer and Arndt von Haeseler
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '" < puzzle.params"'
+        argpos: 2
+        name: stdinput
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"y\n"'
+        argpos: 1000
+        paramfile: puzzle.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Alignment File
+        format: '" " + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparagraph
+        prompt: General options
+        name: general_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Allows to switch between tree reconstruction/analysis by maximum
+                likelihood and likelihood mapping.
+            prompt: Type of analysis? (b)
+            simple: true
+            paramfile: puzzle.params
+            name: analysis_type
+            command: false
+            type: !mobyle/stringtype {default: '1'}
+        - !mobyle/inputprogramparagraph
+            prompt: Both Tree reconstruction and Likelihood mapping options
+            name: both_options
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Determines whether an approximate or the exact likelihood
+                    function is used to estimate parameters of the models of sequence
+                    evolution. The approximate likelihood function is in most cases
+                    sufficient and is faster.
+                prompt: Parameter estimates? (e)
+                simple: true
+                paramfile: puzzle.params
+                name: parameter_estimates
+                command: false
+                type: !mobyle/stringtype {default: '1'}
+            - !mobyle/inputprogramparameter
+                comment: Selects the methods used in the estimation of the model parameters.
+                    Neighbor-joining tree means that a NJ tree is used to estimate
+                    the parameters. Quartet sampling means that a number of random
+                    sets of four sequences are selected to estimate parameters.
+                prompt: Parameter estimation uses? (x)
+                simple: true
+                paramfile: puzzle.params
+                name: parameter_estimation
+                command: false
+                type: !mobyle/stringtype {default: '1'}
+        - !mobyle/inputprogramparagraph
+            prompt: Likelihood mapping options
+            name: likelihood_options
+            precond: {analysis_type: '2'}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: 'If tree reconstruction is selected: number of puzzling steps.
+                    Parameter of the quartet puzzling tree search. Generally, the
+                    more sequences are used the more puzzling steps are advised. The
+                    default value varies depending on the number of sequences (at
+                    least 1000).If likelihood mapping is selected: number of qua rtets
+                    in a likelihood mapping analysis. Equal to the number of dots
+                    in the likelihood mapping diagram. By default 10000 dots/quartets
+                    are assumed. To use all possible quartets in clustered likelihood
+                    mapping you have to specify a value of n=0.'
+                prompt: Number of quartets? (n)
+                format: ( "" , "n\n" + str(value) + "\n" )[ value is not None and
+                    value != vdef]
+                paramfile: puzzle.params
+                name: quartet
+                command: false
+                type: !mobyle/integertype {default: 10000}
+        - !mobyle/inputprogramparagraph
+            prompt: Tree reconstruction options
+            name: reconstruction_options
+            precond: {analysis_type: '1'}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Determines how the overall tree is obtained. The topology
+                    is either computed with the quartet puzzling algorithm or a set
+                    of trees is provided by the user. If there are more than two trees
+                    in such a set, maximum likelihood branch lengths will be computed
+                    for this tree and a number of tests (KH-test, SH-test, and ELW)
+                    will be performed on the trees by default. Instead of the evaluation
+                    a consensus can be computed for all the trees for which ML branch
+                    lengths and ML value are estimated. Alternatively, a maximum likelihood
+                    distance matrix only can also be computed (no overall tree).
+                prompt: Tree search procedure? (k)
+                paramfile: puzzle.params
+                name: tree_search
+                command: false
+                type: !mobyle/stringtype {default: '1'}
+            - !mobyle/inputprogramparameter
+                prompt: User Tree file
+                format: ( "" , str(value) +"\n" )[ value is not None ]
+                argpos: 2000
+                paramfile: puzzle.params
+                mandatory: true
+                name: tree_file
+                precond:
+                    '#or':
+                    - {tree_search: '3'}
+                    - {tree_search: '2'}
+                command: false
+                type: !mobyle/formattedtype
+                    format_terms: ['EDAM_format:1910']
+                    data_terms: ['EDAM_data:0872']
+            - !mobyle/inputprogramparameter
+                comment: Computation of clock-like maximum likelihood branch lengths.
+                    This option also invokes the likelihood ratio clock test.
+                prompt: Compute clocklike branch lengths? (z)
+                format: ( "" , "z\n" )[ value ]
+                paramfile: puzzle.params
+                name: clocklike
+                precond:
+                    tree_search: {'#ne': '4'}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: Location of root. Only for computation of clock-like maximum
+                    likelihood branch lengths. Allows to specify the branch where
+                    the root should be placed in an unrooted tree topology. For example,
+                    in the tree (a,b,(c,d)) l = 1 places the root at the branch leading
+                    to sequence a whereas l=5 places the root at the internal branch.
+                prompt: Enter an invalid branch number to search for the best location
+                    despite of automatic search (l)
+                format: ( "" , "l\n" + str(value) + "\n" )[ value is not None]
+                paramfile: puzzle.params
+                name: invalid
+                precond:
+                    '#and':
+                    -   tree_search: {'#ne': '4'}
+                    - clocklike
+                command: false
+                type: !mobyle/integertype {}
+            - !mobyle/inputprogramparagraph
+                prompt: Quartet puzzling options
+                name: quartet_options
+                children:
+                - !mobyle/inputprogramparameter
+                    comment: For the quartet puzzling tree search only. Only for very
+                        small data sets it is necessary to compute an exact maximum
+                        likelihood. For larger data sets this option should always
+                        be turned on.
+                    prompt: Approximate quartet likelihood (v)
+                    format: ( "v\n" , "" )[ value ]
+                    paramfile: puzzle.params
+                    name: approximate
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+                - !mobyle/inputprogramparameter
+                    comment: Show unresolved quartets. During the quartet puzzling
+                        tree search TREE-PUZZLE counts the number of unresolved quartet
+                        trees. An unresolved quartet is a quartet where the maximum
+                        likelihood values for each of the three possible quartet topologies
+                        are so similar that it is not possible to prefer one of them
+                        (Strimmer et al., 1997). If this option is selected you will
+                        get a detailed list of all star-like quartets. Note, for some
+                        data sets there may be a lot of unresolved quartets. In this
+                        case a list of all unresolved quartets is probably not very
+                        useful and also needs a lot of disk space.
+                    prompt: List unresolved quartets? (u)
+                    format: ( "" , "u\n" )[ value ]
+                    paramfile: puzzle.params
+                    name: unresolved
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+                - !mobyle/inputprogramparameter
+                    comment: 'If tree reconstruction is selected: number of puzzling
+                        steps. Parameter of the quartet puzzling tree search. Generally,
+                        the more sequences are used the more puzzling steps are advised.
+                        The default value varies depending on the number of sequences
+                        (at least 1000).If likelihood mapping is selected: number
+                        of quartets in a likelihood mapping analysis. Equal to the
+                        number of dots in the likelihood mapping diagram. By default
+                        10000 dots/quartets are assumed. To use all possible quartets
+                        in clustered likelihood mapping you have to specify a value
+                        of n=0.'
+                    prompt: Number of puzzling steps (n)
+                    format: ( "" , "n\n" + str(value) + "\n" )[ value is not None
+                        and value != vdef]
+                    paramfile: puzzle.params
+                    name: puzzling_step
+                    command: false
+                    type: !mobyle/integertype {default: 1000}
+                - !mobyle/inputprogramparameter
+                    comment: Writes all intermediate trees (puzzling step trees) used
+                        to compute the quartet puzzling tree into a file, either as
+                        a list of topologies ordered by number of occurrences (*.ptorder),
+                        or as list about the chronological occurrence of the topologies
+                        (*.pstep), or both.
+                    prompt: List puzzling step trees? (j)
+                    paramfile: puzzle.params
+                    name: list_puzzling
+                    command: false
+                    type: !mobyle/stringtype {default: '1'}
+                - !mobyle/inputprogramparameter
+                    comment: For displaying purposes of the unrooted quartet puzzling
+                        tree only. The default outgroup is the first sequence of the
+                        data set.
+                    prompt: Display as outgroup? (o)
+                    format: ( "" , "o\n" + str(value) + "\n" )[ value is not None
+                        and value != vdef]
+                    paramfile: puzzle.params
+                    name: output
+                    command: false
+                    type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: Substitution process options
+        name: substitution_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Specifies whether nucleotide, amino acid sequences, or twostate
+                data serve as input. The default is automatically set by inspection
+                of the input data. After TREE-PUZZLE has selected an appropriate data
+                type (marked by ?Auto:?) the ?d?-option changes the type in the following
+                order: automatically selected type ! Nucleotides ! Amino acids ! automatically
+                selected type.'
+            prompt: Type of sequence input data? (d)
+            argpos: -10
+            paramfile: puzzle.params
+            mandatory: true
+            name: seqtype
+            command: false
+            type: !mobyle/stringtype {default: '1'}
+        - !mobyle/inputprogramparagraph
+            prompt: Amino acids options
+            name: protein_options
+            precond: {seqtype: '2'}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: For amino acid sequence data the Dayhoff et al. (Dayhoff)
+                    model, the Jones et al. (JTT) model, the Adachi and Hasegawa (mtREV24)
+                    model, the Henikoff and Henikoff (BLOSUM 62), the Muller and Vingron
+                    (VT), and theWhelan and Goldman (WAG) substitution model are implemented
+                    in TREE-PUZZLE.The mtREV24 model describes the evolution of amino
+                    acids encoded on mtDNA, and BLOSUM 62 is for distantly related
+                    amino acid sequences, as well as the VT model.
+                prompt: Model of substitution for protein (m)
+                paramfile: puzzle.params
+                name: protein_model
+                command: false
+                type: !mobyle/stringtype {default: '1'}
+            - !mobyle/inputprogramparameter
+                comment: The maximum likelihood calculation needs the frequency of
+                    each nucleotide (amino acid, doublet) as input. TREE-PUZZLE estimates
+                    these values from the sequence input data. This option allows
+                    specification of other values.
+                prompt: Use specified Amino acid frequencies (in %) (f)
+                format: ( ""  , "f\n" )[ value ]
+                argpos: 50
+                paramfile: puzzle.params
+                name: prot_freq
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparagraph
+                prompt: Values of specified amino acid frequencies (in %)
+                name: specified_prot_freq
+                precond: prot_freq
+                children:
+                - !mobyle/inputprogramparameter
+                    prompt: pi (A)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: a_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (R)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: r_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (N)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: n_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (D)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: d_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (C)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: c_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (Q)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: q_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (E)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: e_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (G)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: g_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (H)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: h_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (I)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: i_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (L)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: l_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (K)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: k_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (M)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: m_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (F)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: f_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (P)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: p_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (S)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: s_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (T)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: t_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (W)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: w_freq
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (Y)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: y_freq
+                    command: false
+                    type: !mobyle/floattype {}
+        - !mobyle/inputprogramparagraph
+            prompt: DNA options
+            name: dna_options
+            precond: {seqtype: '1'}
+            argpos: 1
+            children:
+            - !mobyle/inputprogramparameter
+                comment: 'The following models are implemented for nucleotides: the
+                    general time reversible model (Tavaree, 1986, GTR, e.g.,) model,
+                    the Tamura and Nei (TN) model, the Hasegawa et al. (HKY) model,
+                    and the Schroniger and von Haeseler (SH) model.The SH model describes
+                    the evolution of pairs of dependent nucleotides (pairs are the
+                    first and the second nucleotide, the third and the fourth nucleotide
+                    and so on). It allows for specification of the transition-transversion
+                    ratio.The original model (Schroniger and von Haeseler, 1994) is
+                    obtained by setting the transition-transversion parameter to 0.5.The
+                    Jukes and Cantor (1969), the Felsenstein (1981), and the Kimura
+                    (1980) model are all special cases of the HKY model.'
+                prompt: Model of substitution for DNA (m)
+                argpos: 10
+                paramfile: puzzle.params
+                name: dna_model
+                command: false
+                type: !mobyle/stringtype {default: '1'}
+            - !mobyle/inputprogramparagraph
+                prompt: GTR model rates
+                name: GTR_options
+                precond: {dna_model: '4'}
+                argpos: 11
+                children:
+                - !mobyle/inputprogramparameter
+                    prompt: A-C rate (1)
+                    format: ( "" , "1\n"+ str(value) + "\n" )[ value is not None and
+                        value != vdef]
+                    argpos: 11
+                    paramfile: puzzle.params
+                    name: GTR_acrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+                - !mobyle/inputprogramparameter
+                    prompt: A-G rate (2)
+                    format: ( "" , "2\n"+ str(value) + "\n" )[ value is not None and
+                        value != vdef]
+                    paramfile: puzzle.params
+                    name: GTR_agrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+                - !mobyle/inputprogramparameter
+                    prompt: A-T rate (3)
+                    format: ( "" , "3\n"+ str(value) + "\n" )[ value is not None and
+                        value != vdef]
+                    paramfile: puzzle.params
+                    name: GTR_atrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+                - !mobyle/inputprogramparameter
+                    prompt: C-G rate (4)
+                    format: ( "" , "4\n"+ str(value) + "\n" )[ value is not None and
+                        value != vdef]
+                    paramfile: puzzle.params
+                    name: GTR_cgrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+                - !mobyle/inputprogramparameter
+                    prompt: C-T rate (5)
+                    format: ( "" , "5\n" + str(value) +"\n" )[ value is not None and
+                        value != vdef]
+                    paramfile: puzzle.params
+                    name: GTR_ctrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+                - !mobyle/inputprogramparameter
+                    prompt: G-T rate (6)
+                    format: ( "" , "6\n" + str(value) +"\n" )[ value is not None and
+                        value != vdef]
+                    paramfile: puzzle.params
+                    name: GTR_gtrate
+                    command: false
+                    type: !mobyle/floattype {default: 1.0}
+            - !mobyle/inputprogramparagraph
+                prompt: SH model rates
+                name: SH_options
+                precond: {dna_model: '4'}
+                argpos: 11
+                children:
+                - !mobyle/inputprogramparameter
+                    comment: This option is only available for the SH model. With
+                        this option the doublet frequencies are symmetrized. For example,
+                        the frequencies of ?AT? and ?TA? are then set to the average
+                        of both frequencies.
+                    prompt: Symmetrize doublet frequencies (s)
+                    format: ( "" , "s\n" )[ value ]
+                    argpos: 11
+                    paramfile: puzzle.params
+                    name: symmetrize_frequencies
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparagraph
+                prompt: TN model options
+                name: TN_options
+                precond: {dna_model: '2'}
+                argpos: 11
+                children:
+                - !mobyle/inputprogramparameter
+                    comment: This option is only available for the Tamura-Nei model.
+                        With this option the expected (!) transition-transversion
+                        ratio for the F84 model have to be entered and TREE-PUZZLE
+                        computes the corresponding parameters of the TN model (this
+                        depends on base frequencies of the data). This allows to compare
+                        the results of TREE-PUZZLE and the PHYLIP maximum likelihood
+                        programs which use the F84 model.
+                    prompt: Constrain TN model to F84 model (p)
+                    format: ( "" , "p\n" )[ value ]
+                    argpos: 11
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: constrain_TN
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+                - !mobyle/inputprogramparameter
+                    prompt: Expected F84 Transition/transversion ratio
+                    format: ( "" , str(value) + "\n" )[ value is not None]
+                    argpos: 12
+                    paramfile: puzzle.params
+                    name: f84_ratio
+                    precond: constrain_TN
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    comment: This option is only available for the TN model. This
+                        parameter is the ratio of the rates for pyrimidine transitions
+                        and purine transitions. You do not need to specify this parameter
+                        as TREE-PUZZLE estimates it from the data. For precise definition
+                        please read the section in this manual about models of sequence
+                        evolution.
+                    prompt: Y/R transition parameter (r)
+                    format: ( "" , "r\n" + str(value) +"\n" )[ value is not None ]
+                    argpos: 13
+                    paramfile: puzzle.params
+                    name: y_r
+                    command: false
+                    type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                comment: For nucleotide data only. You do not need to specify this
+                    parameter as TREE-PUZZLE estimates it from the data. The precise
+                    definition of this parameter is given in the section on models
+                    of sequence evolution in this manual.
+                prompt: Transition/transversion ratio (t)
+                format: ( "" , "t\n" + str(value) + "\n" )[ value is not None ]
+                paramfile: puzzle.params
+                name: ratio
+                precond:
+                    dna_model: {'#ne': '3'}
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparagraph
+                prompt: Base frequencies (in %) (f)
+                name: nuc_freq
+                children:
+                - !mobyle/inputprogramparameter
+                    comment: The maximum likelihood calculation needs the frequency
+                        of each nucleotide (amino acid, doublet) as input. TREE-PUZZLE
+                        estimates these values from the sequence input data. This
+                        option allows specification of other values.
+                    prompt: Use specified values?
+                    format: ( ""  , "f\n" )[ value ]
+                    argpos: 50
+                    paramfile: puzzle.params
+                    name: use_specified_nuc
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (A)
+                    format: str(value) + "\n"
+                    argpos: 51
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: a_nuc_freq
+                    precond: use_specified_nuc
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (C)
+                    format: str(value) + "\n"
+                    argpos: 52
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: c_nuc_freq
+                    precond: use_specified_nuc
+                    command: false
+                    type: !mobyle/floattype {}
+                - !mobyle/inputprogramparameter
+                    prompt: pi (G)
+                    format: str(value) + "\n"
+                    argpos: 53
+                    paramfile: puzzle.params
+                    mandatory: true
+                    name: g_nuc_freq
+                    precond: use_specified_nuc
+                    command: false
+                    type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Rate heterogeneity options
+        name: rate_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'TREE-PUZZLE provides several different models of rate heterogeneity:
+                uniform rate over all sites (rate homogeneity), Gamma distributed
+                rates, two rates (1 invariable + 1 variable), and a mixed model (1
+                invariable rate + Gamma distributed rates). All necessary parameters
+                can be estimated by TREE-PUZZLE. Note that whenever invariable sites
+                are taken into account the parameter estimation will invoke the ?e?
+                option to use an exact likelihood function. For more detailed information
+                please read the section in this manual about models of sequence evolution.
+                See also option ?m? (model of substitution).'
+            prompt: Model of rate heterogeneity (w)
+            argpos: 20
+            paramfile: puzzle.params
+            name: rate_heterogeneity
+            command: false
+            type: !mobyle/stringtype {default: '1'}
+        - !mobyle/inputprogramparameter
+            comment: This is the so-called shape parameter of the Gamma distribution.
+            prompt: Gamma rate heterogeneity parameter alpha (a)
+            format: ( "" , "a\n" + str(value) +"\n" )[ value is not None ]
+            argpos: 21
+            paramfile: puzzle.params
+            name: alpha
+            precond:
+                '#or':
+                - {rate_heterogeneity: '2'}
+                - {rate_heterogeneity: '4'}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Number of rate categories (4-16) for the discrete Gamma distribution
+                (rate heterogeneity).
+            prompt: Number of Gamma rate categories (c)
+            format: ( "" , "c\n" + str(value) +"\n" )[ value is not None and value
+                != vdef]
+            argpos: 21
+            paramfile: puzzle.params
+            name: gamma_number
+            precond:
+                '#or':
+                - {rate_heterogeneity: '2'}
+                - {rate_heterogeneity: '4'}
+            command: false
+            type: !mobyle/integertype {default: 8}
+        - !mobyle/inputprogramparameter
+            comment: Probability of a site to be invariable. This parameter can be
+                estimated from the data by TREE-PUZZLE (only if the approximation
+                option for the likelihood function is turned off).
+            prompt: Fraction of invariable sites (i)
+            format: ( "" , "i\n" + str(value) +"\n" )[ value is not None ]
+            argpos: 21
+            paramfile: puzzle.params
+            name: invariable
+            precond:
+                '#or':
+                - {rate_heterogeneity: '3'}
+                - {rate_heterogeneity: '4'}
+            command: false
+            type: !mobyle/floattype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(infile)
+            + ".puzzle", name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Output tree
+        filenames: str(infile) + ".tree"
+        name: outtree
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Output distance, filenames: str(infile)
+            + ".dist", name: outdist}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"puzzle.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"puzzle.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0547']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'Strimmer, K., and A. von Haeseler. 1996. Quartet puzzling:A
+        quartet maximum likelihood method for reconstructing tree topologies. Mol.
+        Biol. Evol. 13: 964-969.', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/puzzle/tree-puzzle.pdf']
+homepage_links: ['http://www.tree-puzzle.de/']
+command: puzzle
+env: {}
+source_links: ['http://www.tree-puzzle.de/']

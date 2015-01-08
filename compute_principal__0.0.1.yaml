@@ -1,0 +1,81 @@
+!mobyle/program
+name: compute_principal_
+version: 0.0.1
+title: compute_principal_
+description: Compute principal components given a .hud file.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: contents of a .hud file, format: '" --hud="
+            + str(value)', simple: true, argpos: 1, mandatory: true, name: hud, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: input options
+        name: input_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: the data source is really diploid and biallelic
+            format: '" --diploid_and_biallelic=" + ("Y" if value else "N")'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: diploid_and_biallelic
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: find this many principal components
+        format: '" --npcs=" + str(value)'
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: npcs
+        command: false
+        type: !mobyle/integertype {default: 3}
+    - !mobyle/inputprogramparagraph
+        prompt: output options
+        name: output_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: add row indices for R table compatibility
+            format: '" --add_indices=" + ("Y" if value else "N")'
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: add_indices
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: force first-column elements to be IC-prefixed
+            format: '" --clean_isolates=" + ("Y" if value else "N")'
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: clean_isolates
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: write to file for mobyle
+        format: '" --write_to_file_for_mobyle"'
+        argpos: 6
+        name: write_to_file_for_mobyle
+        command: false
+        hidden: true
+        type: !mobyle/booleantype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: compute_principal__out, filenames: '"out.table"',
+        name: compute_principal__out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"compute_principal_.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"compute_principal_.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: runbsub -n 1 -W 720 -q dean -o result.out -e result.err __bsubArgsEnd__ /usr/local/apps/python-2.6.5/bin/python
+    /home/mobyle/pca/auto.py 20100608a
+env: {}

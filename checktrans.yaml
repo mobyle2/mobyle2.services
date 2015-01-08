@@ -1,0 +1,145 @@
+!mobyle/program
+name: checktrans
+title: checktrans
+description: Reports STOP codons and ORF statistics of a protein
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Minimum orf length to report (value greater than or equal to 1)
+            format: ("", " -orfml=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: orfml
+            command: false
+            type: !mobyle/integertype {default: 100}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: An asterisk in the protein sequence indicates the position of
+                a STOP codon. Checktrans assumes that all ORFs end in a STOP  codon.
+                Forcing the sequence to end with an asterisk, if there is  not one
+                there already, makes checktrans treat the end as a  potential ORF.
+                If an asterisk is added, it is not included in the  reported count
+                of STOPs.
+            prompt: Force the sequence to end with an asterisk
+            format: (" -noaddlast", "")[ bool(value) ]
+            argpos: 3
+            name: addlast
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 4
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: checktrans.outfile}
+        - !mobyle/inputprogramparameter
+            comment: Sequence file to hold output ORF sequences
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 5
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: checktrans.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+        - !mobyle/inputprogramparameter {comment: File for output features, prompt: Name
+                of the output feature file (outfeat), format: '("" , " -outfeat="
+                + str(value))[value is not None]', argpos: 7, name: outfeat, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the feature output format,
+            format: '("", " -offormat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 8, name: offormat_outfeat, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 9
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter {prompt: Outfeat_out option, filenames: outfeat,
+            name: outfeat_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"checktrans.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"checktrans.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0109']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/checktrans.html', 'http://emboss.sourceforge.net/docs/themes']
+command: checktrans
+env: {}

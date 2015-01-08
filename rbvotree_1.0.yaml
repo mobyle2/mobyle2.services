@@ -1,0 +1,73 @@
+!mobyle/program
+name: rbvotree
+version: '1.0'
+title: rbvotree
+description: Report bootstrap values found with consensus program on related tree
+    found with phylogeny algorithm without bootstrap analysis.
+authors: C. Maufrais
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Tree File (Newick standard form)(-n)
+        format: '" -n " + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: njtree
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        prompt: Consensus tree file with bootstrap values (Newick standard form)(-c)
+        format: '" -c " + str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: constree
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of output tree file (-o)
+            format: ("", " -o " + str(value)) [ value is not None]
+            argpos: 3
+            name: outname
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output tree file
+        filenames: str(outname)
+        name: outfile_name
+        precond:
+            outname: {'#ne': None}
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Output tree file
+        filenames: '"rbvotree.out"'
+        name: outfile
+        precond:
+            outname: {'#eq': None}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rbvotree.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0324']
+topics: ['EDAM_topic:0084']
+command: rbvotree
+env: {}

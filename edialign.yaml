@@ -1,0 +1,210 @@
+!mobyle/program
+name: edialign
+title: edialign
+description: Local multiple alignment of sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequences option
+            format: ("", " -sequences=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequences
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Nucleic acid sequence alignment mode (simple, translated or mixed)
+            prompt: Nucleic acid sequence alignment mode
+            format: ("", " -nucmode=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: nucmode
+            command: false
+            type: !mobyle/stringtype
+                default: n
+                options:
+                - {label: Simple, value: n}
+                - {label: Translation, value: nt}
+                - {label: Mixed alignments, value: ma}
+        - !mobyle/inputprogramparameter
+            prompt: Also consider the reverse complement
+            format: ("", " -revcomp")[ bool(value) ]
+            argpos: 3
+            name: revcomp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: By default overlap weights are used when Nseq =<35 but you can
+                set this to 'yes' or 'no'
+            prompt: Use overlap weights
+            format: ("", " -overlapw=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: overlapw
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Default (when nseq =< 35), value: '1'}
+                - {label: 'Yes', value: '2'}
+                - {label: 'No', value: '3'}
+        - !mobyle/inputprogramparameter
+            comment: Clustering method to construct sequence tree (UPGMA, minimum
+                linkage or maximum linkage)
+            prompt: Clustering method to construct sequence tree
+            format: ("", " -linkage=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: linkage
+            command: false
+            type: !mobyle/stringtype
+                default: UPGMA
+                options:
+                - {label: Upgma, value: UPGMA}
+                - {label: Maximum linkage, value: max}
+                - {label: Minimum linkage, value: min}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum fragment length (value greater than or equal to 0)
+            format: ("", " -maxfragl=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: maxfragl
+            command: false
+            type: !mobyle/integertype {default: 40}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Consider only n-fragment pairs that start with two matches
+            format: ("", " -fragmat")[ bool(value) ]
+            argpos: 7
+            name: fragmat
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Consider only p-fragment pairs if first amino acid or codon pair
+                has similarity score of at least n (value greater than or equal to
+                0)
+            format: ("", " -fragsim=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: fragsim
+            command: false
+            type: !mobyle/integertype {default: 4}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Use iterative score
+            format: ("", " -itscore")[ bool(value) ]
+            argpos: 9
+            name: itscore
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Threshold for considering diagonal for alignment (value greater
+                than or equal to 0.0)
+            format: ("", " -threshold=" + str(value))[value is not None and value!=vdef]
+            argpos: 10
+            name: threshold
+            command: false
+            type: !mobyle/floattype {default: 0.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Replace unaligned characters by stars '*' rather then putting
+                them in lowercase
+            format: ("", " -mask")[ bool(value) ]
+            argpos: 11
+            name: mask
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Activate writing of stars instead of numbers
+            format: ("", " -dostars")[ bool(value) ]
+            argpos: 12
+            name: dostars
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Put up to n stars '*' instead of digits 0-9 to indicate level
+                of conservation (value greater than or equal to 0)
+            format: ("", " -starnum=" + str(value))[value is not None and value!=vdef]
+            argpos: 13
+            name: starnum
+            command: false
+            type: !mobyle/integertype {default: 4}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 14
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: edialign.outfile}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 15
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: edialign.outseq}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 16
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {prompt: Outseq_out option, filenames: outseq,
+            name: outseq_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"edialign.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"edialign.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0495']
+topics: ['EDAM_topic:0186']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/edialign.html', 'http://emboss.sourceforge.net/docs/themes']
+command: edialign
+env: {}

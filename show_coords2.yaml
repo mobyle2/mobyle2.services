@@ -1,0 +1,152 @@
+!mobyle/program
+name: show_coords2
+title: Show-coords
+description: Show-coords
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: Input file, format: '" " + str( value
+            )', simple: true, argpos: 80, mandatory: true, name: delta, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Set minimum alignment length to display
+            format: ( "" , " -L " + str(value))[ value is not None ]
+            argpos: 20
+            name: L
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum percent identity to display
+            format: ( "" , " -I " + str(value) )[ value is not None ]
+            argpos: 14
+            name: I
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+        - !mobyle/inputprogramparameter
+            prompt: Brief output that only displays the non-redundant locations of
+                aligning regions
+            format: ( "" , " -b" )[ int(value) ]
+            argpos: 2
+            name: b
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch output to btab format
+            format: ( "" , " -B" )[ int(value) ]
+            argpos: 4
+            name: B
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Include percent coverage columns in the output
+            format: ( "" , " -c" )[ int(value) ]
+            argpos: 6
+            name: c
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Include the alignment direction/reading frame in the output (default
+                for promer)
+            format: ( "" , " -d" )[ int(value) ]
+            argpos: 8
+            name: d
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Only display alignments included in the Longest Ascending Subset,
+                i.e. the global alignment. Recommened to be used in conjunction with
+                the -r or -q options. Does not support circular sequences
+            format: ( "" , " -g" )[ int(value) ]
+            argpos: 10
+            name: g
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Omit the output header
+            format: ( "" , " -H" )[ int(value) ]
+            argpos: 12
+            name: H
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: '*PROMER ONLY* Knockout (do not display) alignments that overlap
+                another alignment in a better reading frame'
+            format: ( "" , " -k" )[ int(value) ]
+            argpos: 16
+            name: k
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Include sequence length columns in the output
+            format: ( "" , " -l" )[ int(value) ]
+            argpos: 18
+            name: l
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Annotate maximal alignments between two sequences, i.e. overlaps
+                between reference and query sequences
+            format: ( "" , " -o" )[ int(value) ]
+            argpos: 22
+            name: o
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Sort output lines by query
+            format: ( "" , " -q" )[ int(value) ]
+            argpos: 24
+            name: q
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Sort output lines by reference
+            format: ( "" , " -r" )[ int(value) ]
+            argpos: 26
+            name: r
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch output to tab-delimited format
+            format: ( "" , " -T" )[ int(value) ]
+            argpos: 28
+            name: T
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of output file
+            format: ( "" , " @ " + str( value ) )[ value is not None ]
+            argpos: 90
+            mandatory: true
+            name: outname
+            command: false
+            type: !mobyle/stringtype {default: promer.coords}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/outputprogramparameter {filenames: str(outname), name: outfile}
+    - !mobyle/outputprogramparameter {filenames: '"std.err"', name: stdoutfile}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"show_coords2.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"show_coords2.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: '"Versatile and open software for comparing large genomes." S.
+        Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway, C. Antonescu, and
+        S.L. Salzberg, Genome Biology (2004), 5:R12.', url: null}
+documentation_links: ['http://mummer.sourceforge.net']
+command: runner show-coords
+env: {}

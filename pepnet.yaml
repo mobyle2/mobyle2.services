@@ -1,0 +1,151 @@
+!mobyle/program
+name: pepnet
+title: pepnet
+description: Draw a helical net for a protein sequence
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: If this is true then the residues ACFGILMVWY are marked as squares
+                and all other residues are unmarked. This overrides any  other markup
+                that you may have specified using the qualifiers  '-squares', '-diamonds'
+                and '-octags'.
+            prompt: Prompt for amphipathic residue marking
+            format: ("", " -amphipathic")[ bool(value) ]
+            argpos: 2
+            name: amphipathic
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: By default the aliphatic residues ILVM are marked with squares.
+            prompt: Mark as squares
+            format: ("", " -squares=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: squares
+            precond: {'#not': amphipathic}
+            command: false
+            type: !mobyle/stringtype {default: ILVM}
+        - !mobyle/inputprogramparameter
+            comment: By default the residues DENQST are marked with diamonds.
+            prompt: Mark as diamonds
+            format: ("", " -diamonds=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: diamonds
+            precond: {'#not': amphipathic}
+            command: false
+            type: !mobyle/stringtype {default: DENQST}
+        - !mobyle/inputprogramparameter
+            comment: By default the positively charged residues HKR are marked with
+                octagons.
+            prompt: Mark as octagons
+            format: ("", " -octags=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: octags
+            precond: {'#not': amphipathic}
+            command: false
+            type: !mobyle/stringtype {default: HKR}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            simple: true
+            argpos: 6
+            mandatory: true
+            name: graph
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 7
+            name: goutfile
+            command: false
+            type: !mobyle/stringtype {default: pepnet_graph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 8
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: outgraph_png
+            precond: {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: outgraph_gif
+            precond: {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: outgraph_ps
+            precond:
+                '#or':
+                - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: outgraph_meta
+            precond: {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: outgraph_data
+            precond: {graph: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pepnet.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pepnet.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0569', 'EDAM_operation:0401']
+topics: ['EDAM_topic:0137', 'EDAM_topic:0092', 'EDAM_topic:2124']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/pepnet.html', 'http://emboss.sourceforge.net/docs/themes']
+command: pepnet
+env: {}

@@ -1,0 +1,267 @@
+!mobyle/program
+name: signalp
+version: '4.0'
+title: signalp
+description: predict signal peptides in proteins
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '" signalp "'
+        name: signalp
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input Sequence
+        format: '" " + str( value )'
+        simple: true
+        argpos: 100
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Use networks and models trained on sequences from the specified type
+            of organisms
+        format: '" -t " + value'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: type
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a type of organism, value: 'null'}
+            - {label: Gram-negative bacteria, value: gram-}
+            - {label: Gram-positive bacteria, value: gram+}
+            - {label: eukaryotes, value: euk}
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>The\
+            \ valid formats are:</html:p><html:ul><html:li><html:strong>short :</html:strong>Write\
+            \  only  one line of concluding scores per sequence. Intended for\n  \
+            \                   analysis of large datasets where machine-readable\
+            \ output is required.<html:em>This is the default</html:em>.</html:li><html:li><html:strong>long\
+            \ :</html:strong>Write the scores for each position in each sequnce.</html:li><html:li><html:strong>all\
+            \ :</html:strong>Write predictions for both Signalp-TM and SignalP-noTM\
+            \ networks. Five\n                     columns with cleavage site (CS)\
+            \ and Signal Peptide (SP)  predictions\n                     for  both\
+            \  SigP-noTM  and  SigP-TM methods and TM prediction for each\n      \
+            \               position.</html:li><html:li><html:strong>summary :</html:strong>Write\
+            \ only the concluding scores for each sequence.  This  is  essen&#8208;\n\
+            \                     tially the same information as the 'short' format.</html:li></html:ul></html:div>"
+        prompt: Produce output in the specified format.
+        format: ( "" , " -f " + value)[ value is not None and value != vdef ]
+        argpos: 10
+        mandatory: true
+        name: format
+        command: false
+        type: !mobyle/stringtype
+            default: short
+            options:
+            - {label: short, value: short}
+            - {label: long, value: long}
+            - {label: all, value: all}
+            - {label: summary, value: summary}
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:ul><html:li><html:strong>gif\
+            \ :</html:strong>Save  plots  in  Graphics Interchange Format (GIF) under\
+            \ the names 'plot.method.#.gif', where\n                     method is\
+            \ nn or hmm, and # is the number of the input sequence.</html:li><html:li><html:strong>gif+eps\
+            \ :</html:strong>Save plots in both GIF and EPS formats as described above.</html:li></html:ul></html:div>"
+        prompt: generate graphics (-g).
+        format: ( "" , " -g "+str( value ) )[ bool( value ) ]
+        argpos: 20
+        name: graphics
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: no graphics, value: 'null'}
+            - {label: GIF, value: gif}
+            - {label: GIF and EPS, value: gif+eps}
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>Input\
+            \ sequences may include or not TM regions.</html:p><html:ul><html:li><html:strong>best\
+            \ :</html:strong>The method decides which neural networks predictions\
+            \  give  the  best\n                     result  choosing  predictions\
+            \  from either SignalP-TM or SignalP-noTM\n                     networks.\
+            \ For 'gram+' organisms it is always SignalP-TM networks.<html:em>(default)</html:em></html:li><html:li><html:strong>notm\
+            \ :</html:strong>The SignalP-noTM neural networks are specifically chosen.</html:li></html:ul></html:div>"
+        prompt: Use the specified prediction method.
+        format: ( "" , " -s " + value)[ value is not None and value != vdef ]
+        argpos: 30
+        name: Method
+        command: false
+        type: !mobyle/stringtype
+            default: best
+            options:
+            - {label: best, value: best}
+            - {label: notm, value: notm}
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>user\
+            \ defined D-cutoff for noTM networks. A score above the specified\n  \
+            \          cutoff will result in a positive prediction of a signal peptide.\
+            \ The cutoff\n            determines the yes/no answer only, the prediction\
+            \ process is not affected.\n            The default cutoffs are:</html:p><html:ul><html:li><html:strong>euk</html:strong>:\
+            \ 0.45</html:li><html:li><html:strong>gram+</html:strong>: 0.57</html:li><html:li><html:strong>gram-</html:strong>:\
+            \ 0.57</html:li></html:ul></html:div>"
+        prompt: cutoff for noTM networks
+        format: ( "" , " -u " + str( value ) )[ value is not None]
+        argpos: 50
+        name: noTM_cutoff
+        command: false
+        type: !mobyle/floattype {}
+        ctrls:
+        -   message: the cutoff must be >= 0 and <= 1
+            test:
+                '#and':
+                -   value: {'#gte': '0'}
+                -   value: {'#lte': '1'}
+    - !mobyle/inputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\">user defined\
+            \ D-cutoff for TM networks. A score above  the  specified\n          \
+            \    cutoff  will result in a positive prediction of a signal peptide.\
+            \ The cutoff\n              determines the yes/no answer only, the prediction\
+            \ process is  not  affected.\n              The default cutoffs are:<html:ul><html:li><html:strong>euk</html:strong>:\
+            \ 0.50</html:li><html:li><html:strong>gram+</html:strong>: 0.45</html:li><html:li><html:strong>gram-</html:strong>:\
+            \ 0.51</html:li></html:ul></html:div>"
+        prompt: cutoff for TM networks
+        format: ( "" , " -U " + str( value ) )[ value is not None]
+        argpos: 50
+        name: TM_cutoff
+        command: false
+        type: !mobyle/floattype {}
+        ctrls:
+        -   message: the cutoff must be >= 0 and <= 1
+            test:
+                '#and':
+                -   value: {'#gte': '0'}
+                -   value: {'#lte': '1'}
+    - !mobyle/inputprogramparameter
+        comment: "truncate the input sequences to the specified length from the  N-ter\u2010\
+            \n              minal. The default is 70 residues. The value of \"0\"\
+            \ disables truncation."
+        prompt: Truncate  each  sequence  to  maximally n N-terminal residues
+        format: ( "" , " -c " + str( value ) )[ value is not None and value != vdef
+            ]
+        argpos: 60
+        name: truncate
+        command: false
+        type: !mobyle/integertype {default: 70}
+        ctrls:
+        -   message: enter a positive value
+            test:
+                value: {'#gte': '0'}
+    - !mobyle/inputprogramparameter
+        prompt: generate a FASTA file with mature sequences based on  the  predictions.
+        format: ( "" , " -m %s_mature.fasta"%sequence)[value]
+        argpos: 70
+        name: mature
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: generate a GFF (name-start-end) file with the predicted signal peptides.
+        format: ( "" , " -n %s.gff"%sequence)[value]
+        argpos: 70
+        name: n_s_e
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p><html:strong>Neural\
+            \ network output</html:strong></html:p><html:p>For  each input sequence\
+            \ the neural network (nn) module of signalp will first return three scores\
+            \ between 0\n       and 1 for each sequence position:</html:p><html:ul><html:li><html:strong>C-score\
+            \ (raw cleavage site score)</html:strong>The output score from networks\
+            \ trained to recognize cleavage sites  vs.  other  sequence  positions.\n\
+            \              Trained  to be high at position +1 (immediately after the\
+            \ cleavage site), and low at all other posi&#8208;\n              tions.</html:li><html:li><html:strong>S-score\
+            \ (signal peptide score)</html:strong>The output score from networks trained\
+            \ to recognize signal peptide vs. non-signal-peptide positions.\n    \
+            \          Trained  to be high at all positions before the cleavage site,\
+            \ and low at positions after the cleav&#8208;\n              age site\
+            \ and in the N-terminals of non-secretory proteins.</html:li><html:li><html:strong>Y-score\
+            \ (combined cleavage site score)</html:strong>The prediction of cleavage\
+            \ site location is optimized by observing where the C-score is high and\
+            \ the\n              S-score  changes from a high to a low value.  The\
+            \ Y-score formalizes this by combining the height of\n              the\
+            \ C-score with the slope of the S-score.<html:br />Specifically, the Y-score\
+            \ is a geometric average between the C-score and a  smoothed  derivative\
+            \  of\n              the  S-score  (i.e.  the difference between the mean\
+            \ S-score over d positions before and d positions\n              after\
+            \ the current position, where d varies with the chosen network ensemble).</html:li></html:ul><html:p>signalp\
+            \ will then report the maximal C-, S-, and Y-scores, the mean S-score\
+            \ in the interval between  the\n       N-terminal  and  the site with\
+            \ the maximal Y-score and, finally, the D-score, the average of the S-mean\
+            \ and\n       Y-max score.</html:p><html:p>The high detail level of the\
+            \ output is intended to allow for interpretation  of  borderline  cases\
+            \  by  the\n       user.</html:p><html:p>If  the sequence is predicted\
+            \ to have a signal peptide, the predicted cleavage site\n       is located\
+            \ immediately before the position with the maximal Y-score.</html:p></html:div>"
+        prompt: signalp report
+        filenames: '"signalp.out"'
+        name: results
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: graphic in GIF
+        filenames: '"*.gif"'
+        name: gif
+        precond:
+            '#or':
+            - {graphics: gif}
+            - {graphics: gif+eps}
+    - !mobyle/outputprogramparameter
+        prompt: graphic in eps
+        filenames: '"*.gif"'
+        name: eps
+        precond: {graphics: gif+eps}
+    - !mobyle/outputprogramparameter
+        prompt: a FASTA file with mature sequences based on  the  predictions
+        filenames: '"%s_mature.fasta"%sequence'
+        name: mature_result
+        precond: mature
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter {prompt: a GFF (name-start-end) file with the
+            predicted signal peptides, filenames: '"%s.gff"%sequence', name: n_s_e_result,
+        precond: n_s_e}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"signalp.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "signalp  predicts  the  presence and location of signal peptide cleavage\
+    \ sites in amino acid sequences from\n       different organisms: Gram-positive\
+    \ prokaryotes, Gram-negative prokaryotes, and eukaryotes.The  method  incorporates\
+    \ a prediction of cleavage sites and a signal peptide/non-signal peptide prediction\
+    \ based on a \n       combination of several artificial neural networks."
+operations: ['EDAM_operation:0418']
+topics: ['EDAM_topic:0748']
+references:
+- {doi: 10.1038/nmeth.1701, label: "SignalP 4.0: discriminating signal peptides from\
+        \ transmembrane regions\n       Thomas Nordahl Petersen, S\xF8ren Brunak,\
+        \ Gunnar von Heijne & Henrik Nielsen\n       Nature Methods, 8:785-786, 2011",
+    url: null}
+- {doi: null, label: "Improved prediction of signal peptides: SignalP 3.0.\n     \
+        \   Jannick Dyrl\xF8v Bendtsen, Henrik Nielsen, Gunnar von Heijne and S\xF8\
+        ren Brunak.\n        J. Mol. Biol., 340:783-795, 2004.", url: null}
+- {doi: null, label: "Identification of prokaryotic and eukaryotic signal peptides\
+        \ and prediction of their cleavage sites.\n        Henrik Nielsen, Jacob Engelbrecht,\
+        \ S\xF8ren Brunak and Gunnar von Heijne.\n        Protein Engineering, 10:1-6,\
+        \ 1997.", url: null}
+- {doi: null, label: "Prediction of signal peptides and signal anchors by a hidden\
+        \ Markov model.\n        Henrik Nielsen and Anders Krogh.\n        Proceedings\
+        \ of the Sixth International Conference on Intelligent Systems for Molecular\
+        \ Biology (ISMB 6),\n        AAAI Press, Menlo Park, California, pp. 122-130,\
+        \ 1998.", url: null}
+documentation_links: ['http://www.cbs.dtu.dk/services/SignalP/']
+env: {}
+source_links: ['http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?signalp']

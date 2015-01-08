@@ -1,0 +1,1009 @@
+!mobyle/program
+name: wublast2
+version: '2.0'
+title: WUBLAST2
+description: Wash-U. BLAST, with gaps
+authors: Gish. W
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: The five BLAST programs described here perform the following tasks:-
+            blastp compares an amino acid query sequence against a protein sequence
+            database;- blastn compares a nucleotide query sequence against a nucleotide
+            sequence database;- blastx compares the six-frame conceptual translation
+            products of a nucleotide query sequence (both strands) against a protein
+            sequence database;- tblastn compares a protein query sequence against
+            a nucleotide sequence database dynamically translated in all six reading
+            frames (both strands).- tblastx compares the six-frame translations of
+            a nucleotide query sequence against the six-frame translations of a nucleotide
+            sequence database.
+        prompt: Blast program
+        format: str(value)
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: wublast2
+        command: true
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a program, value: 'null'}
+            - {label: Blastn (nucleotide query / nucleotide db), value: blastn}
+            - {label: Blastp (amino acid query / protein db), value: blastp}
+            - {label: Blastx (nucleotide query translated / protein db), value: blastx}
+            - {label: tBlastn (protein query / translated nucleotide db), value: tblastn}
+            - {label: tBlastx (nucleotide query translated / translated nucleotide
+                    db), value: tblastx}
+    - !mobyle/inputprogramparagraph
+        prompt: Database
+        name: db
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Choose a protein db for blastp or blastx.
+            prompt: Protein db
+            format: '" "+str(value)'
+            simple: true
+            mandatory: true
+            name: protein_db
+            precond:
+                wublast2:
+                    '#in': [blastp, blastx]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'uniprot: Universal Protein Resource', value: uniprot}
+                - {label: 'uniprot_sprot: Universal Protein Resource (SwissProt part)',
+                    value: uniprot_sprot}
+                - {label: 'uniprot_trembl: Universal Protein Resource (TrEmbl part)',
+                    value: uniprot_trembl}
+                - {label: 'nrprot: NCBI non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot}
+                - {label: 'nrprot_month: NCBI month non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot_month}
+                - {label: 'genpept: Genbank translations (last rel. + upd.)', value: genpept}
+                - {label: 'genpept_new: genpept updates', value: genpept_new}
+                - {label: 'gpbct: genpept bacteries', value: gpbct}
+                - {label: 'gppri: primates', value: gppri}
+                - {label: 'gpmam: other mammals', value: gpmam}
+                - {label: 'gprod: rodents', value: gprod}
+                - {label: 'gpvrt: other vertebrates', value: gpvrt}
+                - {label: 'gpinv: invertebrates', value: gpinv}
+                - {label: 'gppln: plants (including yeast)', value: gppln}
+                - {label: 'gpvrl: virus', value: gpvrl}
+                - {label: 'gpphg: phages', value: gpphg}
+                - {label: 'gpsts: STS', value: gpsts}
+                - {label: 'gpsyn: synthetic', value: gpsyn}
+                - {label: 'gppat: patented', value: gppat}
+                - {label: 'gpuna: unatotated', value: gpuna}
+                - {label: 'gphtg: GS (high throughput Genomic Sequencing)', value: gphtg}
+                - {label: 'sbase: annotated domains sequences', value: sbase}
+        - !mobyle/inputprogramparameter
+            comment: Choose a nucleotide db for blastn, tblastn or tblastx
+            prompt: Nucleotid db
+            format: '" "+str(value)'
+            simple: true
+            mandatory: true
+            name: nucleotid_db
+            precond:
+                wublast2:
+                    '#in': [blastn, tblastn, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'embl: Embl last release + updates', value: embl}
+                - {label: 'embl_new: Embl updates', value: embl_new}
+                - {label: 'genbank: Genbank last release + updates', value: genbank}
+                - {label: 'genbank_new: Genbank updates', value: genbank_new}
+                - {label: 'gbbct: genbank bacteria', value: gbbct}
+                - {label: 'gbpri: primates', value: gbpri}
+                - {label: 'gbmam: other mammals', value: gbmam}
+                - {label: 'gbrod: rodents', value: gbrod}
+                - {label: 'gbvrt: other vertebrates', value: gbvrt}
+                - {label: 'gbinv: invertebrates', value: gbinv}
+                - {label: 'gbpln: plants (including yeast)', value: gbpln}
+                - {label: 'gbvrl: virus', value: gbvrl}
+                - {label: 'gbphg: phages', value: gbphg}
+                - {label: 'gbest: EST (Expressed Sequence Tags)', value: gbest}
+                - {label: 'gbsts: STS (Sequence Tagged sites)', value: gbsts}
+                - {label: 'gbsyn: synthetic', value: gbsyn}
+                - {label: 'gbpat: patented', value: gbpat}
+                - {label: 'gbuna: unannotated', value: gbuna}
+                - {label: 'gbgss: Genome Survey Sequences', value: gbgss}
+                - {label: 'gbhtg: GS (high throughput Genomic Sequencing)', value: gbhtg}
+                - {label: 'imgt: IMGT/LIGM-DB, ImMunoGeneTics sequence database',
+                    value: imgt}
+                - {label: 'borrelia: Borrelia burgdorferi complete genome', value: borrelia}
+                - {label: 'ecoli: Escherichia Coli complete genome', value: ecoli}
+                - {label: 'genitalium: Mycoplasma Genitalium complete genome', value: genitalium}
+                - {label: 'pneumoniae: Mycoplasma Pneumoniae complete genome', value: pneumoniae}
+                - {label: 'hpylori: Helicobacter Pylori complete genome', value: hpylori}
+                - {label: 'bsubtilis: Bacillus Subtilis complete genome', value: bsubtilis}
+                - {label: 'tuberculosis: Mycobacterium tuberculosis complete genome',
+                    value: tuberculosis}
+                - {label: 'ypestis: Yersinia pestis unfinished genome', value: ypestis}
+                - {label: 'yeast: Yeast chromosomes', value: yeast}
+                - {label: 'pfalciparum: Plasmodium falciparum 3D7', value: pfalciparum}
+    - !mobyle/inputprogramparagraph
+        prompt: Query Sequence
+        name: query
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Query
+            format: '" " + str(value)'
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: query_seq
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Do not segment the query sequence on hyphen (-) characters (-nosegs)
+            format: ( "" , " -nosegs" )[ value ]
+            argpos: 5
+            name: nosegs
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: BLAST version
+        format: ( "" , " -" + str(value) )[ value is not None and value != vdef]
+        argpos: 5
+        name: compat
+        command: false
+        type: !mobyle/stringtype
+            default: current
+            options:
+            - {label: Current version 2.0, value: current}
+            - {label: BLAST version 1.4, value: compat1.4}
+            - {label: BLAST version 1.3, value: compat1.3}
+    - !mobyle/inputprogramparagraph
+        prompt: Scoring options
+        name: scoring_opt
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Default: 9 for proteins and 10 for nucleics.'
+            prompt: Open gap penalty (Q)
+            format: ( "" , " Q=" + str(value) )[ value is not None ]
+            name: open_a_gap
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Default: 2 for proteins; 10 for nucleics.'
+            prompt: Extending a gap penalty (R)
+            format: ("" , " R=" + str(value))[ value is not None ]
+            name: extend_a_gap
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Protein penalty (not for blastn)
+            name: scoring_blast
+            precond:
+                wublast2: {'#ne': blastn}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Several PAM (point accepted mutations per 100 residues) amino
+                    acid scoring matrices are provided in the BLAST software distribution,
+                    including the PAM40, PAM120, and PAM250. While the BLOSUM62 matrix
+                    is a good general purpose scoring matrix and is the default matrix
+                    used by the BLAST programs, if one is restricted to using only
+                    PAM scoring matrices, then the PAM120 is recommended for general
+                    protein similarity searches (Altschul, 1991). The pam(1 program
+                    can be used to produce PAM matrices of any desired iteration from
+                    2 to 511. Each matrix is most sensitive at finding similarities
+                    at its particular PAM distance. For more thorough searches, particularly
+                    when the mutational distance between potential homologs is unknown
+                    and the significance of their similarity may be only marginal,
+                    Altschul (1991, 1992) recommends performing at least three searches,
+                    one each with the PAM40, PAM120 and PAM250 matrices.
+                prompt: Similarity matrix (-matrix)
+                format: ( "" , " -matrix " + str(value) )[ value is not None and value
+                    != vdef]
+                name: matrix
+                command: false
+                type: !mobyle/stringtype
+                    default: BLOSUM62
+                    options:
+                    - {label: BLOSUM30, value: BLOSUM30}
+                    - {label: BLOSUM35, value: BLOSUM35}
+                    - {label: BLOSUM40, value: BLOSUM40}
+                    - {label: BLOSUM45, value: BLOSUM45}
+                    - {label: BLOSUM50, value: BLOSUM50}
+                    - {label: BLOSUM55, value: BLOSUM55}
+                    - {label: BLOSUM60, value: BLOSUM60}
+                    - {label: BLOSUM62, value: BLOSUM62}
+                    - {label: BLOSUM65, value: BLOSUM65}
+                    - {label: BLOSUM70, value: BLOSUM70}
+                    - {label: BLOSUM75, value: BLOSUM75}
+                    - {label: BLOSUM80, value: BLOSUM80}
+                    - {label: BLOSUM85, value: BLOSUM85}
+                    - {label: BLOSUM90, value: BLOSUM90}
+                    - {label: PAM10, value: PAM10}
+                    - {label: PAM20, value: PAM20}
+                    - {label: PAM30, value: PAM30}
+                    - {label: PAM40, value: PAM40}
+                    - {label: PAM50, value: PAM50}
+                    - {label: PAM60, value: PAM60}
+                    - {label: PAM70, value: PAM70}
+                    - {label: PAM80, value: PAM80}
+                    - {label: PAM90, value: PAM90}
+                    - {label: PAM100, value: PAM100}
+                    - {label: PAM110, value: PAM110}
+                    - {label: PAM120, value: PAM120}
+                    - {label: PAM130, value: PAM130}
+                    - {label: PAM140, value: PAM140}
+                    - {label: PAM150, value: PAM150}
+                    - {label: PAM160, value: PAM160}
+                    - {label: PAM170, value: PAM170}
+                    - {label: PAM180, value: PAM180}
+                    - {label: PAM190, value: PAM190}
+                    - {label: PAM200, value: PAM200}
+                    - {label: PAM210, value: PAM210}
+                    - {label: PAM220, value: PAM220}
+                    - {label: PAM230, value: PAM230}
+                    - {label: PAM240, value: PAM240}
+                    - {label: PAM250, value: PAM250}
+                    - {label: PAM260, value: PAM260}
+                    - {label: PAM270, value: PAM270}
+                    - {label: PAM280, value: PAM280}
+                    - {label: PAM290, value: PAM290}
+                    - {label: PAM300, value: PAM300}
+                    - {label: PAM310, value: PAM310}
+                    - {label: PAM320, value: PAM320}
+                    - {label: PAM330, value: PAM330}
+                    - {label: PAM340, value: PAM340}
+                    - {label: PAM350, value: PAM350}
+                    - {label: PAM360, value: PAM360}
+                    - {label: PAM370, value: PAM370}
+                    - {label: PAM380, value: PAM380}
+                    - {label: PAM390, value: PAM390}
+                    - {label: PAM400, value: PAM400}
+                    - {label: Identity, value: identity}
+        - !mobyle/inputprogramparagraph
+            prompt: Blastn penalty
+            name: scoring_blastn
+            precond: {wublast2: blastn}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Penalty for a nucleotid mismatch (N)
+                format: ( "" , " N=" + str(value) )[ value is not None and value !=
+                    vdef]
+                name: mismatch
+                precond: {wublast2: blastn}
+                command: false
+                type: !mobyle/floattype {default: -4.0}
+            - !mobyle/inputprogramparameter
+                prompt: Reward for a nucleotid match (M)
+                format: ( "" , " M=" + str(value) )[ value is not None and value !=
+                    vdef]
+                name: match
+                command: false
+                type: !mobyle/floattype {default: 5.0}
+    - !mobyle/inputprogramparagraph
+        prompt: Filtering and masking options
+        name: filter_opt
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Mask letters in the query sequence without altering the sequence
+                itself, during neighborhood word generation.
+            prompt: Filter or Masking query sequence
+            name: filter
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: No filter, value: 'null'}
+                - {label: Filter, value: filter}
+                - {label: Masking, value: wordmask}
+        - !mobyle/inputprogramparameter
+            comment: This option activates filtering or masking of segments of the
+                query sequence based on a potentially wide variety of criteria. The
+                usual intent of filtering is to mask regions that are non-specific
+                for protein identification using sequence similarity. For instance,
+                it may be desired to mask acidic or basic segments that would otherwise
+                yield overwhelming amounts of uninteresting, non-specific matches
+                against a wide array of protein families from a comprehensive database
+                search. The BLAST programs have internally-coded knowledge of the
+                specific command line options needed to invoke the SEG and XNU programs
+                as query sequence filters, but these two filter programs are not included
+                in the BLAST software distribution and must be independently installed.The
+                SEG program (Wootton and Federhen, 1993) masks low compositional complexity
+                regions, while XNU (Claverie and States, 1993) masks regions containing
+                short-periodicity internal repeats. The BLAST programs can pipe the
+                filtered output from one program into another. For instance, XNU+SEG
+                or SEG+XNU can be specified as the filtermethod to have each program
+                filter the query sequence in succession. Note that neither SEG nor
+                XNU is suitable for filtering untranslated nucleotide sequences for
+                use by blastn
+            prompt: Filtering or Masking options
+            format: '" -" + str(filter) + " " + str(value)'
+            name: other_filters
+            precond:
+                filter: {'#ne': None}
+            command: false
+            type: !mobyle/stringtype
+                default: seg
+                options:
+                - {label: DNA filter (-dust), value: dust}
+                - {label: Masks low compositional complexity regions (-seg), value: seg}
+                - {label: Masks regions containing short-periodicity internal repeats
+                        (xnu), value: xnu}
+                - {label: seg+xnu, value: seg+xnu}
+        - !mobyle/inputprogramparameter
+            prompt: Extend masking additional distance into flanking regions (-maskextra)
+            format: ( "" , " -maskextra" )[ value ]
+            name: maskextra
+            precond: {filter: wordmask}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Filter lower-case letters in query
+            format: ( "" , " -" + str(value) )[ value is not None and value != vdef]
+            name: lc
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: None, value: 'null'}
+                - {label: Filter by replacing with the appropriate ambiguity code
+                        (-lcfilter), value: lcfilter}
+                - {label: Mask without altering the sequence (-lcfilter), value: lcmask}
+    - !mobyle/inputprogramparagraph
+        prompt: Selectivity Options
+        name: selectivite
+        argpos: 7
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The parameter Expect (E) establishes a statistical significance
+                threshold for reporting database sequence matches. E is interpreted
+                as the upper bound on the expected frequency of chance occurrence
+                of an HSP (or set of HSPs) within the context of the entire database
+                search. Any database sequence whose matching satisfies E is subject
+                to being reported in the program output. If the query sequence and
+                database sequences follow the random sequence model of Karlin and
+                Altschul (1990), and if sufficiently sensitive BLAST algorithm parameters
+                are used, then E may be thought of as the number of matches one expects
+                to observe by chance alone during the database search. The default
+                value for E is 10, while the permitted range for this Real valued
+                parameter is 0 < E <= 1000.
+            prompt: Expected value (E)
+            format: ( "" , " E=" + str(value) )[ value is not None and value != vdef]
+            simple: true
+            name: Expect
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal number of HSPs saved or reported per subject sequence
+                (-hspmax)
+            format: ( "" , " -hspmax " + str(value) )[ value is not None and value
+                != vdef]
+            name: hspmax
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            comment: E2 is interpreted as the expected number of HSPs that will be
+                found when comparing two sequences that each have the same length
+                -- either 300 amino acids or 1000 nucleotides, whichever is appropriate
+                for the particular program being used.The default value for E2 is
+                typically about 0.15 but may vary from version to version of each
+                program.
+            prompt: Expected number of HSPs that will be found when comparing two
+                sequences that each have the same length (E2)
+            format: ("" , " E2=" + str(value))[ value is not None ]
+            name: E2
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: The parameter Cutoff (S) represents the score at which a single
+                HSP would by itself satisfy the significance threshold E. Higher scores
+                -- higher values for S -- correspond to increasing statistical significance
+                (lower probability of chance occurrence). Unless S is explicitly set
+                on the command line, its default value is calculated from the value
+                of E. If both S and E are set on the command line, the one which is
+                the most restrictive is used. When neither parameter is specified
+                on the command line, the default value for E is used to calculate
+                S.
+            prompt: 'Cutoff score: threshold for report (S)'
+            format: ( "" , " S=" + str(value) )[ value is not None ]
+            name: Cutoff
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: S2 may be thought of as the score expected for the MSP between
+                two sequences that each have the same length -- either 300 amino acids
+                or 1000 nucleotides, whichever is appropriate for the particular program
+                being used.The default value for S2 will be calculated from E2 and,
+                like the relationship between E and S, is dependent on the residue
+                composition of the query sequence and the scoring system employed,
+                as conveyed by the Karlin-Altschul K and Lambda statistics.
+            prompt: Cutoff score which defines HSPs (S2)
+            format: ( "" , " S2=" + str(value) )[ value is not None ]
+            name: S2
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: 'The task of finding HSPs begins with identifying short words
+                of length W in the query sequence that either match or satisfy some
+                positive-valued threshold score T when aligned with a word of the
+                same length in a database sequence. T is referred to as the neighborhood
+                word score threshold (Altschul et al., 1990). These initial neighborhood
+                word hits act as seeds for initiating searches to find longer HSPs
+                containing them. The word hits are extended in both directions along
+                each sequence for as far as the cumulative alignment score can be
+                increased. Extension of the word hits in each direction are halted
+                when: the cumulative alignment score falls off by the quantity X from
+                its maximum achieved value; the cumulative score goes to zero or below,
+                due to the accumulation of one or more negative-scoring residue alignments;
+                or the end of either sequence is reached.'
+            prompt: Length of words identified in the query sequence (W)
+            format: ( "" , " W=" + str(value) )[ value is not None ]
+            name: W
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Neighborhood word score threshold (T)
+            format: ( "" , " T=" + str(value) )[ value is not None ]
+            name: T
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Restrict blast neighborhood word generation to a specific segment
+                of the query sequence that begins at 'nwstart' and continues for 'nwlen'
+                residues or until the end of the query sequence is reached. HSP alignments
+                may extend outside the region of neighborhood word generation but
+                hte alignments can only be initiated by word hits occurring within
+                the region. Through the use of these options, a very long query sequence
+                can be searched piecemeal, using short, overlapping segments each
+                time. The amount of overlap from one neighborhood region to the next
+                need only be the blast wordlength W minus 1, in order to be assured
+                of detecting all HSPs.However, to provide greater freedom for statistical
+                interpretation of multiple HSP findings (eg. matches against exons)
+                more extensive overlapping is recommanded, with the extent to be chosen
+                based on the expected gene density and length of introns.
+            prompt: Start generating neighborhood words here in query (blastp/blastx)
+                (-nwstart)
+            format: ( "" , " -nwstart " + str(value) )[ value is not None ]
+            name: nwstart
+            precond:
+                wublast2:
+                    '#in': [blastp, blastx]
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Generate neighborhood words over this distance from 'nwstart'
+                in query (blastp/blastx) (-nwlen)
+            format: ( "" , " -nwlen " + str(value) )[ value is not None ]
+            name: nwlen
+            precond:
+                wublast2:
+                    '#in': [blastp, blastx]
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Word hit extension drop-off score (X)
+            format: ( "" , " X=" + str(value) )[ value is not None ]
+            name: X
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Invoke a 2-hit BLAST algorithm similar to that of Altschul et
+                al. (1997), with maximum  wordhit separation distance, as measured
+                from the end of each wordhit. Altschul et al. (1997) use the equivalent
+                of hitdist=40 in their software by default (except NCBI-BLASTN, where
+                2-hit BLAST is not available). In WU-BLASTN, setting 'hitdist' and
+                'wink' (see below) is akin to using double-length words generated
+                on W-mer boundaries.For best sensitivity, 2-hit BLAST should generally
+                not be used.
+            prompt: Maximum word separation distance for 2-hit BLAST algorithm (-hitdist)
+            format: ( "" , " -hitdist " + str(value) )[ value is not None and value
+                != vdef]
+            name: hitdist
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: Generate word hits at every wink-th ('W increment') position
+                along the query, where the default wink=1 produces neighborhood words
+                at every position.For good sensitivity, this option should not be
+                used. The benefit of using 'wink' is in finding identical or nearly
+                identical sequences rapidly. When used in conjunction with the 'hitdist'
+                option to obtain the highest speed, care should be taken that desired
+                matches are not precluded by these parameters.
+            prompt: Generate word hits at every wink-th position (-wink)
+            format: ( "" , " -wink " + str(value) )[ value is not None and value !=
+                vdef]
+            name: wink
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: This option turns off both the determination of the number of
+                HSPs that ar consistent with each other in a gapped alignment and
+                an adjustment that is made to the Sum and poisson statistics to account
+                for the consistency of combined HSPs.
+            prompt: Turn off HSP consistency rules for statistics (-consistency)
+            format: ( "" , " -consistency" )[ value ]
+            name: consistency
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal separation allowed between HSPs along query (-hspsepqmax)
+            format: ( "" , " -hspsepqmax " + str(value) )[ value is not None ]
+            name: hspsepqmax
+            precond: {'#not': consistency}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal separation allowed between HSPs along subject (-hspsepsmax)
+            format: ( "" , " -hspsepsmax " + str(value) )[ value is not None ]
+            name: hspsepsmax
+            precond: {'#not': consistency}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Discard HSPs spanned on (-span*)
+            format: ( "" , " -" + str(value) )[ value is not None and value != vdef]
+            name: span
+            command: false
+            type: !mobyle/stringtype
+                default: span2
+                options:
+                - {label: Both query and subject by a better HSP (span2), value: span2}
+                - {label: 'On query, subject or both by a better HSP (span1)', value: span1}
+                - {label: 'By other, better HSPs (span)', value: span}
+        - !mobyle/inputprogramparameter
+            prompt: Do not create gapped alignments (-nogap)
+            format: ( "" , " -nogap" )[ value ]
+            name: nogap
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Generate a gapped alignment for every ungapped HSP found (-gapall)
+            format: ( "" , " -gapall" )[ value ]
+            name: gapall
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparagraph
+            prompt: Selectivity options for gapped alignments
+            name: gap_selectivite
+            precond:
+                '#and':
+                - {'#not': nogap}
+                - {'#not': gapall}
+            argpos: 5
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Expectation threshold of sets of ungapped HSPs for subsequent
+                    use in seeding gapped alignments (-gapE)
+                format: ( "" , " -gapE " + str(value) )[ value is not None and value
+                    != vdef]
+                name: gapE
+                command: false
+                type: !mobyle/floattype {default: 2000.0}
+            - !mobyle/inputprogramparameter
+                prompt: Expectation threshold for saving individual gapped alignments
+                    (-gapE2)
+                format: ( "" , " -gapE2 " + str(value) )[ value is not None ]
+                name: gapE2
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Cutoff score for saving individual gapped alignments (-gapS2)
+                format: ( "" , " -gapS2 " + str(value) )[ value is not None ]
+                name: gapS2
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                comment: Default values are 32 for protein comparisons and 16 for
+                    blastn.
+                prompt: Set the window width within which gapped alignments are generated
+                    (-gapW)
+                format: ( "" , " -gapW " + str(value) )[ value is not None ]
+                name: gapW
+                command: false
+                type: !mobyle/integertype {}
+            - !mobyle/inputprogramparameter
+                prompt: Set the maximum drop-off score during banded gapped alignment
+                    (gapX)
+                format: ("" , " gapX=" + str(value))[ value is not None ]
+                name: gapX
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Maximal permitted distance on the QUERY sequence between two
+                    consistent gapped alignments (-gapsepqmax)
+                format: ( "" , " -gapsepqmax " + str(value) )[ value is not None ]
+                name: gapsepqmax
+                precond:
+                    '#and':
+                    - {'#not': nogap}
+                    - {'#not': consistency}
+                command: false
+                type: !mobyle/integertype {}
+            - !mobyle/inputprogramparameter
+                prompt: Maximal permitted distance on the subject sequence between
+                    two consistent gapped alignments (-gapsepsmax)
+                format: ( "" , " -gapsepsmax " + str(value) )[ value is not None ]
+                name: gapsepsmax
+                precond:
+                    '#and':
+                    - {'#not': nogap}
+                    - {'#not': consistency}
+                command: false
+                type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Translation Option
+        name: translation_opt
+        precond:
+            wublast2: {'#ne': blastn}
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic code to translate the query (blastx,tblastx) (-gcode)
+            format: ( "" , " -gcode " + str(value) )[ value is not None and value
+                != vdef]
+            name: gcode
+            precond:
+                wublast2:
+                    '#in': [blastx, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Standard (1), value: '1'}
+                - {label: Vertebrate Mitochondrial (2), value: '2'}
+                - {label: Yeast Mitochondrial (3), value: '3'}
+                - {label: 'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma
+                        (4)', value: '4'}
+                - {label: Invertebrate Mitochondrial (5), value: '5'}
+                - {label: Ciliate Macronuclear and Dasycladacean (6), value: '6'}
+                - {label: Echinoderm Mitochondrial (9), value: '9'}
+                - {label: Alternative Ciliate Macronuclear (10), value: '10'}
+                - {label: Bacterial (11), value: '11'}
+                - {label: Alternative Yeast Nuclear (12), value: '12'}
+                - {label: Ascidian Mitochondrial (13), value: '13'}
+                - {label: Flatworm Mitochondrial (14), value: '14'}
+        - !mobyle/inputprogramparameter
+            prompt: Which strands (for nucleotid query)
+            format: ( "" , " " + str(value) )[value is not None]
+            name: strand
+            precond:
+                wublast2:
+                    '#in': [blastn, blastx]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Both, value: 'null'}
+                - {label: Top, value: -top}
+                - {label: Bottom, value: -bottom}
+        - !mobyle/inputprogramparameter
+            prompt: Genetic code for database translation (tblastx,tblastn) (-dbgcode)
+            format: ( "" , "-dbgcode " + str(value) )[ value is not None and value
+                != vdef]
+            name: dbgcode
+            precond:
+                wublast2:
+                    '#in': [tblastx, tblastn]
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Standard (1), value: '1'}
+                - {label: Vertebrate Mitochondrial (2), value: '2'}
+                - {label: Yeast Mitochondrial (3), value: '3'}
+                - {label: 'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma
+                        (4)', value: '4'}
+                - {label: Invertebrate Mitochondrial (5), value: '5'}
+                - {label: Ciliate Macronuclear and Dasycladacean (6), value: '6'}
+                - {label: Echinoderm Mitochondrial (9), value: '9'}
+                - {label: Alternative Ciliate Macronuclear (10), value: '10'}
+                - {label: Bacterial (11), value: '11'}
+                - {label: Alternative Yeast Nuclear (12), value: '12'}
+                - {label: Ascidian Mitochondrial (13), value: '13'}
+                - {label: Flatworm Mitochondrial (14), value: '14'}
+        - !mobyle/inputprogramparameter
+            prompt: Which strands of the database sequences (tblastn,tblastx) (-db)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dbstrand
+            precond:
+                wublast2:
+                    '#in': [tblastn, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Both, value: 'null'}
+                - {label: Top, value: -dbtop}
+                - {label: Bottom, value: -dbbottom}
+    - !mobyle/inputprogramparagraph
+        comment: Parameters to use when evaluating the significance of gapped and
+            ungapped alignment scores. Useful when precomputed values are unavailable
+            for the chosen scoring matrix and gap penalty combination in the programs
+            internal tables.
+        prompt: Statistic options
+        name: statistics
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use statistics
+            format: ( "" , " -" + str(value) )[ value is not None and value != vdef]
+            name: stat
+            command: false
+            type: !mobyle/stringtype
+                default: sump
+                options:
+                - {label: Poisson statistics to evaluate multiple HSPs (poissonp),
+                    value: poissonp}
+                - {label: Karlin-Altschul statistics on individual alignment scores
+                        (kap), value: kap}
+                - {label: Karlin-Altschul 'Sum' statistics (sump), value: sump}
+        - !mobyle/inputprogramparameter
+            comment: This option consumes marginally more cpu time.
+            prompt: Collect word-hit statistics (-stats)
+            format: ( "" , " -stats" )[ value ]
+            name: wordstats
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Base statistics on this number of independent contexts or reading
+                frames (-ctxfactor)
+            format: ( "" , " -ctxfactor " + str(value) )[ value is not None ]
+            name: ctxfactor
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: <text lang="en" />
+            prompt: Maximal fractional length of overlap for HSP consistency of two
+                ungapped alignment (-olf)
+            format: ( "" , " -olf " + str(value) )[ value is not None and value !=
+                vdef]
+            name: olf
+            command: false
+            type: !mobyle/floattype {default: 0.125}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal fractional length of overlap for HSP consistency of two
+                gapped alignments (-golf)
+            format: ( "" , " -golf " + str(value) )[ value is not None and value !=
+                vdef]
+            name: golf
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal absolute length of overlap for HSP consistency  of two
+                ungapped alignment (default unlimited) (-olmax)
+            format: ( "" , " -olmax " + str(value) )[ value is not None ]
+            name: olmax
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal absolute length of overlap for HSP consistency  of two
+                gapped alignment (default unlimited) (-golmax)
+            format: ( "" , " -golmax " + str(value) )[ value is not None ]
+            name: golmax
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: This option defines the common ratio of the terms in a geometric
+                progression used in normalizing probabilities across all numbers of
+                Poisson events (typically the number of 'consistent' HSPs). A Poisson
+                probability for N segments is eighted by the reciprocal of the Nth
+                term in the progression, where the first term has a value of (1-rate),
+                the second term is (1-rate)*rate, the third term is (1-rate)*rate*rate,
+                and so on.The default rate is 0.5, such that the probability assigned
+                to a single HSP is discounted by a factor of 2, the Poisson probability
+                of 2 HSPs is discounted by a factor of 4, for 3 HSPs the discount
+                factor is 8, and so on. The rate essentially defines a penalty imposed
+                on the gap between each HSP, where the default penalty is equivalent
+                to 1 bit of information.
+            prompt: Gap decay rate (-gapdecayrate)
+            format: ( "" , " -gapdecayrate " + str(value) )[ value is not None and
+                value != vdef]
+            name: gapdecayrate
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+        - !mobyle/inputprogramparagraph
+            prompt: Parameters for Karlin-Altschul statistics
+            name: kastats
+            precond:
+                stat:
+                    '#in': [kap, sump]
+            argpos: 6
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: K parameter for ungapped alignment scores (K)
+                format: ( "" , " K=" + str(value) )[ value is not None ]
+                name: K
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Lambda parameter for ungapped alignment scores (L)
+                format: ( "" , " L=" + str(value) )[ value is not None ]
+                name: L
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: H parameter for ungapped alignment scores (H)
+                format: ( "" , " H=" + str(value) )[ value is not None ]
+                name: H
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: K parameter for gapped alignment scores (gapK)
+                format: ( "" , " gapK=" + str(value) )[ value is not None ]
+                name: gapK
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Lambda parameter for gapped alignment scores (gapL)
+                format: ( "" , " gapL=" + str(value) )[ value is not None ]
+                name: gapL
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: H parameter for gapped alignment scores (gapH)
+                format: ( "" , " gapH=" + str(value) )[ value is not None ]
+                name: gapH
+                command: false
+                type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Report options
+        name: affichage
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Histogram (H)
+            format: ( "" , " H=1" )[ value ]
+            name: Histogram
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which one-line descriptions
+                will be reported (V).
+            prompt: How many short descriptions? (V)
+            format: ( "" , " V=" + str(value) )[ value is not None and value != vdef]
+            name: Descriptions
+            command: false
+            type: !mobyle/integertype {default: 500}
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which high-scoring segment
+                pairs will be reported (B).
+            prompt: How many alignments? (B)
+            format: ( "" , " B=" + str(value) )[ value is not None and value != vdef]
+            name: Alignments
+            command: false
+            type: !mobyle/integertype {default: 250}
+        - !mobyle/inputprogramparameter
+            prompt: Sort order for reporting database sequences
+            format: ( "" , " -" + str(value) )[ value is not None and value != vdef]
+            name: sortby
+            command: false
+            type: !mobyle/stringtype
+                default: sort_by_pvalue
+                options:
+                - {label: From most significant to least significant (sort_by_pvalue),
+                    value: sort_by_pvalue}
+                - {label: From highest to lowest by the number of HSPs found (sort_by_count),
+                    value: sort_by_count}
+                - {label: From highest to lowest by the score of the highest segment
+                        (sort_by_highscore), value: sort_by_highscore}
+                - {label: From highest to the lowest by the sum total score (sort_by_totalscore),
+                    value: sort_by_totalscore}
+        - !mobyle/inputprogramparameter
+            prompt: Perform full Smith-Waterman before output (blastp only) (-postsw)
+            format: ( "" , " -postsw" )[ value ]
+            name: postsw
+            precond: {wublast2: blastp}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output file name
+            format: '" -o blast.txt"'
+            argpos: 499
+            name: output_file
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: CPU number to use
+            format: '" -cpus 1"'
+            argpos: 499
+            name: cpunum
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Html output format
+            format: ("" , " && html4blast -g -o blast.html blast.txt")[ value ]
+            argpos: 500
+            name: output_format
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display filter sequences in output (-echofilter)
+            format: ( "" , " -echofilter" )[ value ]
+            name: echofilter
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not prune insignificant HSPs from the output lists (-prune)
+            format: ( "" , " -prune" )[ value ]
+            name: prune
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Report this number of consistent (colinear) groups of HSPs (-topcomboN)
+            format: ( "" , " -topcomboN " + str(value) )[ value is not None ]
+            name: topcomboN
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Only show HSP combos within this factor of the best combo (-topcomboE)
+            format: ( "" , " -topcomboE " + str(value) )[ value is not None ]
+            name: topcomboE
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Display gi identifiers, when available (-gi)
+            format: ( "" , " -gi" )[ value ]
+            name: gi
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not display sequence alignments (-noseqs)
+            format: ( "" , " -noseqs" )[ value ]
+            name: noseqs
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Blast report
+        filenames: '"blast.txt"'
+        name: tmp_outfile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/outputprogramparameter
+        prompt: Blast html report
+        filenames: '"blast.html"'
+        name: htmlfile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter {filenames: '"*.gif"', name: imgfile, hidden: true}
+    - !mobyle/outputprogramparameter
+        prompt: Blast xml report
+        filenames: '"blast.xml"'
+        name: xmloutput
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"wublast2.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"wublast2.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Gish, Warren (1994-1997). unpublished.', url: null}
+- {doi: null, label: 'Gish, W, and DJ States (1993). Identification of protein coding
+        regions by database similarity search. Nature Genetics 3:266-72.', url: null}
+- {doi: null, label: 'Altschul, SF, and W Gish (1996). Local alignment statistics.
+        ed. R. Doolittle. Methods in Enzymology 266:460-80.', url: null}
+- {doi: null, label: 'Korf, I, and W Gish (2000). MPBLAST: improved BLAST performance
+        with multiplexed queries. Bioinformatics in press.', url: null}
+- {doi: null, label: 'Altschul, Stephen F., Warren Gish, Webb Miller, Eugene W. Myers,
+        and David J. Lipman (1990). Basic local alignment search tool. J. Mol. Biol.
+        215:403-10.', url: null}
+homepage_links: ['http://blast.wustl.edu/']
+env: {}

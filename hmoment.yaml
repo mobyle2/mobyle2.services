@@ -1,0 +1,190 @@
+!mobyle/program
+name: hmoment
+title: hmoment
+description: Calculate and plot hydrophobic moment for protein sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Seqall option
+            format: ("", " -seqall=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: seqall
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Window
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Alpha helix angle (degrees)
+            format: ("", " -aangle=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: aangle
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Beta sheet angle (degrees)
+            format: ("", " -bangle=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: bangle
+            command: false
+            type: !mobyle/integertype {default: 160}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Graph marker line
+            format: ("", " -baseline=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: baseline
+            command: false
+            type: !mobyle/floattype {default: 0.35}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Produce graphic
+            format: ("", " -plot")[ bool(value) ]
+            argpos: 6
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Plot two graphs
+            format: ("", " -double")[ bool(value) ]
+            argpos: 7
+            name: double
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 8
+            name: graph
+            precond: plot
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 9
+            name: xy_goutfile
+            precond: plot
+            command: false
+            type: !mobyle/stringtype {default: hmoment_xygraph}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 10
+            name: outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype {default: hmoment.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 11
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond:
+                '#and':
+                - plot
+                - {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond:
+                '#and':
+                - plot
+                - {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                -   '#and':
+                    - plot
+                    - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond:
+                '#and':
+                - plot
+                - {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond:
+                '#and':
+                - plot
+                - {graph: data}
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"hmoment.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmoment.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0407']
+topics: ['EDAM_topic:0137']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/hmoment.html', 'http://emboss.sourceforge.net/docs/themes']
+command: hmoment
+env: {}

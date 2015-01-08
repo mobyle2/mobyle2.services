@@ -1,0 +1,261 @@
+!mobyle/program
+name: matcher
+title: matcher
+description: Waterman-Eggert local alignment of two sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Asequence option
+            format: ("", " -asequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: asequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Bsequence option
+            format: ("", " -bsequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: bsequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: This is the scoring matrix file used when comparing sequences.
+                By default it is the file 'EBLOSUM62' (for proteins) or  the file
+                'EDNAFULL' (for nucleic sequences). These files are  found in the
+                'data' directory of the EMBOSS installation.
+            prompt: Matrix file
+            format: ("", " -datafile=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: datafile
+            command: false
+            type: !mobyle/stringtype
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: Eblosum30, value: EBLOSUM30}
+                - {label: Eblosum35, value: EBLOSUM35}
+                - {label: Eblosum40, value: EBLOSUM40}
+                - {label: Eblosum45, value: EBLOSUM45}
+                - {label: Eblosum50, value: EBLOSUM50}
+                - {label: Eblosum55, value: EBLOSUM55}
+                - {label: Eblosum60, value: EBLOSUM60}
+                - {label: Eblosum62, value: EBLOSUM62}
+                - {label: Eblosum62-12, value: EBLOSUM62-12}
+                - {label: Eblosum65, value: EBLOSUM65}
+                - {label: Eblosum70, value: EBLOSUM70}
+                - {label: Eblosum75, value: EBLOSUM75}
+                - {label: Eblosum80, value: EBLOSUM80}
+                - {label: Eblosum85, value: EBLOSUM85}
+                - {label: Eblosum90, value: EBLOSUM90}
+                - {label: Eblosumn, value: EBLOSUMN}
+                - {label: Ednafull, value: EDNAFULL}
+                - {label: Ednamat, value: EDNAMAT}
+                - {label: Ednasimple, value: EDNASIMPLE}
+                - {label: Epam10, value: EPAM10}
+                - {label: Epam100, value: EPAM100}
+                - {label: Epam110, value: EPAM110}
+                - {label: Epam120, value: EPAM120}
+                - {label: Epam130, value: EPAM130}
+                - {label: Epam140, value: EPAM140}
+                - {label: Epam150, value: EPAM150}
+                - {label: Epam160, value: EPAM160}
+                - {label: Epam170, value: EPAM170}
+                - {label: Epam180, value: EPAM180}
+                - {label: Epam190, value: EPAM190}
+                - {label: Epam20, value: EPAM20}
+                - {label: Epam200, value: EPAM200}
+                - {label: Epam210, value: EPAM210}
+                - {label: Epam220, value: EPAM220}
+                - {label: Epam230, value: EPAM230}
+                - {label: Epam240, value: EPAM240}
+                - {label: Epam250, value: EPAM250}
+                - {label: Epam260, value: EPAM260}
+                - {label: Epam270, value: EPAM270}
+                - {label: Epam280, value: EPAM280}
+                - {label: Epam290, value: EPAM290}
+                - {label: Epam30, value: EPAM30}
+                - {label: Epam300, value: EPAM300}
+                - {label: Epam310, value: EPAM310}
+                - {label: Epam320, value: EPAM320}
+                - {label: Epam330, value: EPAM330}
+                - {label: Epam340, value: EPAM340}
+                - {label: Epam350, value: EPAM350}
+                - {label: Epam360, value: EPAM360}
+                - {label: Epam370, value: EPAM370}
+                - {label: Epam380, value: EPAM380}
+                - {label: Epam390, value: EPAM390}
+                - {label: Epam40, value: EPAM40}
+                - {label: Epam400, value: EPAM400}
+                - {label: Epam410, value: EPAM410}
+                - {label: Epam420, value: EPAM420}
+                - {label: Epam430, value: EPAM430}
+                - {label: Epam440, value: EPAM440}
+                - {label: Epam450, value: EPAM450}
+                - {label: Epam460, value: EPAM460}
+                - {label: Epam470, value: EPAM470}
+                - {label: Epam480, value: EPAM480}
+                - {label: Epam490, value: EPAM490}
+                - {label: Epam50, value: EPAM50}
+                - {label: Epam500, value: EPAM500}
+                - {label: Epam60, value: EPAM60}
+                - {label: Epam70, value: EPAM70}
+                - {label: Epam80, value: EPAM80}
+                - {label: Epam90, value: EPAM90}
+                - {label: Sssub, value: SSSUB}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This sets the number of alternative matches output. By default
+                only the highest scoring alignment is shown. A value of 2  gives you
+                other reasonable alignments. In some cases, for example  multidomain
+                proteins of cDNA and genomic DNA comparisons, there  may be other
+                interesting and significant alignments.
+            prompt: Number of alternative matches (value greater than or equal to
+                1)
+            format: ("", " -alternatives=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: alternatives
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            comment: The gap penalty is the score taken away when a gap is created.
+                The best value depends on the choice of comparison  matrix. The default
+                value of 14 assumes you are using the  EBLOSUM62 matrix for protein
+                sequences, or a value of 16 and the  EDNAFULL matrix for nucleotide
+                sequences.
+            prompt: Gap penalty (Positive integer)
+            format: ("", " -gapopen=" + str(value))[value is not None]
+            argpos: 5
+            name: gapopen
+            command: false
+            type: !mobyle/integertype {}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            comment: The gap length, or gap extension, penalty is added to the standard
+                gap penalty for each base or residue in the gap. This is  how long
+                gaps are penalized. Usually you will expect a few long  gaps rather
+                than many short gaps, so the gap extension penalty  should be lower
+                than the gap penalty. An exception is where one or  both sequences
+                are single reads with possible sequencing errors  in which case you
+                would expect many single base gaps. You can get  this result by setting
+                the gap penalty to zero (or very low) and  using the gap extension
+                penalty to control gap scoring.
+            prompt: Gap length penalty (Positive integer)
+            format: ("", " -gapextend=" + str(value))[value is not None]
+            argpos: 6
+            name: gapextend
+            command: false
+            type: !mobyle/integertype {}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output alignment file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 7
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: matcher.align}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the alignment output format
+            format: ("", " -aformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: aformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: MARKX0
+                options:
+                - {label: Fasta, value: FASTA}
+                - {label: Msf, value: MSF}
+                - {label: Pair, value: PAIR}
+                - {label: Markx0, value: MARKX0}
+                - {label: Markx1, value: MARKX1}
+                - {label: Markx2, value: MARKX2}
+                - {label: Markx3, value: MARKX3}
+                - {label: Markx10, value: MARKX10}
+                - {label: Srs, value: SRS}
+                - {label: Srspair, value: SRSPAIR}
+                - {label: Score, value: SCORE}
+                - {label: Unknown, value: UNKNOWN}
+                - {label: Multiple, value: MULTIPLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Match, value: MATCH}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 9
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                aformat_outfile:
+                    '#in': [FASTA, MSF]
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out2 option
+            filenames: outfile
+            name: outfile_out2
+            precond:
+                aformat_outfile:
+                    '#in': [PAIR, MARKX0, MARKX1, MARKX2, MARKX3, MARKX10, SRS, SRSPAIR,
+                        SCORE, UNKNOWN, MULTIPLE, SIMPLE, MATCH]
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"matcher.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"matcher.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0493']
+topics: ['EDAM_topic:0185']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/matcher.html', 'http://emboss.sourceforge.net/docs/themes']
+command: matcher
+env: {}

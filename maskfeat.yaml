@@ -1,0 +1,134 @@
+!mobyle/program
+name: maskfeat
+title: maskfeat
+description: Write a sequence with masked features
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "By default any feature in the feature table with a type starting\
+                \ 'repeat' is masked. You can set this to be any feature  type you\
+                \ wish to mask. \n  See http://www.ebi.ac.uk/embl/WebFeat/ for a list\
+                \ of the EMBL  feature types and see Appendix A of the Swissprot user\
+                \ manual in  http://www.expasy.org/sprot/userman.html for a list of\
+                \ the Swissprot  feature types. \n  The type may be wildcarded by\
+                \ using '*'. \n  If you wish to mask more than one type, separate\
+                \ their names with  spaces or commas, eg: \n  *UTR repeat*"
+            prompt: Type of feature to mask
+            format: ("", " -type=" + str(value))[value is not None]
+            argpos: 2
+            name: type
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: The region can be 'masked' by converting the sequence characters
+                to lower-case, some non-EMBOSS programs e.g. fasta can  interpret
+                this as a masked region. The sequence is unchanged apart  from the
+                case change. You might like to ensure that the whole  sequence is
+                in upper-case before masking the specified regions to  lower-case
+                by using the '-supper' flag.
+            prompt: Change masked region to lower-case
+            format: ("", " -tolower")[ bool(value) ]
+            argpos: 3
+            name: tolower
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Character to use when masking. \n Default is 'X' for protein\
+                \ sequences, 'N' for nucleic sequences. \n  If the mask character\
+                \ is set to be the SPACE character or a null  character, then the\
+                \ sequence is 'masked' by changing it to  lower-case, just as with\
+                \ the '-lowercase' flag."
+            prompt: Character to mask with
+            format: ("", " -maskchar=" + str(value))[value is not None]
+            argpos: 4
+            name: maskchar
+            precond: {'#not': tolower}
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 5
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: maskfeat.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 7
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"maskfeat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"maskfeat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0368']
+topics: ['EDAM_topic:0160', 'EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/maskfeat.html', 'http://emboss.sourceforge.net/docs/themes']
+command: maskfeat
+env: {}

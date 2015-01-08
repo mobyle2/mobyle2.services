@@ -1,0 +1,269 @@
+!mobyle/program
+name: clique
+title: clique
+description: Compatibility Program
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"clique < clique.params"'
+        argpos: 0
+        name: clique
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input File
+        format: '"ln -s "+ str( infile ) + " infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+    - !mobyle/inputprogramparagraph
+        prompt: Clique options
+        name: clique_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "There should also be, in the input file after the numbers of\
+                \ species and characters, an A on the first line of the file. There\
+                \ must also be, before the character data, a line or lines giving\
+                \ the ancestral states for each character. It will look like the data\
+                \ for a species (the ancestor). It must start with the letter A in\
+                \ the first column. There then follow enough characters or blanks\
+                \ to complete the full length of a species name (e. g. ANCESTOR).\
+                \ Then the states which are\n              ancestral for the individual\
+                \ characters follow. These may be 0, 1 or ?, the latter indicating\
+                \ that the ancestral state is unknown.Examples:ANCESTOR 0010011"
+            prompt: Use ancestral states in input file (A)
+            format: ( "" , "A\n" )[ value ]
+            argpos: 1
+            paramfile: clique.params
+            name: use_ancestral_state
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Specify minimum clique size? (C)
+            format: ( "" , "C\n"+ str( min_clique_size ) + "\n")[ value ]
+            argpos: 3
+            paramfile: clique.params
+            name: spec_min_clique_size
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option indicates that you wish to specify a minimum clique
+                size and print out all cliques (and their associated trees) greater
+                than or equal to than that size.
+            prompt: Minimum clique size
+            format: '""'
+            argpos: 2
+            paramfile: clique.params
+            mandatory: true
+            name: min_clique_size
+            precond: spec_min_clique_size
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Analyze multiple data sets (M)
+            format: ( "" , "M\nD\n"+ str( datasets_number ) +"\n" )[ value ]
+            argpos: 10
+            paramfile: clique.params
+            name: multiple_dataset
+            precond: {'#not': multiple_dataweights}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: How many data sets (D)
+            format: '""'
+            argpos: 9
+            mandatory: true
+            name: datasets_number
+            precond: multiple_dataset
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Compute a consensus tree
+            format: ( "", " && cp infile clique.infile &&  cp clique.outtree intree
+                && consense <consense.params && mv outtree consense.outtree && mv
+                outfile consense.outfile" )[ value ]
+            argpos: 10
+            name: consense
+            precond:
+                '#and': [multiple_dataset, print_treefile]
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Weigth options
+        name: weigths
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sites weighted? (W)
+            format: ( "" , "W\n" )[ value ]
+            argpos: 19
+            paramfile: clique.params
+            name: site_weigthed
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Analyze multiple data Weigths (M)
+            format: ( "" , "M\nW\n"+ str( dataweights_number ) +"\n" )[ value ]
+            argpos: 20
+            paramfile: clique.params
+            name: multiple_dataweights
+            precond: {'#not': multiple_dataset}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: How many sets of weights?
+            format: '""'
+            argpos: 21
+            mandatory: true
+            name: dataweights_number
+            precond: multiple_dataweights
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Weight file
+            format: '" ln -s " + str( value ) +" weights && "'
+            argpos: -20
+            mandatory: true
+            name: weigth_file
+            precond:
+                '#or': [site_weigthed, multiple_dataweights]
+            command: false
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Print out compatibility matrix (3)
+            format: ( "" , "3\n" )[ value ]
+            argpos: 1
+            paramfile: clique.params
+            name: print_matrix
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (4)
+            format: ( "4\n" , "" )[ value ]
+            argpos: 1
+            paramfile: clique.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (5)
+            format: ( "5\n" , "" )[ value ]
+            argpos: 1
+            paramfile: clique.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: clique.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Outgroup root (O)
+            format: ("" , "O\\n%s\\n" % str(value) )[ value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: clique.params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: clique.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: clique.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_confirm
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -2
+        paramfile: consense.params
+        name: consense_terminal_type
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: '"clique.outfile"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Output tree
+        filenames: '"clique.outtree"'
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Consense output file, filenames: '"consense.outfile"',
+        name: consense_outfile, precond: consense}
+    - !mobyle/outputprogramparameter
+        prompt: Consense output tree
+        filenames: '"consense.outtree"'
+        name: consense_treefile
+        precond: consense
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"clique.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"clique.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: 'This program uses the compatibility method for unrooted two-state characters
+    to obtain the largest cliques of characters and the trees
+
+    which they suggest.'
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/clique.html']
+env: {}

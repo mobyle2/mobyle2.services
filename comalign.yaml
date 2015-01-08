@@ -1,0 +1,95 @@
+!mobyle/program
+name: comalign
+title: ComAlign
+description: is a program, that given a number of sequences generates a number of
+    heuristic alignments and combines these best possible.
+authors: O. Caprani, K. Bucka-Lassen
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: the sequences must be in the GenAl format
+        prompt: Sequences File (-f)
+        format: '" -f" + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Random seed number (-s)
+        format: ( "" , " -s" + str(value) )[ value is not None and value != vdef]
+        argpos: 1
+        name: seed
+        command: false
+        type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparameter
+        prompt: Number of sequences that are to be aligned (-n)
+        format: ( "" , " -n" + str(value) )[ value is not None and value != vdef]
+        argpos: 1
+        name: seqnb
+        command: false
+        type: !mobyle/integertype {default: 2}
+    - !mobyle/inputprogramparameter
+        comment: On each iteration a new alignment is added to the pool of alignments
+            ComAlign is working on
+        prompt: Number of iterations (-i)
+        format: ( "" , " -i" + str(value) )[ value is not None and value != vdef]
+        argpos: 1
+        name: iterations
+        command: false
+        type: !mobyle/integertype {default: 10}
+    - !mobyle/inputprogramparameter
+        prompt: 'Score: ComAlign records the time it took to find a solution as good
+            as this score (-l)'
+        format: ( "" , " -l" + str(value) )[ value is not None]
+        argpos: 1
+        name: score
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        prompt: ComAlign marks the best solution found after this number of 1/100
+            seconds (-t)
+        format: ( "" , " -t" + str(value) )[ value is not None ]
+        argpos: 1
+        name: time
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        prompt: Makes ComAlign terminate if the score hasn't changed within the last
+            this number of iterations (-c)
+        format: ( "" , " -c" + str(value) )[ value is not None and value != vdef]
+        argpos: 1
+        name: last_iterations
+        command: false
+        type: !mobyle/integertype {default: 20}
+    - !mobyle/inputprogramparameter
+        prompt: Print the best found alignment on termination (-a)
+        format: ( "" , " -a" )[ value ]
+        argpos: 1
+        name: print_best
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"comalign.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"comalign.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0498']
+topics: ['EDAM_topic:0182']
+documentation_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/HowTo.html']
+homepage_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/ComAlign.html']
+command: ComAlign
+env: {}
+source_links: ['http://www.daimi.au.dk/~ocaprani/ComAlign/programs/']

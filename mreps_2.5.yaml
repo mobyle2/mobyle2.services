@@ -1,0 +1,150 @@
+!mobyle/program
+name: mreps
+version: '2.5'
+title: mreps
+description: Algorithm for finding tandem repeats in DNA sequences
+authors: G. Kucherov
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Query Sequence file
+        format: '" -fasta "+str(value)'
+        simple: true
+        argpos: 20
+        mandatory: true
+        name: query
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Specifies the resolution (-res)
+        format: ( "" , " -res " + str(value) )[ value is not None]
+        argpos: 10
+        name: err
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Specifies starting position (-from)
+        format: ( "" , " -from " + str(value) )[ value is not None ]
+        argpos: 10
+        name: from_v
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Specifies end position (-to)
+        format: ( "" , " -to " + str(value) )[ value is not None ]
+        argpos: 10
+        name: to
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Processes by sliding windows of size 2*n overlaping by n (-win)
+        format: ( "" , " -win " + str(value) )[ value is not None ]
+        argpos: 10
+        name: win
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Report repetitions whose size is at least n (-minsize)
+        format: ( "" , " -minsize " + str(value) )[ value is not None ]
+        argpos: 10
+        name: minsize
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Report repetitions whose size is at most n (-maxsize)
+        format: ( "" , " -maxsize " + str(value) )[ value is not None ]
+        argpos: 10
+        name: maxsize
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Report repetitions whose period is at least n (-minperiod)
+        format: ( "" , " -minperiod " + str(value) )[ value is not None ]
+        argpos: 10
+        name: minperiod
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Integer value
+        prompt: Report repetitions whose period is at most n (-maxperiod)
+        format: ( "" , " -maxperiod " + str(value) )[ value is not None ]
+        argpos: 10
+        name: maxperiod
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Float value greater tha 1.0
+        prompt: Report repetitions whose exponent is at least n (-exp)
+        format: ( "" , " -exp " + str(value) )[ value is not None ]
+        argpos: 10
+        name: exp
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparameter
+        prompt: Output small repeats that can occur randomly (-allowsmall)
+        format: ( "" , " -allowsmall" )[ value ]
+        argpos: 10
+        name: allowsmall
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Do not output repetitions sequences (-noprint)
+        format: ( "" , " -noprint" )[ value ]
+        argpos: 10
+        name: noprint
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: XML format output file name (-xmloutput)
+        format: ( "" , " -xmloutput " + str(value) )[ value is not None ]
+        argpos: 10
+        name: xml
+        command: false
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: XML output file
+        filenames: str(xml)
+        argpos: 10
+        name: xmlout
+        precond:
+            xml: {'#ne': None}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"mreps.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"mreps.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0237']
+topics: ['EDAM_topic:0157']
+references:
+- {doi: null, label: 'R. Kolpakov, G. Kucherov, Finding maximal repetitions in a word
+        in linear time, 1999 Symposium on Foundations of Computer Science (FOCS),
+        New-York (USA), pp. 596-604, IEEE Computer Society', url: null}
+- {doi: null, label: 'R. Kolpakov, G. Kucherov, Finding Approximate Repetitions under
+        Hamming Distance, 9-th European Symposium on Algorithms (ESA), Aarhus (Denmark),
+        Lecture Notes in Computer Science, vol. 2161, pp 170-181.', url: null}
+documentation_links: ['http://bioinfo.lifl.fr/mreps/']
+homepage_links: ['http://bioinfo.lifl.fr/mreps/']
+command: mreps
+env: {}
+source_links: ['http://bioinfo.lifl.fr/mreps/']

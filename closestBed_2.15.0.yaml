@@ -1,0 +1,142 @@
+!mobyle/program
+name: closestBed
+version: 2.15.0
+title: 'BEDtools: closestBED'
+description: For each feature in A, finds the closest feature (upstream or downstream)
+    in B
+authors: Quinlan A.R. & Hall I.M.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genome Annotation data A (BED/GFF/VCF format) [-a]
+            format: '" -a " + str( value )'
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: input_bed_fileA
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Genome Annotation data B (BED/GFF/VCF format) [-b]
+            format: '" -b " + str( value )'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_bed_fileB
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Default option: overlaps are reported without respect to strand.Same
+                strandedness option: find the closest feature in B that overlaps A
+                on the _same_ strand.Opposite strandedness option: find the closest
+                feature in B that overlaps A on the _opposite_ strand.'
+            prompt: Strandedness (-s or -S)
+            format: ("", " " + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: force_strand_option
+            command: false
+            type: !mobyle/stringtype
+                default: ignore
+                options:
+                - {label: ignore strandedness (default), value: ignore}
+                - {label: Same strandedness, value: -s}
+                - {label: Opposite strandedness, value: -S}
+        - !mobyle/inputprogramparameter
+            comment: How ties for closest feature are handled.  This occurs when two
+                features in B have exactly the same overlap with A. By default, all
+                such features in B are reported.
+            prompt: Tie handling (-t)
+            format: ("" + str(vdef), " -t " + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: tile_handling_option
+            command: false
+            type: !mobyle/stringtype
+                default: all
+                options:
+                - {label: Report all ties, value: all}
+                - {label: Report the first tie that occurred in the B data, value: first}
+                - {label: Report the last tie that occurred in the B data, value: last}
+        - !mobyle/inputprogramparameter
+            comment: In addition to the closest feature in B, report its distance
+                to A as an extra column.The reported distance for overlapping features
+                will be 0.
+            prompt: Report distance to A as extra column (-d)
+            format: ('',' -d ')[value==1]
+            argpos: 5
+            name: output_distance
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Like -d, report the closest feature in B, and its distance to\
+                \ A as an extra column. Unlike -d, use negative distances to report\
+                \ \t\tupstream features. \t\tThe options for defining which orientation\
+                \ is \"upstream\" are: \t\t- \"ref\"   Report distance with respect\
+                \ to the reference genome.  \t\t            B features with a lower\
+                \ (start, stop) are upstream \t\t- \"a\"     Report distance with\
+                \ respect to A. \t\t            When A is on the - strand, \"upstream\"\
+                \ means B has a \t\t            higher (start,stop). \t\t- \"b\" \
+                \    Report distance with respect to B. \t\t            When B is\
+                \ on the - strand, \"upstream\" means A has a \t\t            higher\
+                \ (start,stop)."
+            prompt: Report distance with orientation (-D)
+            format: ('', ' -D ' + str(value))[value is not None and value != vdef]
+            argpos: 6
+            name: output_distance_orientation
+            command: false
+            type: !mobyle/stringtype
+                default: default
+                options:
+                - {label: Do not report distance with orientation, value: default}
+                - {label: Report distance with respect to the reference genome., value: ref}
+                - {label: Report distance with respect to A., value: a}
+                - {label: Report distance with respect to B., value: b}
+        - !mobyle/inputprogramparameter
+            comment: we want close, yet not touching features only.
+            prompt: Ignore features in B that overlap A (-io)
+            format: ('',' -io ')[value==1]
+            argpos: 7
+            name: output_overlap_feature
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output file name
+            format: (" > " + str(vdef) , " > " + str(value))[value is not None]
+            simple: true
+            argpos: 8
+            mandatory: true
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: closest_feature.txt}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"closestBed.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"closestBed.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3194']
+topics: ['EDAM_topic:0160']
+command: closestBed
+env: {}

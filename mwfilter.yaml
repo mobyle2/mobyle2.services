@@ -1,0 +1,85 @@
+!mobyle/program
+name: mwfilter
+title: mwfilter
+description: Filter noisy data from molecular weights file
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter {prompt: Molecular weights file, format: '("",
+                " -infile=" + str(value))[value is not None]', simple: true, argpos: 1,
+            mandatory: true, name: infile, command: false}
+        - !mobyle/inputprogramparameter {prompt: Molecular weight standards data file,
+            format: '("", " -datafile=" + str(value))[value is not None ]', argpos: 2,
+            name: datafile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Ppm tolerance
+            format: ("", " -tolerance=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: tolerance
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output deleted mwts
+            format: ("", " -showdel")[ bool(value) ]
+            argpos: 4
+            name: showdel
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 5
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.mwfilter}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter {prompt: Outfile_out option, filenames: outfile,
+            name: outfile_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"mwfilter.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"mwfilter.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0398']
+topics: ['EDAM_topic:0141']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/mwfilter.html', 'http://emboss.sourceforge.net/docs/themes']
+command: mwfilter
+env: {}

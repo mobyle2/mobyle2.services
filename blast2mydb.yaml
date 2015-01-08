@@ -1,0 +1,551 @@
+!mobyle/program
+name: blast2mydb
+title: BLAST2MYDB
+description: NCBI BLAST, with gaps against my sequences database
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Create my Database
+        name: db
+        children:
+        - !mobyle/inputprogramparameter
+            format: '"formatdb "'
+            argpos: 1
+            name: formatdb
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Create a protein database for blastx
+            prompt: Protein db
+            format: '" -i "+ str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: protein_db
+            precond:
+                blast2:
+                    '#in': [blastx, blastp]
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Create a nucleotid database for blastn, tblastn or tblastx
+            prompt: Nucleotid db
+            format: '"-p F -i "+ str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: nucleotid_db
+            precond:
+                blast2:
+                    '#in': [blastn, tblastx, tblastn, psitblastn]
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: the name of my db
+            format: '" -n " + str( value )'
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: db_name
+            command: false
+            type: !mobyle/stringtype {default: myDatabase}
+    - !mobyle/inputprogramparameter
+        prompt: Blast initiation
+        format: '" && blastall "'
+        argpos: 4
+        name: blast_init
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: '- Blastp compares an amino acid query sequence against a protein
+            sequence database;- Blastn compares a nucleotide query sequence against
+            a nucleotide sequence database;- Blastx compares the six-frame conceptual
+            translation products of a nucleotide query sequence (both strands) against
+            a protein sequence database;- tBlastn compares a protein query sequence
+            against a nucleotide sequence database dynamically translated in all six
+            reading frames (both strands).- tBlastx compares the six-frame translations
+            of a nucleotide query sequence against the six-frame translations of a
+            nucleotide sequence database.- psitBlastn compares a protein query sequence
+            against a nucleotide sequence database dynamically translated in all six
+            reading frames (both strands) using a position specific matrix created
+            by PSI-BLAST.'
+        prompt: Blast program (-p)
+        format: '" -p "+ str(value)'
+        simple: true
+        argpos: 5
+        mandatory: true
+        name: blast2
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a program, value: 'null'}
+            - {label: Blastn (nucleotide query / nucleotide db), value: blastn}
+            - {label: Blastx (translated nucleotide query / protein db), value: blastx}
+            - {label: tBlastx (translated nucleotide query / translated nucleotide
+                    db), value: tblastx}
+            - {label: Blastp (protein query / protein db), value: blastp}
+            - {label: tBlastn (protein query / translated nucleotide db), value: tblastn}
+            - {label: psitBlastn (protein query / translated nucleotide db), value: psitblastn}
+    - !mobyle/inputprogramparameter
+        format: '" -d "+ str( db_name )'
+        argpos: 6
+        name: blastdb
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Query Sequence
+        name: query
+        argpos: 10
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Read (first, query) sequence or set from file
+            prompt: Query (-i)
+            format: '" -i "+ str(query_seq)'
+            simple: true
+            mandatory: true
+            name: query_seq
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Location on query sequence
+            prompt: Start of required region in query sequence (-L)
+            name: start_region
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Location on query sequence
+            prompt: End of required region in query sequence (-L)
+            format: (' -L "%s"' % (str(start_region)), ' -L "%s %s"' % (str(start_region),
+                str(value)))[value is not None]
+            name: end_region
+            precond:
+                start_region: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of concatenated queries (blastn or tblastn) (-B)
+            format: ("" , " -B "+str(value))[value is not None]
+            name: concat
+            precond:
+                blast2:
+                    '#in': [blastn, tblastn]
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Scoring options
+        name: scoring_opt
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Default: 5 for blastn; 10 for blastp, blastx and tblastn'
+            prompt: Cost to open a gap (-G)
+            format: ("" , " -G "+str(value))[value is not None]
+            name: open_a_gap
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Default: 2 for blastn; 1 for blastp, blastx and tblastnLimited
+                values for gap existence and extension are supported for these programs.
+                Some supported and suggested values are:Existence Extension10 -- 110
+                -- 211 -- 18 -- 29 -- 2'
+            prompt: Cost to extend a gap (-E)
+            format: ("" , " -E "+str(value))[value is not None]
+            name: extend_a_gap
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Protein penalty (not for blastn)
+            name: scoring_blast
+            precond:
+                blast2: {'#ne': blastn}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Similarity matrix (-M)
+                format: ("" , " -M "+str(value))[value is not None and value != vdef]
+                name: matrix
+                command: false
+                type: !mobyle/stringtype
+                    default: BLOSUM62
+                    options:
+                    - {label: BLOSUM62, value: BLOSUM62}
+                    - {label: BLOSUM45, value: BLOSUM45}
+                    - {label: BLOSUM80, value: BLOSUM80}
+                    - {label: PAM30, value: PAM30}
+                    - {label: PAM70, value: PAM70}
+        - !mobyle/inputprogramparagraph
+            prompt: Blastn penalty
+            name: scoring_blastn
+            precond: {blast2: blastn}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Penalty for a nucleotide mismatch (-q)
+                format: ("" , " -q "+str(value))[value is not None and value != vdef]
+                name: mismatch
+                command: false
+                type: !mobyle/floattype {default: -3.0}
+            - !mobyle/inputprogramparameter
+                prompt: Reward for a nucleotide match (-r)
+                format: ("" , " -r "+str(value))[value is not None and value != vdef]
+                name: match
+                command: false
+                type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparameter
+            prompt: Frame shift penalty (-w)
+            format: ("", " -w "+str(value))[value is not None]
+            name: frameshift
+            command: false
+            type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        comment: BLAST 2.0 uses the dust low-complexity filter for blastn and seg
+            for the other programs.If one uses '-F T' then normal filtering by seg
+            or dust (for blastn) occurs (likewise '-F F' means no filtering whatsoever).
+        prompt: Filtering and masking options
+        name: filter_opt
+        argpos: 20
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Filter or Masking query sequence (DUST with blastn, SEG with others)
+                (-F)
+            format: (" -F F" , "")[ value ]
+            name: filter
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: A coiled-coiled filter, based on the work of Lupas et al. (Science,
+                vol 252, pp. 1162-4 (1991)) written by John Kuzio (Wilson et al.,
+                J Gen Virol, vol. 76, pp. 2923-32 (1995))
+            prompt: Filtering options (Filter must be true)
+            name: other_filters
+            precond:
+                '#and':
+                - filter
+                - {'#not': other_masking}
+            command: false
+            type: !mobyle/stringtype {default: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: 'A coiled-coiled filter, based on the work of Lupas et al. (Science,
+                vol 252, pp. 1162-4 (1991)) written by John Kuzio (Wilson et al.,
+                J Gen Virol, vol. 76, pp. 2923-32 (1995)).It is possible to specify
+                that the masking should only be done during the process of building
+                the initial words .If the -U option (to mask any lower-case sequence
+                in the input FASTA file) is used and one does not wish any other filtering,
+                but does wish to mask when building the lookup tables then one should
+                specify: -F ''m'''
+            prompt: Masking options (Filter must be true)
+            name: other_masking
+            precond:
+                '#and':
+                - filter
+                - {'#not': other_filters}
+            command: false
+            type: !mobyle/stringtype {default: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies that any lower-case letters in the input
+                FASTA file should be masked.
+            prompt: Use lower case filtering (-U)
+            format: ("", " -U T")[ bool(value) ]
+            name: lower_case
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        comment: The programs blastn and blastp offer fully gapped alignments. blastx
+            and tblastn have 'in-frame' gapped alignments and use sum statistics to
+            link alignments from different frames. tblastx provides only ungapped
+            alignments.
+        prompt: Selectivity options
+        name: selectivity_opt
+        argpos: 7
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The statistical significance threshold for reporting matches\
+                \ against database sequences; the default value is 10, such that 10\
+                \ matches are expected to be found merely by chance, according to\
+                \ the stochastic model of Karlin and Altschul (1990). If the statistical\
+                \ significance ascribed to a match is greater than the EXPECT threshold,\
+                \ the match will not be reported. Lower EXPECT thresholds are more\
+                \ stringent, leading to fewer chance matches being reported. Fractional\
+                \ values are\n              acceptable."
+            prompt: Expected value (-e)
+            format: ("" , " -e "+str(value))[value is not None and value != vdef]
+            simple: true
+            name: Expect
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: Use words of size N.Zero invokes default behaviorDefault values:-
+                11 for blastn- 3 for others
+            prompt: Word Size (-W)
+            format: ("" , " -W "+str(value))[value is not None]
+            name: word_size
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Default: zero for all programs'
+            prompt: Multiple Hits window size (-A)
+            format: ("" , " -A "+str(value))[value is not None]
+            name: dist_hits
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Blast seeks first short word pairs whose aligned score reaches
+                at least this value.Default values:- 0 for blastn- 11 for blastp-
+                12 for blastx- 13 for tblastn and tblastx
+            prompt: Threshold for extending hits (-f)
+            format: ("" , " -f "+str(value))[value is not None]
+            name: extend_hit
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: This is the value that control the path graph region explored
+                by Blast during a gapped extension (Xg in the NAR paper) (default
+                for blastp is 15).Default values:- 30 for blastn- 0 for tblastx- 15
+                for others
+            prompt: X dropoff value for gapped alignment (-X)
+            format: ("" , " -X "+str(value))[value is not None]
+            name: dropoff_extent
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Default values:- 50 for blastn- 0 for tblastx- 25 for others
+            prompt: X dropoff value for final alignment gapped alignment (-Z)
+            format: ("" , " -Z "+str(value))[value is not None]
+            name: dropoff_final
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Use zero for the real size
+            prompt: Effective length of the search space (-Y)
+            format: ("" , " -Y "+str(value))[value is not None]
+            name: eff_len
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: If this option is used, a value of 100 is recommended.
+            prompt: Number of best hits from a region to keep (-K)
+            format: ("" , " -K "+str(value))[value is not None]
+            name: keep_hits
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Perform or not gapped alignment (not available with tblastx) (-g)
+            format: (" -g F " , "")[value]
+            name: gapped_alig
+            precond:
+                blast2: {'#ne': tblastx}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Single-hit or multiple-hit mode (-P)
+            format: ("" , " -P "+str(value))[value != "0"]
+            name: mode
+            precond:
+                blast2: {'#ne': blastn}
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Multiple-hit (0), value: '0'}
+                - {label: Single-hit (1), value: '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Translation options
+        name: translation_opt
+        argpos: 30
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic code used for query translation (-Q)
+            format: ("" , " -Q "+str(value))[value is not None and value != vdef]
+            name: gc_query
+            precond:
+                blast2:
+                    '#in': [blastx, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Standard (1), value: '1'}
+                - {label: Vertebrate Mitochondrial (2), value: '2'}
+                - {label: Yeast Mitochondrial (3), value: '3'}
+                - {label: 'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma
+                        (4)', value: '4'}
+                - {label: Invertebrate Mitochondrial (5), value: '5'}
+                - {label: Ciliate Macronuclear and Dasycladacean (6), value: '6'}
+                - {label: Echinoderm Mitochondrial (9), value: '9'}
+                - {label: Euplotid Nuclear (10), value: '10'}
+                - {label: Bacterial (11), value: '11'}
+                - {label: Alternative Yeast Nuclear (12), value: '12'}
+                - {label: Ascidian Mitochondrial (13), value: '13'}
+                - {label: Flatworm Mitochondrial (14), value: '14'}
+                - {label: Blepharisma Macronuclear (15), value: '15'}
+        - !mobyle/inputprogramparameter
+            prompt: Genetic code used for database translation (-D)
+            format: ("" , " -D "+str(value))[value != vdef]
+            name: gc_db
+            precond:
+                blast2:
+                    '#in': [tblastn, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Standard (1), value: '1'}
+                - {label: Vertebrate Mitochondrial (2), value: '2'}
+                - {label: Yeast Mitochondrial (3), value: '3'}
+                - {label: 'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma
+                        (4)', value: '4'}
+                - {label: Invertebrate Mitochondrial (5), value: '5'}
+                - {label: Ciliate Macronuclear and Dasycladacean (6), value: '6'}
+                - {label: Echinoderm Mitochondrial (9), value: '9'}
+                - {label: Euplotid Nuclear (10), value: '10'}
+                - {label: Bacterial (11), value: '11'}
+                - {label: Alternative Yeast Nuclear (12), value: '12'}
+                - {label: Ascidian Mitochondrial (13), value: '13'}
+                - {label: Flatworm Mitochondrial (14), value: '14'}
+                - {label: Blepharisma Macronuclear (15), value: '15'}
+        - !mobyle/inputprogramparameter
+            prompt: Query strands to search against database (-S)
+            format: ("" , " -S "+str(value))[value is not None and value != vdef]
+            name: strand
+            precond:
+                blast2:
+                    '#in': [blastn, blastx, tblastx]
+            command: false
+            type: !mobyle/stringtype
+                default: '3'
+                options:
+                - {label: Top (1), value: '1'}
+                - {label: Bottom (2), value: '2'}
+                - {label: Both (3), value: '3'}
+    - !mobyle/inputprogramparagraph
+        prompt: Report options
+        name: affichage
+        argpos: 40
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which one-line descriptions
+                will be reported.
+            prompt: Number of one-line descriptions to show (-v)
+            format: ("" , " -v "+str(value))[value is not None and value != vdef]
+            name: Descriptions
+            command: false
+            type: !mobyle/integertype {default: 500}
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which high-scoring segment
+                pairs will be reported (-b).
+            prompt: Number of database sequences to show alignments (-b)
+            format: ("" , " -b "+str(value))[value is not None and value != vdef]
+            name: Alignments
+            command: false
+            type: !mobyle/integertype {default: 250}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment view options (-m)
+            format: ("" , " -m "+str(value))[value is not None and value != vdef]
+            name: view_alignments
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Pairwise (0), value: '0'}
+                - {label: Query-anchored showing identities (1), value: '1'}
+                - {label: Query-anchored no identities (2), value: '2'}
+                - {label: 'Flat query-anchored, show identities (3)', value: '3'}
+                - {label: 'Flat query-anchored, no identities (5)', value: '4'}
+                - {label: Query-anchored no identities and blunt ends (5), value: '5'}
+                - {label: 'Flat query-anchored, no identities and blunt ends (6)',
+                    value: '6'}
+                - {label: XML Blast output (7), value: '7'}
+                - {label: Tabular output (8), value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Text output file
+            format: '" -o blast2.txt"'
+            argpos: 50
+            name: txtoutput
+            precond:
+                view_alignments: {'#ne': '7'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Xml output file
+            format: '" -o blast2.xml"'
+            argpos: 60
+            name: xmloutput
+            precond: {view_alignments: '7'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Html output
+            format: ("" , " && html4blast -g -o blast2.html blast2.txt")[value]
+            argpos: 61
+            name: htmloutput
+            precond:
+                view_alignments:
+                    '#nin': ['7', '8']
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Blast text report
+        filenames: '"blast2.txt"'
+        name: txtfile
+        precond:
+            view_alignments: {'#ne': '7'}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/outputprogramparameter
+        prompt: Blast xml report
+        filenames: '"blast2.xml"'
+        name: xmlfile
+        precond: {view_alignments: '7'}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Blast html report
+        filenames: '"blast2.html"'
+        name: htmlfile
+        precond:
+            view_alignments:
+                '#nin': ['7', '8']
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        filenames: '"*.gif"'
+        name: imgfile
+        precond:
+            view_alignments:
+                '#nin': ['7', '8']
+        hidden: true
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"blast2mydb.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"blast2mydb.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0352', 'EDAM_operation:0227']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0220']
+references:
+- {doi: null, label: 'Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaeffer,Jinghui
+        Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), Gapped BLAST
+        and PSI-BLAST: a new generation of protein database search programs, Nucleic
+        Acids Res. 25:3389-3402.', url: null}
+documentation_links: ['http://www.ncbi.nlm.nih.gov/books/bv.fcgi?rid=handbook.chapter.ch16',
+    'http://www.ncbi.nlm.nih.gov/Education/BLASTinfo/tut1.html']
+env: {}

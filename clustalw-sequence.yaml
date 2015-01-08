@@ -1,0 +1,501 @@
+!mobyle/program
+name: clustalw-sequence
+title: 'Clustalw: Sequence to Profile alignments'
+description: Sequentially add profile2 sequences to profile1 alignment
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        comment: By PROFILE ALIGNMENT, we mean alignment using existing alignments.
+            Profile alignments allow you to store alignments of your favorite sequences
+            and add new sequences to them in small bunches at a time. (e.g. an alignment
+            output file from CLUSTAL W). One or both sets of input sequences may include
+            secondary structure assignments or gap penalty masks to guide the alignment.Merge
+            2 alignments by profile alignment
+        prompt: Profile Alignments parameters
+        name: profile
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Profile 1
+            format: ( "" , " -profile1=" + str( value ) )[value is not None]
+            simple: true
+            mandatory: true
+            name: profile1
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1982']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            prompt: Profile 2
+            format: ( "" , " -profile2=" + str( value ) )[value is not None]
+            simple: true
+            mandatory: true
+            name: profile2
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: General settings
+        name: general_settings
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Protein or DNA (-type)
+            format: ("", " -type="+str(value))[value is not None]
+            name: typeseq
+            command: false
+            type: !mobyle/stringtype
+                default: auto
+                options:
+                - {label: Automatic, value: auto}
+                - {label: Protein, value: protein}
+                - {label: DNA, value: dna}
+        - !mobyle/inputprogramparameter
+            comment: 'slow: by dynamic programming (slow but accurate)fast: method
+                of Wilbur and Lipman (extremely fast but approximate)'
+            prompt: Toggle Slow/Fast pairwise alignments (-quicktree)
+            format: ( "" , " -quicktree")[ value == "fast"]
+            simple: true
+            name: quicktree
+            command: false
+            type: !mobyle/stringtype
+                default: slow
+                options:
+                - {label: Slow, value: slow}
+                - {label: Fast, value: fast}
+    - !mobyle/inputprogramparagraph
+        comment: 'These similarity scores are calculated from fast, approximate, global
+            alignments, which are controlled by 4 parameters. 2 techniques are used
+            to make these alignments very fast: 1) only exactly matching fragments
+            (k-tuples) are considered; 2) only the ''best'' diagonals (the ones with
+            most k-tuple matches) are used.'
+        prompt: Fast Pairwise Alignments parameters
+        name: fastpw
+        precond: {quicktree: fast}
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'K-TUPLE SIZE: This is the size of exactly matching fragment
+                that is used. INCREASE for speed (max= 2 for proteins; 4 for DNA),
+                DECREASE for sensitivity. For longer sequences (e.g. >1000 residues)
+                you may need to increase the default.'
+            prompt: Word size (-ktuple)
+            format: ( "" , " -ktuple=" + str( value ) )[value is not None and value
+                != vdef ]
+            argpos: 2
+            name: ktuple
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: The number of k-tuple matches on each diagonal (in an imaginary
+                dot-matrix plot) is calculated. Only the best ones (with most matches)
+                are used in the alignment. This parameter specifies how many. Decrease
+                for speed; increase for sensitivity.
+            prompt: Number of best diagonals (-topdiags)
+            format: ( "" , " -topdiags=" + str( value ))[value is not None and value
+                != vdef ]
+            argpos: 2
+            name: topdiags
+            command: false
+            type: !mobyle/integertype {default: 5}
+        - !mobyle/inputprogramparameter
+            comment: 'WINDOW SIZE: This is the number of diagonals around each of
+                the ''best'' diagonals that will be used. Decrease for speed; increase
+                for sensitivity'
+            prompt: Window around best diags (-window)
+            format: ( "" , " -window=" + str( value ) )[ value is not None and value
+                != vdef ]
+            argpos: 2
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 5}
+        - !mobyle/inputprogramparameter
+            comment: This is a penalty for each gap in the fast alignments. It has
+                little affect on the speed or sensitivity except for extreme values.
+            prompt: Gap penalty (-pairgap)
+            format: ( "" , " -pairgap=" + str( value ))[ value is not None and value
+                != vdef ]
+            argpos: 2
+            name: pairgap
+            command: false
+            type: !mobyle/floattype {default: 3.0}
+        - !mobyle/inputprogramparameter
+            prompt: Percent or absolute score ? (-score)
+            format: ( "" , " -score=" +str( value ) )[value is not None and value
+                !=vdef]
+            argpos: 2
+            name: score
+            command: false
+            type: !mobyle/stringtype
+                default: percent
+                options:
+                - {label: Percent, value: percent}
+                - {label: Absolute, value: absolute}
+    - !mobyle/inputprogramparagraph
+        comment: These parameters do not have any affect on the speed of the alignments.
+            They are used to give initial alignments which are then rescored to give
+            percent identity scores. These % scores are the ones which are displayed
+            on the screen. The scores are converted to distances for the trees.
+        prompt: Slow Pairwise Alignments parameters
+        name: slowpw
+        precond: {quicktree: slow}
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Gap opening penalty (-pwgapopen)
+            format: ( "" , " -pwgapopen=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: pwgapopen
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            prompt: Gap extension penalty (-pwgapext)
+            format: ( "" , " -pwgapext=" + str( value ) )[ value is not None and value
+                != vdef ]
+            name: pwgapext
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+        - !mobyle/inputprogramparagraph
+            prompt: Protein parameters
+            name: slowpw_prot
+            precond: {typeseq: protein}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: 'The scoring table which describes the similarity of each
+                    amino acid to each other. For DNA, an identity matrix is used.BLOSUM
+                    (Henikoff). These matrices appear to be the best available for
+                    carrying out data base similarity (homology searches). The matrices
+                    used are: Blosum80, 62, 40 and 30.The Gonnet Pam 250 matrix has
+                    been reported as the best single matrix for alignment, if you
+                    only choose one matrix. Our experience with profile database searches
+                    is that the Gonnet series is unambiguously superior to the Blosum
+                    series at high divergence. However, we did not get the series
+                    to perform systematically better than the Blosum series in Clustal
+                    W (communication of the authors).PAM (Dayhoff). These have been
+                    extremely widely used since the late ''70s. We use the PAM 120,
+                    160, 250 and 350 matrices.'
+                prompt: Protein weight matrix (-pwmatrix)
+                format: ( "" , " -pwmatrix=" + str(value) )[value is not None and
+                    value != vdef ]
+                name: pwmatrix
+                command: false
+                type: !mobyle/stringtype
+                    default: gonnet
+                    options:
+                    - {label: BLOSUM30 (Henikoff), value: blosum}
+                    - {label: Gonnet 250, value: gonnet}
+                    - {label: PAM350 (Dayhoff), value: pam}
+                    - {label: Identity matrix, value: id}
+        - !mobyle/inputprogramparagraph
+            prompt: DNA parameters
+            name: slowpw_dna
+            precond: {typeseq: dna}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: For DNA, a single matrix (not a series) is used. Two hard-coded
+                    matrices are available:1) IUB. This is the default scoring matrix
+                    used by BESTFIT for the comparison of nucleic acid sequences.
+                    X's and N's are treated as matches to any IUB ambiguity symbol.
+                    All matches score 1.9; all mismatches for IUB symbols score 0.2)
+                    CLUSTALW(1.6). The previous system used by ClustalW, in which
+                    matches score 1.0 and mismatches score 0. All matches for IUB
+                    symbols also score 0.
+                prompt: DNA weight matrix (-pwdnamatrix)
+                format: ( "" , " -pwdnamatrix=" + str(value) )[ value is not None
+                    and value != vdef ]
+                name: pwdnamatrix
+                command: false
+                type: !mobyle/stringtype
+                    default: iub
+                    options:
+                    - {label: IUB, value: iub}
+                    - {label: CLUSTALW, value: clustalw}
+    - !mobyle/inputprogramparagraph
+        comment: These options, when doing a profile alignment, allow you to set 2D
+            structure parameters. If a solved structure is available, it can be used
+            to guide the alignment by raising gap penalties within secondary structure
+            elements, so that gaps will preferentially be inserted into unstructured
+            surface loops. Alternatively, a user-specified gap penalty mask can be
+            supplied directly.A gap penalty mask is a series of numbers between 1
+            and 9, one per position in the alignment. Each number specifies how much
+            the gap opening penalty is to be raised at that position (raised by multiplying
+            the basic gap opening penalty by the number) i.e. a mask figure of 1 at
+            a position means no change in gap opening penalty; a figure of 4 means
+            that the gap opening penalty is four times greater at that position, making
+            gaps 4 times harder to open.Gap penalty masks is to be supplied with the
+            input sequences. The masks work by raising gap penalties in specified
+            regions (typically secondary structure elements) so that gaps are preferentially
+            opened in the less well conserved regions (typically surface loops).CLUSTAL
+            W can read the masks from SWISS-PROT, CLUSTAL or GDE format input files.
+            For many 3-D protein structures, secondary structure information is recorded
+            in the feature tables of SWISS-PROT database entries. You should always
+            check that the assignments are correct - some are quite inaccurate. CLUSTAL
+            W looks for SWISS-PROT HELIX and STRAND assignments e.g.FT HELIX 100 115FT
+            HELIX 100 115The structure and penalty masks can also be read from CLUSTAL
+            alignment format as comment lines beginning !SS_ or GM_ e.g.!SS_HBA_HUMA
+            ..aaaAAAAAAAAAAaaa.aaaAAAAAAAAAAaaaaaaAaaa.........aaaAAAAAA!GM_HBA_HUMA
+            112224444444444222122244444444442222224222111111111222444444HBA_HUMA VLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVKGHGKNote
+            that the mask itself is a set of numbers between 1 and 9 each of which
+            is assigned to the residue(s) in the same column below. In GDE flat file
+            format, the masks are specified as text and the names must begin with
+            SS_ or GM_. Either a structure or penalty mask or both may be used. If
+            both are included in an alignment, the user will be asked which is to
+            be used.
+        prompt: Structure Alignments parameters
+        name: structure
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option controls whether the input secondary structure information
+                or gap penalty masks will be used.
+            prompt: Do not use secondary structure-gap penalty mask for profile 1
+                (-nosecstr1)
+            format: ( "" , " -nosecstr1")[ value ]
+            argpos: 2
+            name: nosecstr1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option controls whether the input secondary structure information
+                or gap penalty masks will be used.
+            prompt: Do not use secondary structure-gap penalty mask for profile 2
+                (-nosecstr2)
+            format: ( "" , " -nosecstr2")[ value ]
+            name: nosecstr2
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option provides the value for raising the gap penalty at
+                core Alpha Helical (A) residues. In CLUSTAL format, capital residues
+                denote the A and B core structure notation. The basic gap penalties
+                are multiplied by the amount specified.
+            prompt: Helix gap penalty (-helixgap)
+            format: ( "" , " -helixgap=" + str( value ) )[ value is not None and value
+                != vdef ]
+            name: helixgap
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            comment: This option provides the value for raising the gap penalty at
+                Beta Strand (B) residues. In CLUSTAL format, capital residues denote
+                the A and B core structure notation. The basic gap penalties are multiplied
+                by the amount specified.
+            prompt: Strand gap penalty (-strandgap)
+            format: ( "" , " -strandgap=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: strandgap
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            comment: This option provides the value for the gap penalty in Loops.
+                By default this penalty is not raised. In CLUSTAL format, loops are
+                specified by . in the secondary structure notation.
+            prompt: Loop gap penalty (-loopgap)
+            format: ( "" , " -loopgap=" + str( value ) )[ value is not None and value
+                != vdef ]
+            name: loopgap
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: This option provides the value for setting the gap penalty at
+                the ends of secondary structures. Ends of secondary structures are
+                observed to grow and-or shrink in related structures. Therefore by
+                default these are given intermediate values, lower than the core penalties.
+                All secondary structure read in as lower case in CLUSTAL format gets
+                the reduced terminal penalty.
+            prompt: Secondary structure terminal penalty (-terminalgap)
+            format: ( "" , " -terminalgap=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: terminalgap
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: This option (together with the -helixendin) specify the range
+                of structure termini for the intermediate penalties. In the alignment
+                output, these are indicated as lower case. For Alpha Helices, by default,
+                the range spans the end helical turn.
+            prompt: 'Helix terminal positions: number of residues inside helix to
+                be treated as terminal (-helixendin)'
+            format: ( "" , " -helixendin=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: helixendin
+            command: false
+            type: !mobyle/integertype {default: 3}
+        - !mobyle/inputprogramparameter
+            comment: This option (together with the -helixendin) specify the range
+                of structure termini for the intermediate penalties. In the alignment
+                output, these are indicated as lower case. For Alpha Helices, by default,
+                the range spans the end helical turn.
+            prompt: 'Helix terminal positions: number of residues outside helix to
+                be treated as terminal (-helixendout)'
+            format: ( "" , " -helixendout=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: helixendout
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: This option (together with the -strandendout option) specify
+                the range of structure termini for the intermediate penalties. In
+                the alignment output, these are indicated as lower case. For Beta
+                Strands, the default range spans the end residue and the adjacent
+                loop residue, since sequence conservation often extends beyond the
+                actual H-bonded Beta Strand.
+            prompt: 'Strand terminal positions: number of residues inside strand to
+                be treated as terminal (-strandendin)'
+            format: ( "" , " -strandendin=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: strandendin
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: This option (together with the -strandendin option) specify the
+                range of structure termini for the intermediate penalties. In the
+                alignment output, these are indicated as lower case. For Beta Strands,
+                the default range spans the end residue and the adjacent loop residue,
+                since sequence conservation often extends beyond the actual H-bonded
+                Beta Strand.
+            prompt: 'Strand terminal positions: number of residues outside strand
+                to be treated as terminal (-strandendout)'
+            format: ( "" , " -strandendout=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: strandendout
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: This option lets you choose whether or not to include the masks
+                in the CLUSTAL W output alignments. Showing both is useful for understanding
+                how the masks work. The secondary structure information is itself
+                very useful in judging the alignment quality and in seeing how residue
+                conservation patterns vary with secondary structure.
+            prompt: Output in alignment (-secstrout)
+            format: ( "" , " -secstrout=" + str( value ) )[ value is not None and
+                value != vdef ]
+            name: secstrout
+            command: false
+            type: !mobyle/stringtype
+                default: STRUCTURE
+                options:
+                - {label: Secondary Structure, value: STRUCTURE}
+                - {label: Gap Penalty Mask, value: MASK}
+                - {label: Structure and Penalty Mask, value: BOTH}
+                - {label: None, value: NONE}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: outputparam
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output format (-output)
+            format: ( "" , " -output=" + str( value) )[ value is not None and value
+                != vdef ]
+            name: outputformat
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: CLUSTAL, value: 'null'}
+                - {label: GCG, value: GCG}
+                - {label: GDE, value: GDE}
+                - {label: PHYLIP, value: PHYLIPI}
+                - {label: NEXUS, value: NEXUS}
+                - {label: PIR, value: PIR}
+                - {label: FASTA, value: FASTA}
+        - !mobyle/inputprogramparameter
+            prompt: Output sequence numbers in the output file (for clustalw output
+                only) (-seqnos)
+            format: ( "" , " -seqnos=on")[ value is not None and value != vdef]
+            name: seqnos
+            precond:
+                outputformat: {'#eq': None}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Result order (-outorder)
+            format: ( "" , " -outorder=" + str(value))[ value is not None and value
+                != vdef ]
+            name: outorder
+            command: false
+            type: !mobyle/stringtype
+                default: aligned
+                options:
+                - {label: Input, value: input}
+                - {label: Aligned, value: aligned}
+        - !mobyle/inputprogramparameter
+            prompt: Sequence alignment file name(-outfile)
+            format: ( "" , " -outfile=" + str( value))[ value is not None ]
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: outputparam
+        argpos: 5
+        children:
+        - !mobyle/outputprogramparameter
+            comment: 'In the conservation line output in the clustal format alignment
+                file, three characters are used:''*'' indicates positions which have
+                a single, fully conserved residue.'':'' indicates that one of the
+                following ''strong'' groups is fully conserved (STA,NEQK,NHQK,NDEQ,QHRK,MILV,MILF,HY,FYW).''.''
+                indicates that one of the following ''weaker'' groups is fully conserved
+                (CSA,ATV,SAG,STNK,STPA,SGND,SNDEQK,NDEQHK,NEQHRK,FVLIM,HFY).These
+                are all the positively scoring groups that occur in the Gonnet Pam250
+
+                matrix. The strong and weak groups are defined as strong score >0.5
+                and weak
+
+                score =<0.5 respectively.'
+            prompt: Alignment file
+            filenames: ("*.aln", str(outfile))[outfile is not None]
+            name: clustalaligfile
+            precond:
+                outputformat: {'#eq': None}
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1982']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Alignment file
+            filenames: ((("*.nxs","*.phy")[outputformat == 'PHYLIPI'],"*.msf")[outputformat
+                == 'GCG'],str(outfile))[outfile is not None]
+            name: aligfile
+            precond:
+                outputformat:
+                    '#in': [NEXUS, GCG, PHYLIPI]
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Sequences file
+            filenames: ((("*.fasta","*.pir")[outputformat == 'PIR'],"*.gde")[outputformat
+                == 'GDE'],str(outfile))[outfile is not None]
+            name: seqfile
+            precond:
+                outputformat:
+                    '#in': [GDE, PIR, FASTA]
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Tree file
+            filenames: '"*.dnd"'
+            name: dndfile
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"clustalw-sequence.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"clustalw-sequence.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3081', 'EDAM_operation:0492']
+topics: ['EDAM_topic:0182']
+command: clustalw -sequences
+env: {}

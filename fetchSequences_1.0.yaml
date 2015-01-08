@@ -1,0 +1,50 @@
+!mobyle/program
+name: fetchSequences
+version: '1.0'
+title: fetch sequences
+description: Retrieve sequences in databases from list of identifier (USA list)
+authors: EMBOSS
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter {comment: "list of identifiers in USA format:\n\
+                \             databank:Acc\n             ( one item per line )", prompt: list
+                of sequences identifier in USA format, format: '" @" + str(value)',
+            simple: true, argpos: 2, mandatory: true, name: USAList, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: the sequences
+            filenames: '"fetchSequences.out"'
+            name: sequence_out
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fetchSequences.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0344']
+topics: ['EDAM_topic:3071']
+references:
+- {doi: null, label: 'http://emboss.sourceforge.net/', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/seqret.html', 'http://emboss.sourceforge.net/docs/themes']
+command: seqret
+env: {}

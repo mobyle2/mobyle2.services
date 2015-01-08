@@ -1,0 +1,58 @@
+!mobyle/program
+name: psort
+title: PSORT
+description: Predicts protein subcellular localization sites from their amino acid
+    sequence
+authors: Nakai, K. and Horton, P.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Protein sequence file
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: seqfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparameter
+        prompt: Verbose mode (-w)
+        format: ("", " -w")[ value ]
+        argpos: 1
+        name: Verbose
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Html output file
+        filenames: '"psort.html"'
+        argpos: 100
+        name: htmlfile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"psort.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"psort.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2489']
+topics: ['EDAM_topic:0140']
+references:
+- {doi: null, label: "A program for detecting the sorting signals of\n\tproteins and\
+        \ predicting their subcellular localization, trends\n\tBiochem. Sci., in press,\
+        \ 1999.", url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/psort/index.html']
+homepage_links: ['http://psort.hgc.jp/']
+command: psort
+env: {}

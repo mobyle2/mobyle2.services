@@ -1,0 +1,51 @@
+!mobyle/program
+name: bigorf_extract
+version: '1.0'
+title: bigorf_extract
+description: extract sequences with the largest ORF from a sequence translated with
+    EMBOSS transseq and checktrans
+authors: E. Deveaud
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: This is where you should enter the list of candidate ORFs for each
+            gene
+        prompt: Protein sequences to filter
+        format: '" " + value'
+        simple: true
+        argpos: 2
+        name: protein_sequences
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparameter
+        comment: Number of characters that should be stripped. Default value is 4
+            because transseq adds 2 characters (_[frame index]) and checktrans another
+            2 (_[candidate index])
+        prompt: Integer
+        format: '" -s %d" % value'
+        argpos: 1
+        name: characters_to_strip
+        command: false
+        type: !mobyle/integertype {default: 4}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Sequence
+        filenames: '"bigorf_extract.out"'
+        name: protein_sequence_out
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"bigorf_extract.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0108']
+command: bigorf_extract.py
+env: {}

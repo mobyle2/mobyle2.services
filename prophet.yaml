@@ -1,0 +1,146 @@
+!mobyle/program
+name: prophet
+title: prophet
+description: Scan one or more sequences with a Gribskov or Henikoff profile
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter {prompt: Profile or weight matrix file, format: '("",
+                " -infile=" + str(value))[value is not None]', simple: true, argpos: 2,
+            mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Gap opening coefficient (value from 0.0 to 100.0)
+            format: ("", " -gapopen=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: gapopen
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100.0 is required
+                test:
+                    value: {'#lte': '100.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Gap extension coefficient (value from 0.0 to 100.0)
+            format: ("", " -gapextend=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: gapextend
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+            ctrls:
+            -   message: Value greater than or equal to 0.0 is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100.0 is required
+                test:
+                    value: {'#lte': '100.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output alignment file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 5
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: prophet.align}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the alignment output format
+            format: ("", " -aformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: aformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: SIMPLE
+                options:
+                - {label: Fasta, value: FASTA}
+                - {label: Msf, value: MSF}
+                - {label: Pair, value: PAIR}
+                - {label: Markx0, value: MARKX0}
+                - {label: Markx1, value: MARKX1}
+                - {label: Markx2, value: MARKX2}
+                - {label: Markx3, value: MARKX3}
+                - {label: Markx10, value: MARKX10}
+                - {label: Srs, value: SRS}
+                - {label: Srspair, value: SRSPAIR}
+                - {label: Score, value: SCORE}
+                - {label: Unknown, value: UNKNOWN}
+                - {label: Multiple, value: MULTIPLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Match, value: MATCH}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 7
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                aformat_outfile:
+                    '#in': [FASTA, MSF]
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out2 option
+            filenames: outfile
+            name: outfile_out2
+            precond:
+                aformat_outfile:
+                    '#in': [PAIR, MARKX0, MARKX1, MARKX2, MARKX3, MARKX10, SRS, SRSPAIR,
+                        SCORE, UNKNOWN, MULTIPLE, SIMPLE, MATCH]
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"prophet.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"prophet.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0300']
+topics: ['EDAM_topic:0188']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/prophet.html', 'http://emboss.sourceforge.net/docs/themes']
+command: prophet
+env: {}

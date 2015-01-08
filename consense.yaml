@@ -1,0 +1,134 @@
+!mobyle/program
+name: consense
+title: consense
+description: Consensus tree program
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"consense <consense.params"'
+        argpos: 0
+        name: consense
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: Input is a tree file which contains a series of trees in the Newick
+            standard form
+        prompt: Series of trees in file (intree)
+        format: '"ln -s "+ str( infile )+ " intree &&"'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        prompt: Consensus type
+        paramfile: consense.params
+        name: type
+        command: false
+        type: !mobyle/stringtype {default: MRE}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ( "3\n" , "" )[ value ]
+            argpos: 1
+            paramfile: consense.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (4)
+            format: ( "4\n" , "" )[ value ]
+            argpos: 1
+            paramfile: consense.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: consense.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Outgroup species (O)
+            format: ( "" , "O\n"+ str( value ) +"\n" )[ value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: consense.params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Trees to be treated as rooted (R)
+            format: ( "" , "R\n" )[ value ]
+            argpos: 1
+            paramfile: consense.params
+            name: rooted
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -1
+        paramfile: consense.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Consense output file, filenames: '"consense.outfile"',
+        argpos: 40, name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Consense tree file
+        filenames: '"consense.outtree"'
+        argpos: 50
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"consense.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"consense.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "CONSENSE reads a  file of  computer-readable trees\n\tand prints out (and\
+    \ may also write out onto a file) a consensus tree."
+operations: ['EDAM_operation:0555']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/consense.html']
+env: {}

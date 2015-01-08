@@ -1,0 +1,246 @@
+!mobyle/program
+name: gblocks
+version: Version 0.91b
+title: Gblocks
+description: Selection of conserved blocks from multiple sequence alignment
+authors: Jose Castresana
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "FASTA-formatted alignments are accepted by gblocks. \n\t\t\t\
+                \      \tThere is no limit for the number of sequences or positions\
+                \ in the alignment\n\t\t\t      \tas long as there is enough memory\
+                \ available for the program."
+            prompt: Alignment
+            format: '" "+str(value)+" -g"'
+            simple: true
+            mandatory: true
+            name: infile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            comment: 'Automatic: For FASTA-formatted alignments, gblocks assigned
+                the type Protein automatically.In other cases, precise.'
+            prompt: Type of sequence (-t)
+            format: ("", " -t="+str(value))[value is not None and value!=vdef]
+            name: input_type
+            command: false
+            type: !mobyle/stringtype
+                default: auto
+                options:
+                - {label: Automatic, value: auto}
+                - {label: Protein, value: Protein}
+                - {label: DNA, value: DNA}
+    - !mobyle/inputprogramparagraph
+        prompt: Options for selection
+        name: sel_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Any integer BIGGER than half the number of sequences \n    \
+                \        \t\t\tand SMALLER OR EQUAL than the total number of sequences.\
+                \ If you put an integer not in this interval, gblocks will run the\
+                \ program with default value, check the warning in output.By default,\
+                \ = 50% of the number of sequences +1."
+            prompt: Minimum Number Of Sequences For A Conserved Position(-b1)
+            format: ("" , " -b1="+str(value))[value is not None]
+            name: MNOSFACP
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Any integer EQUAL OR SMALLER than Minimum Number Of Sequences
+                For A Conserved Position. If you put an integer not in this interval,
+                gblocks will run the program with default value, check the warning
+                in output.By default, = 85% of the number of sequences.
+            prompt: Minimum Number Of Sequences For A Flank Position(-b2)
+            format: ("" , " -b2="+str(value))[value is not None]
+            name: MNOSFOFP
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Any integer equal or bigger than 2 (= 10 by default).
+            prompt: Minimum Length Of A Block(-b4)
+            format: ("" , " -b4="+str(value))[value is not None and value!=vdef]
+            name: MLOAB
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: 'None(default value): No gap positions are allowed in the final
+                alignment.With Half: Positions with a gap in less than 50% of the
+                sequences selected in the final alignment (if they''re in an appropriate
+                block).All: Positions with gaps are not treated differently from others
+                positions.'
+            prompt: Allowed Gap Positions (-b5)
+            format: ("", " -b5="+str(value))[value is not None and value!=vdef]
+            name: gap
+            command: false
+            type: !mobyle/stringtype
+                default: n
+                options:
+                - {label: None, value: n}
+                - {label: With Half, value: h}
+                - {label: All, value: a}
+        - !mobyle/inputprogramparameter
+            comment: All segment with contiguous non-conserved positions bigger than
+                this value is rejected (=8 by default).
+            prompt: Maximum Number Of Contiguous Nonconserved Positions(-b3)
+            format: ("" , " -b3="+str(value))[value is not None and value!=vdef]
+            name: MNOCNP
+            command: false
+            type: !mobyle/integertype {default: 8}
+    - !mobyle/inputprogramparagraph
+        prompt: Saving options
+        name: saving_options
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Saving or Not the alignment file with the selected blocks.
+            prompt: Selected Blocks (-s)
+            format: (" -s=n" , "")[value]
+            name: sb
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Saving an HTML file (Yes), saving a text file (Text), saving
+                a short text file (Short Text) or not saving any of them (No).With
+                the first two options the original file is shown with the selected
+                blocks underlined and, in the HTML file, with colored conserved positions.The
+                parameters used and the flank positions of the selected blocks are
+                written in these files.
+            prompt: Results And Parameters File(-p)
+            format: ("" , " -p="+str(value))[value is not None and value!=vdef]
+            name: Res_Param
+            command: false
+            type: !mobyle/stringtype
+                default: y
+                options:
+                - {label: 'Yes', value: y}
+                - {label: Text, value: t}
+                - {label: Short Text, value: s}
+                - {label: 'No', value: n}
+        - !mobyle/inputprogramparameter
+            comment: Number of characters per line in the alignment shown in the Results
+                And Parameters File.Any integer bigger than 50 is accepted (60 by
+                default).
+            prompt: Characters Per Line In Results And Parameters File (>50)(-v)
+            format: ("" , " -v="+str(value))[value is not None and value!=vdef]
+            name: PerLine
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            comment: Saving or Not a the alignment file with the blocks NOT selected
+                (i.e., the complementary of the selected blocks).
+            prompt: NonConserved Blocks (-n)
+            format: ("" , " -n=y")[value]
+            name: nc
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Saving or Not the alignment file where only gap positions (i.e.
+                positions with at least one gap) have been removed.
+            prompt: Ungapped Alignment (-u)
+            format: ("" , " -u=y")[value]
+            name: ua
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Saving or Not a file that can be read by the program SeqPup.In
+                this file, conserved positions as defined by Gblocks are shadowed
+                and selected blocks underlined
+            prompt: Mask File With The Selected Blocks (-k)
+            format: ("" , " -k=y")[value]
+            name: mask
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Saving or Not a Postscript file that shows schematically the
+                selected blocks. You need a postscript viewer or editor to view this
+                file.
+            prompt: Postscript File With The Selected Blocks (-d)
+            format: ("" , " -d=y")[value]
+            name: ps
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Results and Params (HTML format)
+        filenames: '"*-gb.htm"'
+        name: Res_Param_HTML
+        precond:
+            '#and':
+            -   Res_Param: {'#ne': t}
+            -   Res_Param: {'#ne': s}
+            -   Res_Param: {'#ne': n}
+    - !mobyle/outputprogramparameter
+        prompt: Results and Params (Text format)
+        filenames: '"*-gb.txt"'
+        name: Res_Param_t
+        precond: {Res_Param: t}
+    - !mobyle/outputprogramparameter
+        prompt: Results and Params (ShortText format)
+        filenames: '"*-gb.txts"'
+        name: Res_Param_st
+        precond: {Res_Param: s}
+    - !mobyle/outputprogramparameter
+        prompt: Alignment file with selected blocks
+        filenames: '"*-gb"'
+        name: alignment_result
+        precond: sb
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: NonConserved Blocks File
+        filenames: '"*-gbComp"'
+        name: nc_file
+        precond: nc
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Ungapped Alignment File
+        filenames: '"*--"'
+        name: ua_file
+        precond: ua
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter {prompt: Mask File With The Selected Blocks,
+        filenames: '"*-gbMask"', name: mask_file, precond: mask}
+    - !mobyle/outputprogramparameter {prompt: Postscript File, filenames: '"*-gbPS"',
+        name: ps_file, precond: ps}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"gblocks.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"gblocks.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0448']
+topics: ['EDAM_topic:0182']
+references:
+- {doi: null, label: 'Castresana, J. (2000). Selection of conserved blocks from multiple
+        alignments for their use in phylogenetic analysis. Molecular Biology and Evolution
+        17, 540-552', url: null}
+- {doi: null, label: 'Talavera, G., and Castresana, J. (2007). Improvement of phylogenies
+        after removing divergent and ambiguously aligned blocks from protein sequence
+        alignments. Systematic Biology 56, 564-577', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/gblocks/']
+homepage_links: ['http://molevol.cmima.csic.es/castresana/Gblocks.html']
+command: gblocks
+env: {}
+source_links: ['http://molevol.cmima.csic.es/castresana/Gblocks.html']

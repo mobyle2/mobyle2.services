@@ -1,0 +1,72 @@
+!mobyle/program
+name: featcopy
+title: featcopy
+description: Reads and writes a feature table
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter {prompt: Features option, format: '("", "
+                -features=" + str(value))[value is not None]', simple: true, argpos: 1,
+            mandatory: true, name: features, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output feature file (outfeat)
+            format: ("" , " -outfeat=" + str(value))[value is not None]
+            argpos: 2
+            name: outfeat
+            command: false
+            type: !mobyle/stringtype {default: featcopy.outfeat}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the feature output format
+            format: ("", " -offormat=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: offormat_outfeat
+            command: false
+            type: !mobyle/stringtype
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 4
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter {prompt: Outfeat_out option, filenames: outfeat,
+            name: outfeat_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"featcopy.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"featcopy.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0254']
+topics: ['EDAM_topic:0160', 'EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/featcopy.html', 'http://emboss.sourceforge.net/docs/themes']
+command: featcopy
+env: {}

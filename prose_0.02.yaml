@@ -1,0 +1,66 @@
+!mobyle/program
+name: prose
+version: '0.02'
+title: PROSE
+description: Prosite Pattern search
+authors: K. Schuerer
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Protein Sequence File
+        format: '" " + str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: seqfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Include abundant patterns (-s)
+        format: ("", " -s")[value]
+        name: abundant
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Report occurrences (-m)
+        format: ("", " -m " + str(value))[value != vdef]
+        name: report
+        command: false
+        type: !mobyle/stringtype
+            default: short
+            options:
+            - {label: Shortest only (short), value: short}
+            - {label: Longest only (long), value: long}
+            - {label: All subpatterns (all), value: all}
+    - !mobyle/inputprogramparameter
+        prompt: Perform case sensitive search (-c)
+        format: ("", " -c")[value]
+        name: case
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter {comment: "This file require exactly one pattern\
+            \ per\n          line, in the following format:NAME followed by PATTERN.",
+        prompt: Pattern list file (-l), format: '("", " -l " + str(value))[value is
+            not None]', name: plist, command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"prose.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"prose.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0342']
+topics: ['EDAM_topic:0160', 'EDAM_topic:0090']
+command: prose
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/prose/']

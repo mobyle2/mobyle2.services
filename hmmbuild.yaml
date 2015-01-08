@@ -1,0 +1,429 @@
+!mobyle/program
+name: hmmbuild
+title: HMMBUILD
+description: Build a profile HMM from an input multiple alignment
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Aligned sequences File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 30
+        mandatory: true
+        name: alignfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1961']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        comment: "The alphabet type (amino, DNA, or RNA) is autodetected by default,\
+            \ by looking at the composition of the\n            msafile. Autodetection\
+            \ is normally quite reliable, but occasionally alphabet type may be ambiguous\
+            \ and\n            autodetection can fail (for instance, on tiny toy alignments\
+            \ of just a few residues). To avoid this, or to\n            increase\
+            \ robustness in automated analysis pipelines, you may specify the alphabet\
+            \ type of msafile with\n            these options.Protein: Specify that\
+            \ all sequences in seqfile are proteins. By default, alphabet type is\n\
+            \                    autodetected from looking at the residue composition.DNA:\
+            \ Specify that all sequences in seqfile are DNAs.RNA: Specify that all\
+            \ sequences in seqfile are RNAs."
+        prompt: Forcing an alphabet in input alignment
+        format: ("", " " + str(value) )[ value is not None and value != vdef]
+        simple: true
+        argpos: 2
+        name: alphabet
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Autodetection, value: 'null'}
+            - {label: Protein, value: --amino}
+            - {label: DNA, value: --dna}
+            - {label: RNA, value: --rna}
+    - !mobyle/inputprogramparameter
+        format: '" " + str(alignfile) + ".hmm"'
+        argpos: 20
+        name: hmm_textfile
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Name the new profile. The default is to use the name of the\
+                \ alignment (if one\n          is present in the msafile, or, failing\
+                \ that, the name of the hmmfile. If msafile contains\n          more\
+                \ than one alignment, -n doesn't work, and every alignment must have\
+                \ a name\n          annotated in the msafile (as in Stockholm #=GF\
+                \ ID annotation)."
+            prompt: Name the HMM (-n)
+            format: ( "" , " -n " + str(value) )[ value is not None ]
+            argpos: 1
+            name: hmmname
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "After each model is constructed, resave annotated, possibly\
+                \ modified source alignments\n            to a file in Stockholm format.\
+                \ The alignments are annotated with a\n            reference annotation\
+                \ line indicating which columns were assigned as consensus,\n    \
+                \        and sequences are annotated with what relative sequence weights\
+                \ were assigned.\n            Some residues of the alignment may have\
+                \ been shifted to accommodate restrictions\n            of the Plan7\
+                \ profile architecture, which disallows transitions between insert\n\
+                \            and delete states.."
+            prompt: Re_save annotated, possibly modified MSA to 'file', in Stockholm
+                format. (-O)
+            format: ( "" , " -O " + str(value) )[ value is not None ]
+            argpos: 1
+            name: re_save
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        comment: These options control how consensus columns are defined in an alignment.
+        prompt: Alternative model construction strategies
+        name: AlternativeConstruction
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Define consensus columns as those that have a fraction >= symfrac\
+                \ of residues\n            as opposed to gaps. (See the --symfrac\
+                \ option.) This is the default."
+            prompt: Quickly and heuristically determine the architecture of the model
+                (fast)
+            format: ( "" , " --fast" )[ value ]
+            argpos: 1
+            name: fast
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Enter a value >= 0 and <= 1. Define the residue fraction threshold\
+                \ necessary \n              to define a consensus column\n       \
+                \       when using the --fast option. The default is 0.5. The symbol\
+                \ fraction in each\n              column is calculated after taking\
+                \ relative sequence weighting into account, and ignoring\n       \
+                \       gap characters corresponding to ends of sequence fragments\
+                \ (as opposed\n              to internal insertions/deletions). \n\
+                \              Setting this to 0.0 means that every alignment column\
+                \ will be assigned\n\t\t\t  as consensus, which may be useful in some\
+                \ cases. Setting it to 1.0\n\t          means that only columns that\
+                \ have no gap characters at all will be\n              assigned as\
+                \ consensus."
+            prompt: Sets sym fraction controlling for the --fast model construction
+                algorithm, (symfrac)
+            format: ( "" , " --symfrac " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: symfrac
+            precond: fast
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+        - !mobyle/inputprogramparameter
+            comment: "Enter a value >= 0 and <= 1. We only want to count terminal\
+                \ gaps as deletions if the aligned sequence is known\n           to\
+                \ be full-length, not if it is a fragment (for instance, because only\
+                \ part of it was\n           sequenced). HMMER uses a simple rule\
+                \ to infer fragments: if the sequence length\n           L is less\
+                \ than a fraction x times the mean sequence length of all the sequences\n\
+                \           in the alignment, then the sequence is handled as a fragment.\
+                \ The default is 0.5."
+            prompt: Tag sequence as a fragment, (fragthresh)
+            format: ( "" , " --fragthresh " + str(value) )[ value is not None and
+                value !=vdef ]
+            name: fragthresh
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced options
+        name: advanced
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "HMMER uses an ad hoc sequence weighting algorithm to downweight\
+                \ closely related sequences and upweight\n          distantly related\
+                \ ones. This has the effect of making models less biased by uneven\
+                \ phylogenetic\n          representation. For example, two identical\
+                \ sequences would typically each receive half the weight that one\n\
+                \          sequence would. These options control which algorithm gets\
+                \ used.wnp: Use the Henikoff position-based sequence weighting scheme\
+                \ [Henikoff and Henikoff,\n          J. Mol. Biol. 243:574, 1994].\
+                \ This is the default.wgsc: Use the Gerstein/Sonnhammer/Chothia weighting\
+                \ algorithm [Gerstein et al, J. Mol.\n          Biol. 235:1067, 1994].wblosum:\
+                \ Use the same clustering scheme that was used to weight data in calculating\
+                \ BLOSUM\n          subsitution matrices [Henikoff and Henikoff, Proc.\
+                \ Natl. Acad. Sci 89:10915,\n          1992]. Sequences are single-linkage\
+                \ clustered at an identity threshold (default\n          0.62; see\
+                \ --wid) and within each cluster of c sequences, each sequence gets\
+                \ relative\n          weight 1/c.wnone: No relative weights. All sequences\
+                \ are assigned uniform weight"
+            prompt: Alternative relative sequence weighting strategies
+            format: ( "" , ' --'+ str(value) )[ value != vdef and value != 'infoWgiven'
+                ]
+            name: relativeWeight
+            command: false
+            type: !mobyle/stringtype
+                default: wpb
+                options:
+                - {label: Henikoff position-based weighting scheme (wpb), value: wpb}
+                - {label: Gerstein/Sonnhammer/Chothia ad hoc sequence weighting algorithm
+                        (wgsc), value: wgsc}
+                - {label: BLOSUM filtering algorithm to weight the sequences (wblosum),
+                    value: wblosum}
+                - {label: Turn off all sequence weighting (wnone), value: wnone}
+                - {label: Personal weights in file. Give file in next parameter, value: infoWgiven}
+        - !mobyle/inputprogramparameter
+            prompt: Personal weights in file
+            format: ("", "--wgiven " + str( value ))[value is not None]
+            name: wgiven
+            precond: {relativeWeight: infoWgiven}
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: "Sets the identity threshold used by single-linkage clustering\
+                \ when using --wblosum.\n            Invalid with any other weighting\
+                \ scheme. Default is 0.62. Enter a value >= 0 and <= 1"
+            prompt: Set identity cutoff for BLOSUM filtering algorithm option (wid)
+            format: ("", " --wid " + str(value))[value is not None and value != vdef]
+            name: wid
+            precond:
+                '#and':
+                - {relativeWeight: wblosum}
+                - {'#not': eset}
+            command: false
+            type: !mobyle/floattype {default: 0.62}
+        - !mobyle/inputprogramparameter
+            comment: 'After relative weights are determined, they are normalized to
+                sum to a total effective sequence number,
+
+                eff nseq. This number may be the actual number of sequences in the
+                alignment, but it is almost always
+
+                smaller than that. The default entropy weighting method (--eent) reduces
+                the effective sequence number
+
+                to reduce the information content (relative entropy, or average expected
+                score on true homologs) per
+
+                consensus position. The target relative entropy is controlled by a
+                two-parameter function, where the two
+
+                parameters are settable with --ere and --esigma.--eent: Adjust effective
+                sequence number to achieve a specific relative entropy per position
+
+                (see --ere). This is the default.--eclust: Set effective sequence
+                number to the number of single-linkage clusters at a specific
+
+                identity threshold (see --eid). This option is not recommended; it''s
+                for experiments
+
+                evaluating how much better --eent is.--enone: Turn off effective sequence
+                number determination and just use the actual number
+
+                of sequences. One reason you might want to do this is to try to maximize
+                the
+
+                relative entropy/position of your model, which may be useful for short
+                models'
+            prompt: Alternate effective sequence weighting strategies
+            format: ( "" , " " +str(value) )[ value != vdef and value != 'turnOff']
+            name: effectiveWeight
+            precond: {'#not': eset}
+            command: false
+            type: !mobyle/stringtype
+                default: --eent
+                options:
+                - {label: Adjust effective sequence weighting to achieve relative
+                        entropy target (eent), value: --eent}
+                - {label: Effective sequence weighting is weighting of single linkage
+                        clusters (eclust), value: --eclust}
+                - {label: 'No effective sequence weighting: just use number of sequence
+                        (enone)', value: --enone}
+                - {label: Personal setting of effective sequence weighting for all
+                        models to value, value: turnOff}
+        - !mobyle/inputprogramparameter
+            comment: Explicitly set the effective sequence number for all models to
+                value
+            prompt: Set personal effective sequence weighting for all models to value
+                (eset)
+            format: ( "" , " --eset " + str(value) )[ value is not None ]
+            name: eset
+            precond: {effectiveWeight: turnOff}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Set the minimum relative entropy/position target to value. Requires\
+                \ --eent. Default\n              depends on the sequence alphabet;\
+                \ for protein sequences, it is 0.59 bits/position."
+            prompt: 'For personal adjustment of effective sequence weighting: set
+                minimum relative entropy/position to value (ere)'
+            format: ( "" , " --ere " + str(value) )[ value is not None ]
+            name: ere
+            precond: {effectiveWeight: --eent}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the minimum relative entropy contributed by an entire model\
+                \ alignment, over\n            its whole length. This has the effect\
+                \ of making short models have higher relative\n            entropy\
+                \ per position than --ere alone would give. The default is 45.0 bits."
+            prompt: 'For personal adjustment of effective sequence weighting: set
+                sigma parameter to value (esigma)'
+            format: ( "" , " --esigma " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: esigma
+            precond: {effectiveWeight: --eent}
+            command: false
+            type: !mobyle/floattype {default: 45.0}
+        - !mobyle/inputprogramparameter
+            comment: "Enter a value >= 0 and <= 1. Sets the fractional pairwise identity\
+                \ cutoff used \n           by single linkage clustering with the --eclust\
+                \ option. The default is 0.62."
+            prompt: 'For single linkage clustering: set fractional identity cutoff
+                to value (eid)'
+            format: ( "" , " --eid " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: eid
+            precond:
+                '#and':
+                - {effectiveWeight: --eclust}
+                - {'#not': eset}
+            command: false
+            type: !mobyle/floattype {default: 0.62}
+    - !mobyle/inputprogramparagraph
+        comment: "The location parameters for the expected score distributions for\
+            \ MSV filter scores, \n        Viterbi filter scores, and Forward scores\
+            \ require three short random sequence simulations."
+        prompt: Control of E-value calibration
+        name: ECalibration
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the sequence length in simulation that
+                estimates the location parameter mu
+
+                for MSV filter E-values. Default is 200.'
+            prompt: Lengt of sequences for MSV Gumbel mu fit (EmL)
+            format: ( "" , " --EmL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EmL
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the number of sequences in simulation
+                that estimates the location parameter
+
+                mu for MSV filter E-values. Default is 200.'
+            prompt: Number of sequences for MSV Gumbel mu fit (EmN)
+            format: ( "" , " --EmN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EmN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the sequence length in simulation that
+                estimates the location parameter mu
+
+                for Viterbi filter E-values. Default is 200.'
+            prompt: Lengt of sequences for Viterbi Gumbel mu fit (EvL)
+            format: ( "" , " --EvL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EvL
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the number of sequences in simulation
+                that estimates the location parameter
+
+                mu for Viterbi filter E-values. Default is 200.'
+            prompt: Number of sequences for Viterbi Gumbel mu fit (EvN)
+            format: ( "" , " --EvN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EvN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the sequence length in simulation that
+                estimates the location parameter tau
+
+                for Forward E-values. Default is 100.'
+            prompt: Lengt of sequences for Forward exp tail tau fit (EfL)
+            format: ( "" , " --EfL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EfL
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0. Sets the number of sequences in simulation
+                that estimates the location parameter
+
+                tau for Forward E-values. Default is 200.'
+            prompt: Number of sequences for Forward exp tail tau fit (EfN)
+            format: ( "" , " --EfN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EfN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'Enter a value > 0 and < 1. Sets the tail mass fraction to fit
+                in the simulation that estimates the location parameter
+
+                tau for Forward evalues. Default is 0.04.'
+            prompt: Tail mass for Forward exponential tail tau fit (Eft)
+            format: ( "" , " --Eft " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: Eft
+            command: false
+            type: !mobyle/floattype {default: 0.04}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Seed the random number generator with the value, an integer\
+                \ >= 0. If the value is nonzero,\n            any stochastic simulations\
+                \ will be reproducible; the same command will give the\n         \
+                \   same results. If the number is 0, the random number generator\
+                \ is seeded arbitrarily, and\n            stochastic simulations will\
+                \ vary from run to run of the same command. The default\n        \
+                \    seed is 42."
+            prompt: Set random number seed  (seed)
+            format: ( "" , " --seed " + str(value))[ value is not None and value !=
+                vdef ]
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 42}
+        - !mobyle/inputprogramparameter
+            prompt: Use a Laplace +1 prior
+            format: ( "" , " --laplace " )[ value ]
+            name: laplace
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Hmm profile, filenames: '"*.hmm"', name: hmmfile_res}
+    - !mobyle/outputprogramparameter
+        prompt: Alignment file
+        filenames: re_save
+        name: re_save_file
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1961']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"hmmbuild.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmbuild.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0296']
+topics: ['EDAM_topics:0188']
+command: hmmbuild
+env: {}

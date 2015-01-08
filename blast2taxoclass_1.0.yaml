@@ -1,0 +1,182 @@
+!mobyle/program
+name: blast2taxoclass
+version: '1.0'
+title: blast2taxoclass
+description: Blast filtering with taxonomic hierarchy information
+authors: C. Maufrais
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Blast output file
+        format: '" -i " + str(value)'
+        simple: true
+        argpos: 20
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/inputprogramparameter
+        prompt: 'Find taxonomic classification of:'
+        format: '" -" + str(value)'
+        simple: true
+        name: blastfilter
+        command: false
+        type: !mobyle/stringtype
+            default: M
+            options:
+            - {label: best hit, value: M}
+            - {label: most frequent hit, value: F}
+    - !mobyle/inputprogramparameter
+        comment: '0: all hsp'
+        prompt: Number of hsp to consider (-x)
+        format: ("", " -x " + str(value) )[value is not None and value != vdef]
+        name: nbofhit
+        command: false
+        type: !mobyle/integertype {default: 10}
+    - !mobyle/inputprogramparameter
+        comment: '0: all hsp'
+        prompt: Number of hsp to consider (-x)
+        format: ("", " -x " + str(value) )[value is not None and value != vdef]
+        name: nbofhit
+        command: false
+        type: !mobyle/integertype {default: 10}
+    - !mobyle/inputprogramparagraph
+        prompt: Taxonomic hierarchy filter option
+        name: taxonomicfilter
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'zero means: root of taxonomy, higher value: leaf or near'
+            prompt: Relative position in taxonomic hierarchy (-p)
+            format: ("", " -p " + str(value) )[value is not None]
+            simple: true
+            name: position
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Taxonomic Name (-n)
+            format: ("", " -n " + str(value).replace(' ','_') )[value is not None]
+            simple: true
+            name: taxonomic_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: If Taxonomic rank is not defined for one hit, it is not treated.
+            prompt: Taxonomic rank name (-r)
+            format: ("", " -r " + str(value) )[value is not None]
+            simple: true
+            name: rank
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: null, value: 'null'}
+                - {label: superkingdom, value: superkingdom}
+                - {label: kingdom, value: kingdom}
+                - {label: subkingdom, value: subkingdom}
+                - {label: superphylum, value: superphylum}
+                - {label: phylum, value: phylum}
+                - {label: subphylum, value: subphylum}
+                - {label: superclass, value: superclass}
+                - {label: class, value: class}
+                - {label: subclass, value: subclass}
+                - {label: infraclass, value: infraclass}
+                - {label: superorder, value: superorder}
+                - {label: order, value: order}
+                - {label: suborder, value: suborder}
+                - {label: infraorder, value: infraorder}
+                - {label: parvorder, value: parvorder}
+                - {label: superfamily, value: superfamily}
+                - {label: family, value: family}
+                - {label: subfamily, value: subfamily}
+                - {label: tribe, value: tribe}
+                - {label: subtribe, value: subtribe}
+                - {label: genus, value: genus}
+                - {label: subgenus, value: subgenus}
+                - {label: species_group, value: species_group}
+                - {label: species_subgroup, value: species_subgroup}
+                - {label: species, value: species}
+                - {label: subspecies, value: subspecies}
+                - {label: varietas, value: varietas}
+                - {label: forma, value: forma}
+    - !mobyle/inputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Blast output file(s) sort/split by specific taxonomic hierarchy
+                (-b)
+            format: ("" , " -b") [value]
+            name: blastout
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Query name write in file(s) sort/split by specific taxonomic hierarchy
+                (-q)
+            format: ("" , " -q") [value]
+            name: queryout
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Extract fasta sequence, matching specified taxonomic filter,
+                from file containing query sequences witch are used to made blast.
+            prompt: Extraction of fasta sequences.
+            name: fastaExtract
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Query sequences witch are used to made blast.
+            format: (""," && extractfasta -i "+ str(value) + " *.qry") [value is not
+                None]
+            argpos: 100
+            name: query_seq
+            precond:
+                '#and': [fastaExtract, queryout]
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: '"blast2taxoclass.out"'
+            name: outfile
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Blast output file(s)
+            filenames: '"*.blast"'
+            name: blastoutfile
+            precond: blastout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0857']
+        - !mobyle/outputprogramparameter
+            prompt: Query name file
+            filenames: '"*.qry"'
+            name: queryoutfile
+            precond: queryout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Fasta file
+            filenames: '"*.fasta"'
+            name: fastafile
+            precond: fastaExtract
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"blast2taxoclass.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0258', 'EDAM_operation:0637']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0637']
+command: blast2taxoclass
+env: {}

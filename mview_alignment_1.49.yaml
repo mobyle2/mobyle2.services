@@ -1,0 +1,452 @@
+!mobyle/program
+name: mview_alignment
+version: '1.49'
+title: MVIEW
+description: Multiple alignment pretty viewer
+authors: N. P. Brown
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Alignment File
+        format: '" -in clustal "+str(value)'
+        simple: true
+        argpos: 1000
+        mandatory: true
+        name: alig
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1982']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        prompt: Output format (-out)
+        format: ( "", " -out " + str(value) )[ value is not None and value != vdef]
+        simple: true
+        argpos: 1
+        name: out
+        command: false
+        type: !mobyle/stringtype
+            default: html
+            options:
+            - {label: HTML, value: html}
+            - {label: GCG/MSF, value: msf}
+            - {label: Pearson/FASTA, value: pearson}
+            - {label: PIR, value: pir}
+            - {label: RDB table for storage/manipulation in relational database form,
+                value: rdb}
+    - !mobyle/inputprogramparagraph
+        prompt: Main formatting options
+        name: main_formatting_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Attach a ruler (-ruler)
+            format: ( "" , " -ruler on" )[ value ]
+            simple: true
+            name: ruler
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show alignment (-alignment)
+            format: ( " -alignment off" , "" )[ value ]
+            name: alignment
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show consensus (-consensus)
+            format: ( "" , " -consensus on" )[ value ]
+            simple: true
+            name: consensus
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use DNA/RNA colormaps and/or consensus groups (-dna)
+            format: ( "" , " -dna" )[ value ]
+            name: dna
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Alignment options
+        name: alignment_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml"><html:ul><html:li><html:em>Colour
+                all the residues</html:em>, will colour every residue according to
+                the currently selected palette.</html:li><html:li><html:em>Colouring
+                by identity to the first sequence</html:em>, will colour only those
+                residues that are identical to some reference sequence (usually the
+                query or first row).</html:li><html:li><html:em>Colour only when above
+                a given percent similarity</html:em>, will colour only those residues
+                that belong to a specified physicochemical class that is conserved
+                in at least a specified percentage of all rows for a given column.
+                This defaults to 70% and and may be set to another threshold, eg.,
+                -coloring consensus -threshold 80 would specify 80%. Note that the
+                physicochemical classes in question can be confined to individual
+                residues.</html:li><html:li><html:em>Colours residues by the colour
+                of the class to which they belong</html:em>, is like -coloring consensus,
+                but colours residues by the colour of the class to which they belong.</html:li></html:ul><html:p>By
+                default, the consensus computation counts gap characters, so that
+                sections of the alignment may be uncolored where the presence of gaps
+                prevents the non-gap count from reaching the threshold. Setting -con_gaps
+                off prevents this, allowing sequence-only based consensus thresholding.</html:p></html:div>
+            prompt: Colour scheme (-coloring)
+            format: ( "" , " -coloring " + str(value) )[ value !=vdef ]
+            simple: true
+            argpos: 3
+            name: coloring
+            command: false
+            type: !mobyle/stringtype
+                default: none
+                options:
+                - {label: No colouring, value: none}
+                - {label: Colour all the residues, value: any}
+                - {label: Colouring by identity to the first sequence, value: identity}
+                - {label: Colour only when above a given percent similarity, value: consensus}
+                - {label: Colours residues by the colour of the class to which they
+                        belong, value: group}
+        - !mobyle/inputprogramparameter
+            prompt: Threshold percentage for consensus coloring (-threshold)
+            format: ( "" , " -threshold " + str(value) )[ value is not None and value
+                != vdef]
+            argpos: 3
+            name: threshold
+            command: false
+            type: !mobyle/floattype {default: 70.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Tip: If you want to see only the conserved residues above the
+                threshold (ie., only one type of conserved residue per column), add
+                the option -ignore class.'
+            prompt: Ignore singleton or class group (-ignore)
+            format: ( "" , " -ignore " + str(value) )[ value is not None and value
+                != vdef]
+            argpos: 3
+            name: ignore
+            command: false
+            type: !mobyle/stringtype
+                default: none
+                options:
+                - {label: Class, value: class}
+                - {label: None, value: none}
+                - {label: Singleton, value: singleton}
+    - !mobyle/inputprogramparagraph
+        prompt: Consensus options
+        name: consensus_options
+        precond: consensus
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml"><html:p>Colouring
+                of an alignment by consensus determines which residues to colour and
+                the colours to use based on</html:p><html:ol><html:li>the consensus
+                threshold chosen for the colouring operation,</html:li><html:li>a
+                consideration of the common physicochemical properties of the residues
+                in that column,</html:li><html:li>the chosen colour scheme.</html:li></html:ol></html:div>
+            prompt: Basic style of coloring (-con_coloring)
+            format: ( "" , " -con_coloring " + str(value) )[ value is not None ]
+            simple: true
+            argpos: 3
+            name: con_coloring
+            command: false
+            type: !mobyle/stringtype
+                default: none
+                options:
+                - {label: Colour all the residues (any), value: any}
+                - {label: Colouring by identity to the first sequence (identity),
+                    value: identity}
+                - {label: No colouring (none), value: none}
+        - !mobyle/inputprogramparameter
+            prompt: Consensus line thresholds (in range 50..100) (separated by commas)
+                (-con_threshold)
+            format: ( "" , " -con_threshold " + str(value) )[ value is not None and
+                value != vdef]
+            argpos: 3
+            name: con_threshold
+            command: false
+            type: !mobyle/stringtype {default: '100,90,80,70'}
+        - !mobyle/inputprogramparameter
+            prompt: Ignore singleton or class group (-con_ignore)
+            format: ( "" , " -con_ignore " + str(value) )[ value is not None and value
+                != vdef]
+            argpos: 3
+            name: con_ignore
+            command: false
+            type: !mobyle/stringtype
+                default: none
+                options:
+                - {label: Class, value: class}
+                - {label: None, value: none}
+                - {label: Singleton, value: singleton}
+    - !mobyle/inputprogramparagraph
+        prompt: Hybrid alignment and consensus options
+        name: hybrid_alignment_consensus_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Count gaps during consensus computations (-con_gaps)
+            format: ( " -con_gaps off" , "" )[ value ]
+            argpos: 3
+            name: con_gaps
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: General row/column filters
+        name: general_row_column_filters
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Report top N hits (-top)
+            format: ( "" , " -top " + str(value) )[ value is not None ]
+            name: top
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: You must enter a string composed of two numbers separated by
+                comma
+            prompt: Display column range M:N (-range)
+            format: ( "" , " -range " + str(value).replace(',',':') )[ value is not
+                None ]
+            name: range
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Only report sequences with percent identity <= N (-maxident)
+            format: ( "" , " -maxident " + str(value) )[ value is not None and value
+                != vdef]
+            name: maxident
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Use row N or row identifier as percent identity reference (-ref)
+            format: ( "" , " -ref " + str(value) )[ value is not None ]
+            name: ref
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: You must enter a string composed of two numbers separated by
+                comma
+            prompt: Keep only the rows from start to end (separated by comma) (-keep)
+            format: ( ""  , " -keep " + str(value) )[ value is not None ]
+            name: keep_only
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: You must enter a string composed of two numbers separated by
+                comma
+            prompt: Discard rows from start to end (separated by comma) (-disc)
+            format: ( ""  , " -disc " + str(value).replace(',','..') )[ value is not
+                None ]
+            name: disc
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: You must enter a string composed of two numbers separated by
+                comma
+            prompt: Display rows unprocessed (separated by comma ) (-nops)
+            format: ( ""  , " -nops " + str(value).replace(',','..' ))[ value is not
+                None ]
+            name: nops
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: General formatting options
+        name: general_formatting_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Paginate in N columns of alignment (-width)
+            format: ( "" , " -width " + str(value) )[ value is not None ]
+            name: width
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Use this character as the gap (-gap)
+            format: ( " " ,  " -gap " + str(value) )[ value is not None]
+            name: gap
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Switch off label: row number (-label0)'
+            format: ( "" , " -label0" )[ value ]
+            name: label0
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Switch off label: identifier (-label1)'
+            format: ( "" , " -label1" )[ value ]
+            name: label1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Switch off label: description (-label2)'
+            format: ( "" , " -label2" )[ value ]
+            name: label2
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Switch off label: scores (-label3)'
+            format: ( "" , " -label3" )[ value ]
+            name: label3
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Switch off label: percent identity (-label4)'
+            format: ( "" , " -label4" )[ value ]
+            name: label4
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output multi-pass alignments with columns in register (-register)
+            format: ( " -register off" , "" )[ value ]
+            name: register
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: HTML markup options
+        name: html_markup_options
+        precond: {out: html}
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Amount of HTML markup (-html)
+            format: ("", " -html " + str(value))[value is not None]
+            mandatory: true
+            name: html_output
+            command: false
+            type: !mobyle/stringtype
+                default: full
+                options:
+                - {label: Full, value: full}
+                - {label: Head, value: head}
+                - {label: Body, value: body}
+                - {label: Data, value: data}
+                - {label: CSS, value: css}
+                - {label: 'OFF', value: 'off'}
+        - !mobyle/inputprogramparameter
+            prompt: Page title string
+            format: ( "" , " -title " + str(value) )[ value is not None ]
+            name: Title
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Page background color (-pagecolor)
+            format: ( "" , " -pagecolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: pagecolor
+            command: false
+            type: !mobyle/stringtype {default: white}
+        - !mobyle/inputprogramparameter
+            prompt: Page text color (-textcolor)
+            format: ( "" , " -textcolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: textcolor
+            command: false
+            type: !mobyle/stringtype {default: black}
+        - !mobyle/inputprogramparameter
+            prompt: Link color (-linkcolor)
+            format: ( "" , " -linkcolor " + str(value) )[ value is not None and value
+                != vdef]
+            argpos: 3
+            name: linkcolor
+            command: false
+            type: !mobyle/stringtype {default: blue}
+        - !mobyle/inputprogramparameter
+            prompt: Active link color (-alinkcolor)
+            format: ( "" , " -alinkcolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: alinkcolor
+            command: false
+            type: !mobyle/stringtype {default: red}
+        - !mobyle/inputprogramparameter
+            prompt: Visited link color (-vlinkcolor)
+            format: ( "" , " -vlinkcolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: vlinkcolor
+            command: false
+            type: !mobyle/stringtype {default: purple}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment background color (-alncolor)
+            format: ( "" , " -alncolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: alncolor
+            command: false
+            type: !mobyle/stringtype {default: white}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment label color (-labcolor)
+            format: ( "" , " -labcolor " + str(value) )[ value is not None and value
+                != vdef]
+            name: labcolor
+            command: false
+            type: !mobyle/stringtype {default: black}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment default text color (-symcolor)
+            format: ( " " , " -symcolor " + str(value) )[ value is not None ]
+            name: symcolor
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment gap color (-gapcolor)
+            format: ( "" , " -gapcolor " + str(value) )[ value is not None ]
+            name: gapcolor
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Use bold emphasis for coloured residues (-bold)
+            format: ( "" , " -bold" )[ value ]
+            name: bold
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use Cascading Style Sheets (-css)
+            format: ( "" , " -css on" )[ value is not None and value != vdef]
+            name: css
+            command: false
+            type: !mobyle/stringtype
+                default: 'off'
+                options:
+                - {label: 'OFF', value: 'off'}
+                - {label: 'ON', value: 'on'}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Alignment output file
+        filenames: '"mview.out"'
+        name: alig_file
+        precond:
+            out:
+                '#in': [msf, pearson, pir]
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Alignment output file
+        filenames: '"mview_alignment.html"'
+        argpos: 10000
+        name: html_file
+        precond: {out: html}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Alignment output in RDB format
+        filenames: '"mview.out"'
+        name: rdb_file
+        precond: {out: rdb}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"mview_alignment.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0562', 'EDAM_operation:0565']
+topics: ['EDAM_topic:0220', 'EDAM_topic:0092']
+references:
+- {doi: null, label: 'Brown, N.P., Leroy C., Sander C. (1998). MView: A Web compatible
+        database search or multiple alignment viewer. Bioinformatics. 14(4):380-381.',
+    url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/mview/index.html']
+homepage_links: ['http://bio-mview.sourceforge.net/']
+command: mview
+env: {}

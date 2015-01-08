@@ -1,0 +1,560 @@
+!mobyle/program
+name: pars
+title: pars
+description: Discrete character parsimony
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"pars < pars.params"'
+        argpos: 0
+        name: pars
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: 'Warnning: if you want to perform a bootstrap (seqboot method) before
+            your pars analysis your data must be in sequential format.'
+        prompt: Input File
+        format: '"ln -s " + str( infile ) +" infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+    - !mobyle/inputprogramparameter
+        comment: "if you intend to perform pars alone, your data must be in Phylip\
+            \ format interleaved or sequential. But\n    \t\tif you want to perform\
+            \ a bootsrap (seqboot) before the pars analysis, the data must be in Phylip\
+            \ sequential format."
+        prompt: Input File Format
+        argpos: 90
+        paramfile: pars.params
+        name: input_format
+        command: false
+        type: !mobyle/stringtype {default: sequential}
+    - !mobyle/inputprogramparagraph
+        prompt: Pars options
+        name: pars_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "PARS is a general parsimony program which carries out the Wagner\
+                \ parsimony method with multiple states. Wagner parsimony allows changes\
+                \ among all states. The criterion is to find the tree which requires\
+                \ the minimum number of changes. The Wagner method was originated\
+                \ by Eck and Dayhoff (1966) and by Kluge and Farris (1969). Here are\
+                \ its assumptions:1. Ancestral states are unknown.2. Different characters\
+                \ evolve independently.3. Different lineages evolve independently.4.\
+                \ Changes to all other states are equally probable (Wagner).5. These\
+                \ changes are a priori improbable over the evolutionary time spans\
+                \ involved in the differentiation of the group in question.6. Other\
+                \ kinds of evolutionary event such as retention of polymorphism are\
+                \ far less probable than these state changes.7. Rates of evolution\
+                \ in different lineages are sufficiently low that two changes in a\
+                \ long segment of the tree are far less probable than one change in\
+                \ a short segment.PARS can handle both bifurcating and multifurcating\
+                \ trees. In doing its search for most parsimonious trees, it adds\
+                \ species not only by creating new forks in the middle of existing\
+                \ branches, but it also tries putting them at the end of new branches\
+                \ which are added to existing forks. Thus it searches among both bifurcating\
+                \ and multifurcating trees. If a branch in a tree does not have any\
+                \ characters which might change in that branch in the most parsimonious\
+                \ tree, it does not save\n              that tree. Thus in any tree\
+                \ that results, a branch exists only if some character has a most\
+                \ parsimonious reconstruction that would involve change in that branch."
+            prompt: Search option (S)
+            argpos: 1
+            paramfile: pars.params
+            name: search_opt
+            command: false
+            type: !mobyle/stringtype {default: '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Number of trees to save? (V)
+            format: ("", "V\n"+str(value)+"\n")[value is not None and value != vdef]
+            argpos: 1
+            paramfile: pars.params
+            name: save_trees
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The weights follow the format described in the main documentation
+                file, with integer weights from 0 to 35 allowed by using the characters
+                0, 1, 2, ..., 9 and A, B, ... Z.
+            prompt: Weighted sites (W)
+            format: ("" , "W\n")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: weights
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {prompt: Weight file, format: '"ln -s " +
+                str( weight_file ) + " weights && "', argpos: -9, mandatory: true,
+            name: weight_file, precond: weights, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: User tree options
+        name: user_tree_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'To give your tree to the program, you must normally put it in
+                the alignment file, after the sequences, preceded by a line indicating
+                how many trees you give.Here, this will be automatically appended:
+                just give a treefile and the number of trees in it.'
+            prompt: 'Use user tree (default: no, search for best tree)? (U)'
+            format: ("", "U\n")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: user_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Give a tree whenever the infile does not already contain the
+                tree.
+            prompt: User Tree file
+            format: ("", " cat "+ str( tree_file ) + " >> intree && " )[value is not
+                None]
+            argpos: -1
+            mandatory: true
+            name: tree_file
+            precond: user_tree
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+        - !mobyle/inputprogramparameter
+            comment: Give this information whenever the infile does not already contain
+                the tree.
+            prompt: How many tree(s) in the User Tree file
+            format: '"echo " + str( value ) + " >> intree && "'
+            argpos: -2
+            mandatory: true
+            name: tree_nb
+            precond:
+                tree_file: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        comment: By selecting this option, the bootstrap will be performed on your
+            sequence file. So you don't need to perform a separated seqboot before.Don't
+            give an already bootstrapped file to the program, this won't work!
+        prompt: Bootstrap and Jumble options
+        name: jumble_bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The resampling methods available are:The bootstrap.Bootstrapping\
+                \ was invented by Bradley Efron in 1979, and its use in phylogeny\
+                \ estimation was introduced by me (Felsenstein, 1985b; see also Penny\
+                \ and Hendy, 1985). \n          It involves creating a new data set\
+                \ by sampling N characters randomly with replacement, so that the\
+                \ resulting data set has the same size as the original,\n        \
+                \  but some characters have been left out and others are duplicated.\
+                \ The random variation of the results from analyzing these bootstrapped\
+                \ data sets can be\n          shown statistically to be typical of\
+                \ the variation that you would get from collecting new data sets.\n\
+                \          The method assumes that the characters evolve independently,\
+                \ an assumption that may not be realistic for many kinds of data.Delete-half-jackknifing.This\
+                \ alternative to the bootstrap involves sampling a random half of\
+                \ the characters, and including them in the data but dropping the\
+                \ others.\n           The resulting data sets are half the size of\
+                \ the original, and no characters are duplicated.\n           The\
+                \ random variation from doing this should be very similar to that\
+                \ obtained from the bootstrap. \n           The method is advocated\
+                \ by Wu (1986). It was mentioned by me in my bootstrapping paper (Felsenstein,\
+                \ 1985b), and has been available\n           for many years in this\
+                \ program as an option. \n           Note that, for the present, block-jackknifing\
+                \ is not available, because I cannot figure out how to do it straightforwardly\
+                \ when the block size is not a divisor of the number of characters.Permuting\
+                \ species within characters.This method of resampling (well, OK, it\
+                \ may not be best to call it resampling) was introduced by Archie\
+                \ (1989) and Faith (1990; see also Faith and Cranston, 1991).\n  \
+                \        It involves permuting the columns of the data matrix separately.\n\
+                \          This produces data matrices that have the same number and\
+                \ kinds of characters but no taxonomic structure.\n          It is\
+                \ used for different purposes than the bootstrap, as it tests not\
+                \ the variation around an estimated tree but the\n          hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, \n          then we\
+                \ can argue that there is some taxonomic structure in the data (though\
+                \ perhaps it might be just the presence of aa pair of sibling species).Permuting\
+                \ characters.This simply permutes the order of the characters, the\
+                \ same reordering being applied to all species.\n          For many\
+                \ methods of tree inference this will make no difference to the outcome\
+                \ (unless one has rates of evolution correlated among adjacent sites).\n\
+                \          It is included as a possible step in carrying out a permutation\
+                \ test of homogeneity of characters (such as the Incongruence Length\
+                \ Difference test).Permuting characters separately for each species.This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before.\n     \
+                \     It shuffles the character order separately for each species.Jumblethe\
+                \ tree construction programs the exact details of the search of different\
+                \ trees depend on the order of input of species. \n          In these\
+                \ programs J option enables you to tell the program to use a random\
+                \ number generator to choose the input order of species."
+            prompt: I want to
+            simple: true
+            name: seqboot_or_jumble
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: choose a method, value: 'null'}
+                - {label: perform a Bootstrap on Data before analysis (Seqboot), value: '0'}
+                - {label: perform a Delete-half jackknife on Data (Seqboot), value: '1'}
+                - {label: permute species for each character (Seqboot), value: '2'}
+                - {label: permute character order (Seqboot), value: '3'}
+                - {label: permute within species (Seqboot), value: '4'}
+                - {label: randomize input order of sequences (Jumble), value: '5'}
+        - !mobyle/inputprogramparameter
+            comment: "The seqboot and jumble seed option should be an integer between\
+                \ 1 and 32767, and should of form 4n+1, which means that it must give\
+                \ a remainder of 1 when divided by 4. \n               This can be\
+                \ judged by looking at the last two digits of the number. Each different\
+                \ seed leads to a different sequence of addition of species. \n  \
+                \             By simply changing the random number seed and re-running\
+                \ the programs one can look for other, and better trees. \n      \
+                \         If the seed entered is not odd, the program will not proceed."
+            prompt: Random number seed (must be odd)
+            simple: true
+            mandatory: true
+            name: seed
+            precond:
+                seqboot_or_jumble: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            format: '"seqboot <seqboot.params && mv outfile seqboot.outfile && rm
+                infile  && ln -s seqboot.outfile infile && "'
+            argpos: -5
+            name: seqboot
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            format: ( 'D\n' , 'D\nJ\n' , 'D\nJ\nJ\n' , 'D\nJ\nJ\nJ\n' , 'D\nJ\nJ\nJ\nJ\n'
+                , )[ int( seqboot_or_jumble ) ]
+            argpos: 1
+            paramfile: seqboot.params
+            name: seqboot_method
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            format: str( seed ) + "\n"
+            argpos: 1000
+            paramfile: seqboot.params
+            name: seqboot_seed
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "This option is mandatory if you select a seqboot method. This\
+                \ value indicate how many set of data you will generate.\n       \
+                \     This option could generate huge data and should be used with\
+                \ discernment.  \n            If you provide 10 \"sequences\" of 1000\
+                \ char lenght each (a file of ~10Kb) and select 1000 replicates wou\
+                \ will generate 10.000 sequences of 1000 char lenght (a file of ~10Mb\
+                \ which could lead to some problems to view or download the results)"
+            prompt: How many replicates
+            format: '"R\n" + str( value ) + "\n"'
+            argpos: 20
+            paramfile: seqboot.params
+            mandatory: true
+            name: seqboot_replicates
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            format: '"y\n"'
+            argpos: 100
+            paramfile: seqboot.params
+            name: bootconfirm
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            format: '"0\n"'
+            argpos: -1
+            paramfile: seqboot.params
+            name: bootterminal_type
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   '#and':
+                    -   seqboot_or_jumble: {'#gte': '0'}
+                    -   seqboot_or_jumble: {'#lt': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            format: '''J\n'' + str( seed ) + "\n" + str( jumble_times ) +"\n"'
+            argpos: 10
+            paramfile: pars.params
+            name: jumble
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                - {seqboot_or_jumble: '5'}
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "The Seqboot or Jumble options also causes the program to ask\
+                \ you how many times you want to restart the jumble process.\n   \
+                \         If you answer 10, the program will try ten different orders\
+                \ of species in constructing the trees, and the results printed out\
+                \ will reflect this entire search process (that is, the best trees\
+                \ found among all 10 runs will be printed out, not the best trees\
+                \ from each individual run)."
+            prompt: Number of times to jumble
+            mandatory: true
+            name: jumble_times
+            precond:
+                seqboot_or_jumble: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            format: '"M\nD\n" + str( seqboot_replicates ) + "\n" + str( seed ) +"\n"
+                + str( jumble_times ) +"\n"'
+            argpos: 20
+            paramfile: pars.params
+            name: multiple_dataset
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   seqboot_or_jumble: {'#ne': '5'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: this option make sense only if you have multiple data set ( seqboot
+                )
+            prompt: Compute a consensus tree ( seqboot )
+            format: ( "" , " && cp infile pars.infile && cp pars.outtree intree &&
+                consense <consense.params && mv outtree consense.outtree && mv outfile
+                consense.outfile" )[ value ]
+            argpos: 30
+            name: consense
+            precond:
+                '#and':
+                -   seqboot_or_jumble: {'#ne': None}
+                -   seqboot_or_jumble: {'#ne': '5'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ("3\n", "")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out steps in each character (4)
+            format: ("", "4\n")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: print_step
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print states at all nodes of tree (5)
+            format: ("", "5\n")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: print_states
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (6)
+            format: ("6\n", "")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ("", "1\n")[ value ]
+            argpos: 1
+            paramfile: pars.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Parsimony options
+        name: parsimony_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use Threshold parsimony (T)
+            format: ("", "T\n" + str(threshold) + "\n")[ value ]
+            argpos: 3
+            paramfile: pars.params
+            name: use_threshold
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Threshold parsimony value
+            format: '""'
+            argpos: 2
+            paramfile: pars.params
+            mandatory: true
+            name: threshold
+            precond: use_threshold
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The O (Outgroup) option specifies which species is to have the
+                root of the tree be on the line leading to it.For example, if the
+                outgroup is a species "Mouse" then the root of the tree will be placed
+                in the middle of the branch which is connected to this species, with
+                Mouse branching off on one side of the root and the lineage leading
+                to the rest of the tree on the other.This option is toggle on by choosing
+                the number of the outgroup (the species being taken in the numerical
+                order that they occur in the input file).Outgroup-rooting will not
+                be attempted  if it is a user-defined tree, despite your invoking
+                the option.When it is used, the tree as printed out is still listed
+                as being an unrooted tree, though the outgroup is connected to the
+                bottommost node so that it is easy to visually convert the tree into
+                rooted form.
+            prompt: Outgroup root species (O)
+            format: ("", "o\n" + str(value) + "\n")[value is not None and value!=vdef]
+            argpos: 1
+            paramfile: pars.params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparameter
+        format: '"y\n"'
+        argpos: 1000
+        paramfile: pars.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: pars.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_confirm
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -2
+        paramfile: consense.params
+        name: consense_terminal_type
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Pars output file, filenames: '"pars.outfile"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Pars output tree
+        filenames: '"pars.outtree"'
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: seqboot outfile
+        filenames: '"seqboot.outfile"'
+        argpos: 40
+        name: seqboot_out
+        precond:
+            '#and':
+            -   seqboot_or_jumble: {'#ne': None}
+            -   '#and':
+                -   seqboot_or_jumble: {'#gte': '0'}
+                -   seqboot_or_jumble: {'#lt': '5'}
+    - !mobyle/outputprogramparameter {prompt: Consense output file, filenames: '"consense.outfile"',
+        name: consense_outfile, precond: consense}
+    - !mobyle/outputprogramparameter
+        prompt: Consense output tree
+        filenames: '"consense.outtree"'
+        name: consense_treefile
+        precond: consense
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pars.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pars.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: PARS is a general parsimony program which carries out the Wagner parsimony
+    method with multiple states. Wagner parsimony allows changes among all states.
+    The criterion is to find the tree which requires the minimum number of changes.
+operations: ['EDAM_operation:0545']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/pars.html']
+env: {}

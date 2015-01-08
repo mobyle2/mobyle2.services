@@ -1,0 +1,448 @@
+!mobyle/program
+name: hmmscan
+title: HMMSCAN
+description: Search sequence(s) against pfam a profile HMM database
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence file
+        format: '" "+str(value)'
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: seqfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: HMM database
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        name: HMMDB
+        command: false
+        type: !mobyle/stringtype
+            default: Pfam-A.hmm
+            options:
+            - {label: Pfam-A, value: Pfam-A.hmm}
+            - {label: Pfam-B, value: Pfam-B.hmm}
+    - !mobyle/inputprogramparagraph
+        prompt: Options for reporting thresholds
+        name: thresholds_report
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "In the per-target output, report target profiles with an E-value\
+                \ of <= value. The\n        default is 10.0, meaning that on average,\
+                \ about 10 false positives will be reported\n        per query, so\
+                \ you can see the top of the 'noise' and decide for yourself if it's\
+                \ really\n        noise."
+            prompt: E_value cutoff (-E)
+            format: ( "" , " -E " + str(value) )[ value is not None and value != vdef]
+            simple: true
+            argpos: 1
+            name: E_value_cutoff
+            precond:
+                '#and':
+                -   Bit_cutoff: {'#eq': None}
+                -   model_specific: {'#ne': --cut_ga}
+                -   model_specific: {'#ne': --cut_nc}
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: "Instead of thresholding per-profile output on E-value, instead\
+                \ report target profiles\n        with a bit score of >= value."
+            prompt: Bit score cutoff (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None ]
+            argpos: 1
+            name: Bit_cutoff
+            precond:
+                '#and':
+                - {E_value_cutoff: '10.0'}
+                -   model_specific: {'#ne': --cut_ga}
+                -   model_specific: {'#ne': --cut_nc}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "In the per-domain output, for target profiles that have already\
+                \ satisfied the perprofile\n            reporting threshold, report\
+                \ individual domains with a conditional E-value\n            of <=\
+                \ value. The default is 10.0. A 'conditional' E-value means the expected\n\
+                \            number of additional false positive domains in the smaller\
+                \ search space of those\n            comparisons that already satisfied\
+                \ the per-profile reporting threshold (and thus\n            must\
+                \ have at least one homologous domain already)."
+            prompt: E-value cutoff for the per-domain ranked hit list (--domE)
+            format: ( "" , " --domE " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: domE
+            precond:
+                '#and':
+                -   domT: {'#eq': None}
+                -   model_specific: {'#ne': --cut_ga}
+                -   model_specific: {'#ne': --cut_nc}
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: "Instead of thresholding per-domain output on E-value, instead\
+                \ report domains with\n              a bit score of >= value."
+            prompt: Bit score cutoff for the per-domain ranked hit list  (--domT)
+            format: ( "" , " --domT " + str(value) )[ value is not None ]
+            name: domT
+            precond:
+                '#and':
+                - {domE: '10.0'}
+                -   model_specific: {'#ne': --cut_ga}
+                -   model_specific: {'#ne': --cut_nc}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparagraph
+            comment: "'Inclusion' thresholds are stricter than reporting thresholds.\
+                \ Inclusion thresholds \n            control which hits are considered\
+                \ to be reliable enough to be included in an output alignment or a\
+                \ \n            subsequent search round. In hmmscan, which does not\
+                \ have any alignment output  nor any iterative\n            search\
+                \ steps, inclusion thresholds have little effect. They only affect\
+                \ what domains get\n            marked as significant ('!') or questionable\
+                \ ('?') in domain output."
+            prompt: Options controlling inclusion (significance) thresholds.
+            name: thresholds_inclusion
+            argpos: 1
+            children:
+            - !mobyle/inputprogramparameter
+                comment: "Use an E-value of <= value as the per-target inclusion threshold.\
+                    \ The default is\n              0.01, meaning that on average,\
+                    \ about 1 false positive would be expected in every\n        \
+                    \      100 searches with different query sequences."
+                prompt: Include sequences lower than this E-value threshold (--incE)
+                format: ( "" , " --incE " + str(value) )[ value is not None and value
+                    != vdef]
+                name: incE
+                precond:
+                    '#and':
+                    -   incT: {'#eq': None}
+                    -   model_specific: {'#ne': --cut_ga}
+                command: false
+                type: !mobyle/floattype {default: 0.01}
+            - !mobyle/inputprogramparameter
+                comment: "Use a conditional E-value of <= value as the per-domain\
+                    \ inclusion threshold, in\n              targets that have already\
+                    \ satisfied the overall per-target inclusion threshold. The\n\
+                    \              default is 0.01."
+                prompt: Include domains lower than this E-value threshold  (--incdomE)
+                format: ( "" , " --incdomE " + str(value) )[ value is not None and
+                    value != vdef]
+                name: incdomE
+                precond:
+                    '#and':
+                    -   incdomT: {'#ne': None}
+                    -   model_specific: {'#eq': None}
+                command: false
+                type: !mobyle/floattype {default: 0.01}
+            - !mobyle/inputprogramparameter
+                comment: "Instead of using E-values for setting the inclusion threshold,\
+                    \ instead use a bit score\n                of >= the value as\
+                    \ the per-target inclusion threshold. It would be unusual to use\
+                    \ bit\n                score thresholds with hmmscan, because\
+                    \ you don't expect a single score threshold\n                to\
+                    \ work for different profiles; different profiles have slightly\
+                    \ different expected score\n                distributions."
+                prompt: Include sequences upper than this score threshold  (--incT)
+                format: ( "" , " --incT " + str(value) )[ value is not None ]
+                name: incT
+                precond:
+                    '#and':
+                    - {incE: '0.01'}
+                    -   model_specific: {'#ne': --cut_ga}
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                comment: "Instead of using E-values, instead use a bit score of >=\
+                    \ value as the per-domain\n                inclusion threshold.\
+                    \ As with --incT above, it would be unusual to use a single bit\n\
+                    \                score threshold in hmmscan."
+                prompt: Include domans upper than this score threshold  (--incdomT)
+                format: ( "" , " --incdomT " + str(value) )[ value is not None ]
+                name: incdomT
+                precond:
+                    '#and':
+                    - {incdomE: '0.01'}
+                    -   model_specific: {'#eq': None}
+                command: false
+                type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Curated profile databases may define specific bit score thresholds\
+                \ for each profile, superseding any thresholding\n            based\
+                \ on statistical significance alone. To use these options, the profile\
+                \ must contain the appropriate\n            (GA, TC, and/or NC) optional\
+                \ score threshold annotation; this is picked up by hmmbuild from Stockholm\n\
+                \            format alignment files. Each thresholding option has\
+                \ two scores: the per-sequence threshold x1 value and the\n      \
+                \      per-domain threshold x2 value. These act as if -T x1 --incT\
+                \ x1 --domT x2 --incdomT x2 has been\n            applied specifically\
+                \ using each model's curated thresholds.cut ga: Use the GA (gathering)\
+                \ bit scores in the model to set per-sequence (GA1) and\n        \
+                \    per-domain (GA2) reporting and inclusion thresholds. GA thresholds\
+                \ are generally\n            considered to be the reliable curated\
+                \ thresholds defining family membership; for\n            example,\
+                \ in Pfam, these thresholds define what gets included in Pfam Full\
+                \ alignments\n            based on searches with Pfam Seed models.cut_nc:\
+                \ Use the NC (noise cutoff) bit score thresholds in the model to set\
+                \ per-sequence\n            (NC1) and per-domain (NC2) reporting and\
+                \ inclusion thresholds. NC thresholds\n            are generally considered\
+                \ to be the score of the highest-scoring known false positive.cut_tc:\
+                \ Use the NC (trusted cutoff) bit score thresholds in the model to\
+                \ set per-sequence\n            (TC1) and per-domain (TC2) reporting\
+                \ and inclusion thresholds. TC thresholds are\n            generally\
+                \ considered to be the score of the lowest-scoring known true positive\
+                \ that\n            is above all known false positives."
+            prompt: Options for model-specific thresholding
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: model_specific
+            precond:
+                '#and':
+                - {'#not': Bit_cutoff}
+                - {E_value_cutoff: '10.0'}
+                -   incdomT: {'#eq': None}
+                - {incdomE: '0.01'}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: No profile, value: 'null'}
+                - {label: use profile's GA gathering cutoffs (cut_ga), value: --cut_ga}
+                - {label: use profile's NC noise cutoffs (cut_nc), value: --cut_nc}
+                - {label: use profile's TC trusted cutoffs (cut_tc), value: --cut_tc}
+    - !mobyle/inputprogramparagraph
+        comment: "HMMER3 searches are accelerated in a three-step filter pipeline:\
+            \ the MSV filter, the Viterbi filter, and\n            the Forward filter.\
+            \ The first filter is the fastest and most approximate; the last is the\
+            \ full Forward scoring\n            algorithm. There is also a 'bias filter'\
+            \ step between MSV and Viterbi. Targets that pass all the steps\n    \
+            \        in the acceleration pipeline are then subjected to 'postprocessing'\
+            \ -- domain identification and scoring\n            using the Forward/Backward\
+            \ algorithm. Changing filter thresholds only removes or includes targets\
+            \ from\n            consideration; changing filter thresholds does not\
+            \ alter bit scores, E-values, or alignments, all of which are\n      \
+            \      determined solely in 'postprocessing'."
+        prompt: Options controlling acceleration heuristics
+        name: acceleration
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Turn off all filters, including the bias filter, and run full\
+                \ Forward/Backward postprocessing\n              on every target.\
+                \ This increases sensitivity somewhat, at a large cost in speed."
+            prompt: Turn all heuristic filters off (less speed, more power) (--max)
+            format: ( "" , " --max " )[ value ]
+            name: max
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Set the P-value threshold for the MSV filter step. The default\
+                \ is 0.02, meaning that\n            roughly 2% of the highest scoring\
+                \ nonhomologous targets are expected to pass the filter."
+            prompt: Stage 1 (MSV) threshold
+            format: ( "" , " --F1 " + str(value) )[ value is not None and value !=
+                vdef]
+            name: F1
+            precond: {'#not': max}
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+        - !mobyle/inputprogramparameter
+            comment: Set the P-value threshold for the Viterbi filter step. The default
+                is 0.001.
+            prompt: Stage 1 (Vit) threshold
+            format: ( "" , " --F2 " + str(value) )[ value is not None and value !=
+                vdef]
+            name: F2
+            precond: {'#not': max}
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            comment: Set the P-value threshold for the Forward filter step. The default
+                is 1e-5.
+            prompt: Stage 1 (Fwd) threshold
+            format: ( "" , " --F3 " + str(value) )[ value is not None and value !=
+                vdef]
+            name: F3
+            precond: {'#not': max}
+            command: false
+            type: !mobyle/floattype {default: 1.0e-05}
+        - !mobyle/inputprogramparameter
+            comment: "Turn off the bias filter. This increases sensitivity somewhat,\
+                \ but can come at a\n            high cost in speed, especially if\
+                \ the query has biased residue composition (such\n            as a\
+                \ repetitive sequence region, or if it is a membrane protein with\
+                \ large regions\n            of hydrophobicity). Without the bias\
+                \ filter, too many sequences may pass the filter\n            with\
+                \ biased queries, leading to slower than expected performance as the\
+                \ computationally\n            intensive Forward/Backward algorithms\
+                \ shoulder an abnormally heavy\n            load."
+            prompt: Turn off composition bias filter (--nobias)
+            format: ( "" , " --nobias " )[ value ]
+            name: nobias
+            precond: {'#not': max}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other expert options
+        name: expert
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Turn off the 'null2' score corrections for biased composition.
+            prompt: Turn off biased composition score corrections (--nonull2)
+            format: ( "" , " --nonull2 " )[ value ]
+            name: nonull2
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Assert that the total number of targets in your searches is\
+                \ the value, for the purposes of\n          per-sequence E-value calculations,\
+                \ rather than the actual number of targets seen."
+            prompt: Control of E_value calculation (-Z)
+            format: ( "" , " -Z " + str(value) )[ value is not None ]
+            argpos: 1
+            name: E_value_calculation
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Assert that the total number of targets in your searches is\
+                \ the value, for the purposes\n          of per-domain conditional\
+                \ E-value calculations, rather than the number of targets\n      \
+                \    that passed the reporting thresholds."
+            prompt: Set Z score of significant sequences, for domain E-value calculation  (--domZ)
+            format: ( "" , " --domZ " + str(value) )[ value is not None ]
+            name: domZ
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Set the random number seed to value. Some steps in postprocessing\
+                \ require Monte\n               Carlo simulation. The default is to\
+                \ use a fixed seed (42), so that results are exactly\n           \
+                \    reproducible. Any other positive integer will give different\
+                \ (but also reproducible)\n               results. A choice of 0 uses\
+                \ a 'randomly chosen' seed."
+            prompt: Set RNG seed number (--seed)
+            format: ( "" , " --seed " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 42}
+    - !mobyle/inputprogramparagraph
+        prompt: Options controlling output
+        name: controlOutput
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the sequence(s) file (-o)
+            format: ( " " , " -o " + str(value) )[ value is not None ]
+            argpos: 1
+            name: outfile_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Save a simple tabular (space-delimited) file summarizing the\
+                \ 'per-target' output,\n        with one data line per homologous\
+                \ target model found"
+            prompt: File name of parseable table of per-sequence hits (--tblout)
+            format: ( "" , " --tblout " + str(value) )[ value is not None ]
+            argpos: 1
+            name: perseqfile_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Save a simple tabular (space-delimited) file summarizing the\
+                \ 'per-domain' output,\n          with one data line per homologous\
+                \ domain detected in a query sequence for each\n          homologous\
+                \ model."
+            prompt: File name of parseable table of per-domain hits (--domtblout)
+            format: ( "" , " --domtblout " + str(value) )[ value is not None ]
+            argpos: 1
+            name: perdomfile_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Use accessions instead of names in the main output, where available\
+                \ for profiles\n        and/or sequences"
+            prompt: Prefer accessions over names in output
+            format: ( "" , " --acc " )[ value ]
+            name: acc
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Omit the alignment section from the main output. This can greatly\
+                \ reduce the\n        output volume."
+            prompt: Don't output alignments, so output is smaller
+            format: ( "" , " --noali " )[ value ]
+            name: noali
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Unlimit the length of each line in the main output. The default\
+                \ is a limit of 120\n                characters per line, which helps\
+                \ in displaying the output cleanly on terminals and\n            \
+                \    in editors, but can truncate target profile description lines."
+            prompt: Unlimit ASCII text output line width (--notextw)
+            format: ( "" , " --notextw " )[ value ]
+            name: notextw
+            precond: {textw: '120'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Set the main output's line length limit to value> characters\
+                \ per line. The default is\n         120."
+            prompt: Set max width of ASCII text output lines (--textw)
+            format: ( "" , " --textw " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: textw
+            command: false
+            type: !mobyle/integertype {default: 120}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Options controlling output
+        name: controlOutput
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: str(outfile_name)
+            name: output_file_name
+            precond:
+                outfile_name: {'#ne': None}
+        - !mobyle/outputprogramparameter {prompt: Output parseable table of per-sequence
+                hits, filenames: str(perseqfile_name), name: output_perseqfile_name,
+            precond: perseqfile_name}
+        - !mobyle/outputprogramparameter {prompt: Output parseable table of per-domain
+                hits, filenames: str(perdomfile_name), name: output_perdomfile_name,
+            precond: perdomfile_name}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"hmmscan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmscan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "hmmscan reads sequence(s) from seqfile and compares it against all the HMMs\
+    \ in pfam \n        database looking for significantly similar sequence matches.\
+    \ \n        The output consists of three sections: a ranked list of the best scoring\
+    \ HMMs, \n        a list of the best scoring domains in order of their occurrence\
+    \ in the sequence, \n        and alignments for all the best scoring domains.\
+    \ A sequence score may be higher than a \n        domain score for the same sequence\
+    \ if there is more than one domain in the sequence; \n        the sequence score\
+    \ takes into account all the domains. All sequences scoring above the\n      \
+    \   -E and -T cutoffs are shown in the first list, then every domain found in\
+    \ this list is shown\n        in the second list of domain hits. If desired, E-value\
+    \ and score thresholds may also be applied\n        to the domain list using the\
+    \ --domE and --domT options."
+operations: ['EDAM_operation:0340']
+topics: ['EDAM_topic:0594', 'EDAM_topic:0724', 'EDAM_topic:0160']
+command: hmmscan
+env: {}

@@ -1,0 +1,123 @@
+!mobyle/program
+name: treealign
+title: treealign
+description: Phylogenetic alignment of homologous sequences
+authors: J. Hein
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: 'The sequences should
+
+            be homologous and there should be a history to be found. If you give it
+            a set
+
+            of COMPLETELY unrelated sequences, it is possible that it will not be
+            able to
+
+            align them, since it cannot allocate enough memory.The sequences should
+            not vary in length because they have been sequenced
+
+            unequally much.  Length differences should be due to evolution. Thus it
+            should
+
+            not be used to look for local homologies.'
+        prompt: Sequences File
+        format: str(value)+ "\n"
+        simple: true
+        argpos: 30
+        paramfile: par.dat
+        mandatory: true
+        name: fileseq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1948']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Sequence type
+        format: str(value)
+        simple: true
+        argpos: 11
+        paramfile: par.dat
+        mandatory: true
+        name: seqtype
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a sequence type, value: 'null'}
+            - {label: Protein (1), value: '1'}
+            - {label: DNA (0), value: '0'}
+    - !mobyle/inputprogramparameter
+        prompt: Number of sequences
+        format: '" "+str(value)'
+        simple: true
+        argpos: 12
+        paramfile: par.dat
+        mandatory: true
+        name: nuseq
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        prompt: Gap open penalty
+        format: '" "+str(value)'
+        simple: true
+        argpos: 13
+        paramfile: par.dat
+        mandatory: true
+        name: gap_open
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        prompt: Gap extension penalty
+        format: '" " + str(value) + "\n"'
+        simple: true
+        argpos: 14
+        paramfile: par.dat
+        mandatory: true
+        name: gap_ext
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Present ancestral sequences
+            format: ( "0" , "1" )[ value ]
+            argpos: 21
+            paramfile: par.dat
+            name: ancesterout
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output tree file, filenames: '"*.tree"',
+        argpos: 40, name: filetree}
+    - !mobyle/outputprogramparameter {prompt: Output alignment file, filenames: '"*.ali"',
+        argpos: 50, name: fileali}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"treealign.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"treealign.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0492', 'EDAM_operation:0323']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0084']
+references:
+- {doi: null, label: 'Hein, J.: Unified approach to alignment and phylogenies. Meth.
+        Enzymol. 183:626-645 (1990).', url: null}
+- {doi: null, label: 'Hein, J.: A new method that simultaneously aligns and reconstruct
+        ancestral sequences for any number of homologous sequences, when the phylogeny
+        is given. Mol. Biol. Evol. 6:649-668 (1989).', url: null}
+- {doi: null, label: 'Hein, J.: A tree reconstruction method that is economical in
+        the number of pairwise comparisons used. Mol. Biol. Evol. 6:669-684 (1989).',
+    url: null}
+command: treealign
+env: {}

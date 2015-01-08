@@ -1,0 +1,248 @@
+!mobyle/program
+name: morePhyML
+version: '1.0'
+title: morePhyML
+description: Improving ML tree searching with PhyML 3
+authors: Alexis Criscuolo
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence Alignment
+        format: '" -i "+str(value)'
+        simple: true
+        mandatory: true
+        name: alignment
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        prompt: Data type (-d)
+        format: ( "" , " -d " + str(value) )[ value is not None ]
+        simple: true
+        name: seqtype
+        command: false
+        type: !mobyle/stringtype
+            default: nt
+            options:
+            - {label: DNA (nt), value: nt}
+            - {label: Amino-Acids (aa), value: aa}
+    - !mobyle/inputprogramparagraph
+        prompt: Control Options
+        name: control_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Nucleotide substitution model (-m)
+            format: ("", " -m "+str(value))[value != vdef]
+            simple: true
+            name: ntmodel
+            precond: {seqtype: nt}
+            command: false
+            type: !mobyle/stringtype
+                default: GTR
+                options:
+                - {label: HKY85, value: HKY85}
+                - {label: JC69, value: JC69}
+                - {label: K80, value: K80}
+                - {label: F81, value: F81}
+                - {label: F84, value: F84}
+                - {label: TN93, value: TN93}
+                - {label: GTR, value: GTR}
+                - {label: TN93e, value: TN93e}
+                - {label: TPM1e, value: TPM1e}
+                - {label: TPM1u, value: TPM1u}
+                - {label: TPM2e, value: TPM2e}
+                - {label: TPM2u, value: TPM2u}
+                - {label: TPM3e, value: TPM3e}
+                - {label: TPM3u, value: TPM3u}
+                - {label: TIM1e, value: TIM1e}
+                - {label: TIM1u, value: TIM1u}
+                - {label: TIM2e, value: TIM2e}
+                - {label: TIM2u, value: TIM2u}
+                - {label: TIM3e, value: TIM3e}
+                - {label: TIM3u, value: TIM3u}
+                - {label: TVMe, value: TVMe}
+                - {label: TVMu, value: TVMu}
+                - {label: SYM, value: SYM}
+        - !mobyle/inputprogramparameter
+            prompt: Amino-acid substitution model (-m)
+            format: ("", " -m "+str(value))[value != vdef]
+            simple: true
+            name: aamodel
+            precond: {seqtype: aa}
+            command: false
+            type: !mobyle/stringtype
+                default: LG
+                options:
+                - {label: LG, value: LG}
+                - {label: WAG, value: WAG}
+                - {label: JTT, value: JTT}
+                - {label: MtREV, value: MtREV}
+                - {label: Dayhoff, value: Dayhoff}
+                - {label: DCMut, value: DCMut}
+                - {label: RtREV, value: RtREV}
+                - {label: CpREV, value: CpREV}
+                - {label: VT, value: VT}
+                - {label: Blosum62, value: Blosum62}
+                - {label: MtMam, value: MtMam}
+                - {label: MtArt, value: MtArt}
+                - {label: HIVw, value: HIVw}
+                - {label: HIVb, value: HIVb}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated transition/transversion ratio for DNA sequences? (-t)
+            format: ( ""  , " -t e")[ value ]
+            name: tstvratio1
+            precond: {seqtype: nt}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User transition/transversion ratio for DNA sequences? (-t)
+            format: ( ""  , " -t "+str(value))[ value is not None ]
+            name: tstvratio2
+            precond:
+                '#and':
+                - {seqtype: nt}
+                - {'#not': tstvratio1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated proportion of invariable sites? (-v)
+            format: ( ""  , " -v e")[ value ]
+            name: propinvar1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User proportion of invariable sites? (-v)
+            format: ( ""  , " -v "+str(value))[value is not None]
+            name: propinvar2
+            precond: {'#not': propinvar1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of relative substitution rate categories (-c)
+            format: ("", " -c "+str(value))[value is not None and value != vdef]
+            name: nbsubstcat
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated Gamma distribution parameter? (-a)
+            format: ("", " -a e")[value]
+            name: gamma1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User gamma distribution parameter? (-a)
+            format: ("", " -a "+str(value))[value is not None]
+            name: gamma2
+            precond: {'#not': gamma1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Equilibrium character frequencies (-f)
+            format: ("", " -f "+str(value))[value is not None]
+            simple: true
+            name: frequencies
+            command: false
+            type: !mobyle/stringtype
+                default: m
+                options:
+                - {label: 'm: equilibrium frequency estimated by ML for nucleotides
+                        or defined by the substitution model for amino acids.', value: m}
+                - {label: 'e: equilibrium frequency estimated by counting the occurence
+                        of each character state in the alignment.', value: e}
+        - !mobyle/inputprogramparameter
+            prompt: Starting tree filename (u)
+            format: ("", " -u "+str(value))[value is not None]
+            name: usertreefile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+        - !mobyle/inputprogramparameter
+            prompt: Most parsimonious starting tree (-p)
+            format: ("", " -p")[value]
+            name: parsimoniousTree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Number of random starting trees to be used (-n)
+            format: ("", " -n " + str(value))[value is not None]
+            name: randomNumber
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: First tree swapping (-s)
+            format: ("", " -s "+str(value))[value is not None and value !=vdef]
+            name: tree_swapping
+            command: false
+            type: !mobyle/stringtype
+                default: SPR
+                options:
+                - {label: SPR, value: SPR}
+                - {label: NNI, value: NNI}
+                - {label: both, value: both}
+        - !mobyle/inputprogramparameter
+            prompt: Branch support (-b)
+            format: ("", " -b "+str(value))[value is not None and value !=vdef]
+            name: branch_support
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: SH-like branch support, value: 'null'}
+                - {label: '-2: khi2-based parametric support', value: '-2'}
+                - {label: '0: none support', value: '0'}
+                - {label: '-1: aLRT support', value: '-1'}
+        - !mobyle/inputprogramparameter
+            prompt: Write the likelihood for each character (-l)
+            format: ("", " -l")[value]
+            name: likelihoodCar
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Write the results outputed by the first run of phyml (-x)
+            format: ("", " -x")[value]
+            name: firstRun
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: '"*_morephyml_stats.txt"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Output tree
+        filenames: '"*_morephyml_tree.txt"'
+        name: outtree
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"morePhyML.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"morePhyML.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0547']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Criscuolo A (2011) morePhyML: improving the phylogenetic tree\
+        \ space\n\texploration with PhyML 3. Molecular Phylogenetics and Evolution.",
+    url: null}
+- {doi: null, label: "Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel\
+        \ O\n\t(2010) New algorithms and methods to estimate maximum-likelihood\n\t\
+        phylogenies: assessing the performance of PhyML 3.0. Syst Biol\n\t59:307-321.",
+    url: null}
+- {doi: null, label: 'Guindon, S. and Gascuel, O. (2003) A simple, fast and accurate
+        algorithm to estimate large phylogenies by maximum likelihood Syst. Biol.,
+        52, 696-704', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/morePhyML/morePhyML_doc.pdf']
+command: morePhyML
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/morePhyML/']

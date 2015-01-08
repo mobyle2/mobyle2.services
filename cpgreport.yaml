@@ -1,0 +1,102 @@
+!mobyle/program
+name: cpgreport
+title: cpgreport
+description: Identify and report CpG-rich regions in nucleotide sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This sets the score for each CG sequence found. A value of 17
+                is more sensitive, but 28 has also been used with some  success.
+            prompt: Cpg score (value from 1 to 200)
+            format: ("", " -score=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: score
+            command: false
+            type: !mobyle/integertype {default: 17}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 200 is required
+                test:
+                    value: {'#lte': '200'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 3
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: cpgreport.outfile}
+        - !mobyle/inputprogramparameter {comment: File for output features, prompt: Name
+                of the output feature file (outfeat), format: '("" , " -outfeat="
+                + str(value))[value is not None]', argpos: 4, name: outfeat, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the feature output format,
+            format: '("", " -offormat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 5, name: offormat_outfeat, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {prompt: Outfeat_out option, filenames: outfeat,
+            name: outfeat_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cpgreport.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cpgreport.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0430']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cpgreport.html', 'http://emboss.sourceforge.net/docs/themes']
+command: cpgreport
+env: {}

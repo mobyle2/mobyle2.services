@@ -1,0 +1,290 @@
+!mobyle/program
+name: codonw
+version: 1.4.4
+title: codonw
+description: Correspondence Analysis of Codon Usage
+authors: J. Peden
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"codonw -silent -nomenu -nowarn"'
+        argpos: 0
+        name: codonw
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '" " + str(seqfile) + ".indices " + str(seqfile) + ".bulk"'
+        argpos: 2000
+        name: outfiles
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Sequences File
+        format: '" " + str(value)'
+        simple: true
+        argpos: 1000
+        mandatory: true
+        name: seqfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Defaults settings
+        name: defaults
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic codes (-code)
+            format: ( ""  , " -code " + str(value) )[value is not None and value !=
+                vdef]
+            argpos: 2
+            name: gc
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: 'Universal Genetic code [TGA=* TAA=* TAG=*] (0)', value: '0'}
+                - {label: 'Vertebrate Mitochondrial code [AGR=* ATA=M TGA=W] (1)',
+                    value: '1'}
+                - {label: 'Yeast Mitochondrial code [CTN=* ATA=M TGA=W] (2)', value: '2'}
+                - {label: 'Filamentous fungi Mitochondrial code [TGA=W] (3)', value: '3'}
+                - {label: 'Insects and Plathyhelminthes Mitochondrial co [ATA=M TGA=W
+                        AGR=S] (4)', value: '4'}
+                - {label: 'Nuclear code of Cilitia [UAA=Q=Gln UAG=Q] (5)', value: '5'}
+                - {label: 'Nuclear code of Euplotes [UGA=C] (6)', value: '6'}
+                - {label: Mitochondrial code of Echinoderms UGA=W AGR=S AAA=N (7),
+                    value: '7'}
+        - !mobyle/inputprogramparameter
+            prompt: Fop/CBI codons (-f_type)
+            format: ( ""  , " -f_type " + str(value) )[ value is not None and value
+                != vdef]
+            argpos: 2
+            name: fop_values
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Escherichia coli (0), value: '0'}
+                - {label: Bacillus subtilis (1), value: '1'}
+                - {label: Dictyostelium discoideum (2), value: '2'}
+                - {label: Aspergillus nidulans (3), value: '3'}
+                - {label: Saccharomyces cerevisiae (4), value: '4'}
+                - {label: Drosophila melanogaster (5), value: '5'}
+                - {label: Caenorhabditis elegans (6), value: '6'}
+                - {label: Neurospora crassa (7), value: '7'}
+        - !mobyle/inputprogramparameter
+            prompt: CAI fitness values (-c_type)
+            format: ( ""  , " -c_type " + str(value) )[value is not None and value
+                != vdef]
+            argpos: 2
+            name: cai_values
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Escherichia coli (0), value: '0'}
+                - {label: Bacillus subtilis (1), value: '1'}
+                - {label: Saccharomyces cerevisiae (2), value: '2'}
+        - !mobyle/inputprogramparameter
+            prompt: Output Computer readable (-machine)
+            format: ( ""  , " -machine" )[ value ]
+            argpos: 2
+            name: output_type
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Concatenate all genes instead of individual genes (-totals)
+            format: ( ""  , " -totals" )[ value ]
+            argpos: 3
+            name: genes
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Codon usage indices
+        name: CU_options
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: All indices (-all_indices)
+            format: ( ""  , " -all_indices" )[ value ]
+            name: all_indices
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparagraph
+            prompt: Special indices
+            name: sp_indices
+            precond: {'#not': all_indices}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Codon Adaptation Index (-cai)
+                format: ( ""  , " -cai" )[ value ]
+                name: CAI
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter {prompt: User input file of CAI values
+                    (-cai_file), format: '( ""  , " -cai_file " + str(value) )[value
+                    is not None]', argpos: 2, name: cai_file, precond: CAI, command: false}
+            - !mobyle/inputprogramparameter
+                prompt: Frequency of OPtimal codons index (-fop)
+                format: ( ""  , " -fop" )[ value ]
+                name: Fop
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter {prompt: User input file of Fop values
+                    (-fop_file), format: '( ""  , " -fop_file " + str(value) )[ value
+                    is not None ]', argpos: 2, name: fop_file, precond: Fop, command: false}
+            - !mobyle/inputprogramparameter
+                prompt: Codon bias index (-cbi)
+                format: ( ""  , " -cbi" )[ value ]
+                name: CBI
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter {prompt: User input file of CBI values
+                    (-cbi_file), format: '( ""  , " -cbi_file " + str(value) )[ value
+                    is not None ]', argpos: 2, name: cbi_file, precond: CBI, command: false}
+            - !mobyle/inputprogramparameter
+                prompt: Effective Number of Codons (-enc)
+                format: ( ""  , " -enc" )[ value ]
+                name: ENc
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: GC content of gene (-gc)
+                format: ( ""  , " -gc" )[ value ]
+                name: GC
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: GC of silent 3rd codon posit. (-gc3s)
+                format: ( ""  , " -gc3s" )[ value ]
+                name: GC3s
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Base composition at synonymous third codon positions (-sil_base)
+                format: ( ""  , " -sil_base" )[ value ]
+                name: silent_bc
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Number of synonymous codons (-L_sym)
+                format: ( "" , " -L_sym" )[ value ]
+                name: L_sym
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Total Number of synonymous and non-synonymous codons (-L_aa)
+                format: ( ""  , " -L_aa" )[ value ]
+                name: L_aa
+                command: false
+                type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Amino acid indices
+        name: AA_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Hydrophobicity of protein (-hyd)
+            format: ( ""  , " -hyd" )[ value ]
+            argpos: 4
+            name: Hydro
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Aromaticity of protein (-aro)
+            format: ( ""  , " -aro" )[ value ]
+            argpos: 4
+            name: Aromo
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Bulk output option
+        format: ( ""  , " " + str(value) )[ value is not None and value != vdef]
+        argpos: 4
+        name: bulk_output_option
+        command: false
+        type: !mobyle/stringtype
+            default: -cu
+            options:
+            - {label: Codon Usage (-cu), value: -cu}
+            - {label: Amino Acid Usage (-aau), value: -aau}
+            - {label: Relative Amino Acid Usage (-raau), value: -raau}
+            - {label: Tabulation of codon usage (-cutab), value: -cutab}
+            - {label: Tabulation of dataset's codon usage (-cutot), value: -cutot}
+            - {label: Relative Synonymous Codon Usage (-rscu), value: -rscu}
+            - {label: Fasta format (-fasta), value: -fasta}
+            - {label: Reader format with codons are seperated by spaces (-reader),
+                value: -reader}
+            - {label: Conceptual translation of DNA to amino acid (-transl), value: -transl}
+            - {label: Detailed report of codon G+C composition (-base), value: -base}
+            - {label: Dinucleotide usage of the three codon position (-dinuc), value: -dinuc}
+            - {label: No bulk output to be written to file (-noblk), value: -noblk}
+    - !mobyle/inputprogramparameter
+        prompt: Correspondence analysis options (available for several sequences)
+        format: ( "" , " %s" %value)[value is not None]
+        argpos: 3
+        name: COA_option
+        command: false
+        type: !mobyle/stringtype
+            default: 'Null'
+            options:
+            - {label: Do not perform a COA, value: 'Null'}
+            - {label: COA of codon usage frequencies (-coa_cu), value: -coa_cu}
+            - {label: COA of Relative Synonymous Codon Usage (-coa_rscu), value: -coa_rscu}
+            - {label: COA on Amino Acid usage frequencies (-coa_aa), value: -coa_aa}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced COA options
+        name: coa_advanced
+        precond: COA_option
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Generate detailed (expert) statistics on COA (-coa_expert)
+            format: ( ""  , " -coa_expert" )[ value ]
+            argpos: 3
+            name: coa_expert
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Select number of axis to record (-coa_axes)
+            format: (  "" , "  -coa_axes " +  str(value) )[value is not None and value!=vdef]
+            argpos: 3
+            name: coa_axes
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            comment: Values can be whole numbers or a percentage (5 or 10%).
+            prompt: Select number of genes to use to identify optimal codons (-coa_num)
+            format: ( ""  , " -coa_num " + str(value) )[ value is not None ]
+            argpos: 3
+            name: coa_num
+            command: false
+            type: !mobyle/integertype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Results files, filenames: '"*.bulk"',
+        name: results_files}
+    - !mobyle/outputprogramparagraph
+        prompt: Advanced COA options
+        name: coa_advanced
+        precond: COA_option
+        children:
+        - !mobyle/outputprogramparameter {prompt: Coa file, filenames: '"coa_raw"',
+            name: coa_files}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"codonw.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"codonw.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+documentation_links: ['http://codonw.sourceforge.net/Readme.html', 'http://codonw.sourceforge.net/Tutorial.html']
+homepage_links: ['http://codonw.sourceforge.net/']
+env: {}
+source_links: ['http://sourceforge.net/projects/codonw/files/']

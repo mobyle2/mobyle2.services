@@ -1,0 +1,155 @@
+!mobyle/program
+name: trimseq
+title: trimseq
+description: Remove unwanted characters from start and end of sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This determines the size of the region that is considered when
+                deciding whether the percentage of ambiguity is greater than  the
+                threshold. A value of 5 means that a region of 5 letters in  the sequence
+                is shifted along the sequence from the ends and  trimming is done
+                only if there is a greater or equal percentage of  ambiguity than
+                the threshold percentage.
+            prompt: Window size (value greater than or equal to 1)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            comment: This is the threshold of the percentage ambiguity in the window
+                required in order to trim a sequence.
+            prompt: Percent threshold of ambiguity in window
+            format: ("", " -percent=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: percent
+            command: false
+            type: !mobyle/floattype {default: 100.0}
+        - !mobyle/inputprogramparameter
+            comment: In nucleic sequences, trim off not only N's and X's, but also
+                the nucleotide IUPAC ambiguity codes M, R, W, S, Y, K, V, H,  D and
+                B. In protein sequences, trim off not only X's but also B  and Z.
+            prompt: Trim off all ambiguity codes, not just n or x
+            format: ("", " -strict")[ bool(value) ]
+            argpos: 4
+            name: strict
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: In protein sequences, trim off not only X's, but also the *'s
+            prompt: Trim off asterisks
+            format: ("", " -star")[ bool(value) ]
+            argpos: 5
+            name: star
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Trim at the start
+            format: (" -noleft", "")[ bool(value) ]
+            argpos: 6
+            name: left
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Trim at the end
+            format: (" -noright", "")[ bool(value) ]
+            argpos: 7
+            name: right
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 8
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: trimseq.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 9
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"trimseq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"trimseq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0369', 'EDAM_operation:0235']
+topics: ['EDAM_topic:0156']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/trimseq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: trimseq
+env: {}

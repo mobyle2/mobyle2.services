@@ -1,0 +1,266 @@
+!mobyle/program
+name: blast2genoclass
+version: '1.0'
+title: blast2genoclass
+description: One-line description of Blast program filtering
+authors: C. Maufrais
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Blast output file
+        format: '" -i " + str(value)'
+        simple: true
+        argpos: 20
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/inputprogramparameter
+        prompt: 'Filter the one-line description of Blast program with:'
+        format: ("", " -" + str(value))[value != vdef]
+        simple: true
+        name: blastfilter
+        command: false
+        type: !mobyle/stringtype
+            default: 'Null'
+            options:
+            - {label: null, value: 'Null'}
+            - {label: best e-value, value: M}
+            - {label: most frequent description, value: F}
+    - !mobyle/inputprogramparameter
+        comment: '0: all hsp'
+        prompt: Number of hsp to consider (-x)
+        format: ("", " -x " + str(value) )[value is not None and value != vdef]
+        name: nbofhit
+        command: false
+        type: !mobyle/integertype {default: 10}
+    - !mobyle/inputprogramparameter
+        prompt: Filter the one-line description of Blast program with user name (-p)
+        format: ("", " -p " + str(value).replace(' ','_') )[value is not None]
+        simple: true
+        name: genomic_name
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Filter the hit of Blast with Taxonomic hierarchy name (-n)
+        format: ("", " -n " + str(value).replace(' ','_') )[value is not None]
+        simple: true
+        mandatory: true
+        name: taxonomic_name
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'In "res4individualBlast.txt" file, for all input blast, are
+                details:For all matching "Description filter option":- query name,
+                (query letter): percentage of matching descriptionand for all corresponding
+                hits:- Database sequence''s species, accession number and letters-
+                Hsp description'
+            prompt: Report detailed results matching "Description filter option" for
+                all blast (-v)
+            format: ("" , " -v") [value]
+            name: verboseall
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: In "res4allBlast.txt" file, for the best database sequence(s),
+                are details:For database sequence matching "Description filter option":-
+                Database sequence's species, accession number, letters and description-
+                Number of query matching this sequence.- Query name, (letters)and
+                for all corresponding hsp:- Hsp description
+            prompt: Detailed report for database sequence(s) matching "Description
+                filter option" (-V)
+            format: ("" , " -V") [value]
+            name: verbose
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Hsp(s) selection (-m)
+            format: ("", " -m " + str(value))[value != vdef]
+            name: option
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: All hsps, value: '0'}
+                - {label: Only compatible hsps, value: '1'}
+                - {label: Simple overlaps are possible, value: '2'}
+                - {label: Global overlaps on database sequence(s) are possible, value: '3'}
+        - !mobyle/inputprogramparameter
+            comment: For 1,2,3 hsps alignments (Sbjt and Query) are re-aligned on
+                the reference sequence extract from database.For 4,5,6 part of queries
+                corresponding to hsps are re-aligned on the reference sequence extract
+                from database.
+            prompt: 'Produce alignment: database sequence matching "Description filter
+                option" vs queries (-a)'
+            format: ("" , " -a " +str(value)) [value != vdef]
+            name: align
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: null, value: '0'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        merged in pairwise alignment', value: '1'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        in multiple alignment', value: '2'}
+                - {label: 'hsps blast and database sequence reference alignment: hsp
+                        in multiple alignment and consensus', value: '3'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries merged in pairwise alignment', value: '4'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries in multiple alignment', value: '5'}
+                - {label: 'part of queries (hsp) and database sequence reference alignment:
+                        queries in multiple alignment and consensus', value: '6'}
+        - !mobyle/inputprogramparameter
+            prompt: 'Produce graphical alignment summary images: database sequence
+                matching "Description filter option" vs queries (-g)'
+            format: ("" , " -g") [value]
+            name: picture
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Blast output file(s) sort/split by specific taxonomic hierarchy
+                (-b)
+            format: ("" , " -b") [value]
+            name: blastout
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Extract Hsp(s) fragment from Query sequence(s) (-Q)
+            format: ("" , " -Q") [value]
+            name: hspSeq
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Query name write in file(s) sort/split by specific taxonomic hierarchy
+                (-q)
+            format: ("" , " -q") [value]
+            name: queryout
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Report database sequence(s) matching option in fasta file (-s)
+            format: ("" , " -s") [value]
+            name: besthitseq
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Extract fasta sequence, matching specified taxonomic filter,
+                from file containing query sequences witch are used to made blast.
+            prompt: Extraction of fasta sequences.
+            name: fastaExtract
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Query sequences witch are used to made blast.
+            name: query_seq
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Query sequences witch are used to made blast.
+            format: (""," -f "+ str(query_seq)) [query_seq is not None]
+            name: query_seq_run1
+            precond:
+                '#and': [hspSeq, query_seq]
+            command: false
+            hidden: true
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Query sequences witch are used to made blast.
+            format: (""," && extractfasta -i "+ str(query_seq) + " *.qry") [query_seq
+                is not None]
+            argpos: 100
+            name: query_seq_run2
+            precond:
+                '#and': [fastaExtract, queryout, query_seq]
+            command: false
+            hidden: true
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: '"blast2genoclass.out"'
+            name: outfile
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {prompt: Graphical output, filenames: '"*.png"',
+            name: pictureout, precond: picture}
+        - !mobyle/outputprogramparameter
+            prompt: Alignment
+            filenames: '"*.aln"'
+            name: alignout
+            precond: align
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Verbose output file for all blast
+            filenames: '"res4individualBlast.txt"'
+            name: verboseoutall
+            precond: verboseall
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Verbose output file for database sequence(s)
+            filenames: '"res4allBlast.txt"'
+            name: verboseout
+            precond: verbose
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Blast output file(s)
+            filenames: '"*.blast"'
+            name: blastoutfile
+            precond: blastout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0857']
+        - !mobyle/outputprogramparameter
+            prompt: Query name file
+            filenames: '"*.qry"'
+            name: queryoutfile
+            precond: queryout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Database sequence(s) fasta file
+            filenames: '"*.dbfasta"'
+            name: besthitseqfile
+            precond: besthitseq
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Fasta file
+            filenames: '"*.fasta"'
+            name: fastafile
+            precond:
+                '#or': [fastaExtract, hspSeq]
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"blast2genoclass.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0258']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0623']
+command: blast2genoclass
+env: {}

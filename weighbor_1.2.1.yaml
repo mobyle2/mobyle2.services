@@ -1,0 +1,95 @@
+!mobyle/program
+name: weighbor
+version: 1.2.1
+title: Weighbor
+description: Weighted neighbor joining
+authors: Bruno, Halpern, Socci
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Distances matrix File (-i)
+        format: '" -i " + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/inputprogramparameter
+        comment: Default is 500. This is the effective sequence length equal to the
+            number of varying sites. Note if the -L option is not used then the program
+            will print a warning message to stderr indicating that it is using this
+            default length.
+        prompt: Length of the sequences (-L)
+        format: ( "" , " -L " + str(value) )[ value is not None ]
+        simple: true
+        argpos: 2
+        name: Length
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Sets the size of the alphabet of characters (number of bases) b.
+            1/b is equal to the probability that there will be a match for infinite
+            evolution time. The default value for b is 4.
+        prompt: Size of the alphabet (-b)
+        format: ( "" , " -b " + str(value) )[ value is not None and value != vdef]
+        argpos: 2
+        name: size
+        command: false
+        type: !mobyle/integertype {default: 4}
+    - !mobyle/inputprogramparameter
+        prompt: Verbose output (-v)
+        format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+        argpos: 2
+        name: verbose
+        command: false
+        type: !mobyle/stringtype
+            default: 'Null'
+            options:
+            - {label: Choose a verbose type, value: 'Null'}
+            - {label: Verbose (-v), value: -v}
+            - {label: Very verbose (-vv), value: -vv}
+            - {label: Very very verbose (-vvv), value: -vvv}
+    - !mobyle/inputprogramparameter
+        prompt: Output file (-o)
+        format: '" -o weighbor.treefile"'
+        argpos: 3
+        name: outfile
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree output file
+        filenames: '"weighbor.treefile"'
+        name: treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"weighbor.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"weighbor.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "Weighbor takes an input file of pairwise distances in Phylip format and\
+    \ computes the phylogentic tree that best\n       corresponds to those distances."
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'W. J. Bruno, N. D. Socci, and A. L. Halpern. Weighted Neighbor
+        Joining: A Likelihood-Based Approach to Distance-Based Phylogeny Reconstruction,
+        Mol. Biol. Evol. 17 (1): 189-197 (2000).', url: null}
+homepage_links: ['http://www.is.titech.ac.jp/~shimo/prog/consel/']
+command: weighbor
+env: {}
+source_links: ['http://www.is.titech.ac.jp/~shimo/prog/consel/']

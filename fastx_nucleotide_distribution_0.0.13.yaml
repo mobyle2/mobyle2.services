@@ -1,0 +1,73 @@
+!mobyle/program
+name: fastx_nucleotide_distribution
+version: 0.0.13
+title: FASTX Toolkit - FASTX Nucleotide Distribution Graph
+description: FASTA/Q Nucleotide Distribution Plotter
+authors: Assaf Gordon
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_options
+        children:
+        - !mobyle/inputprogramparameter {comment: Should be the output of "fastx_quality_statistics"
+                program., prompt: Select input file (-i), format: ''' -i '' + str(value)',
+            simple: true, mandatory: true, name: text_intput, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Will be plotted on the graph
+            prompt: Graph title (-t)
+            format: ('', ' -t ' + str(value))[value is not None]
+            simple: true
+            name: graph_title
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Default is PNG image.
+            prompt: Generate a PostScript file? (-p)
+            format: ''' -p'''
+            name: generate_file
+            command: false
+            hidden: true
+            type: !mobyle/booleantype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output file name (-o)
+            format: ''' -o '' + ( str(vdef) ,str(value) )[value is not None and value
+                != vdef] + ".ps"'
+            simple: true
+            mandatory: true
+            name: outfile_name
+            command: false
+            type: !mobyle/stringtype {default: fastx_graph}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output_options
+        children:
+        - !mobyle/outputprogramparameter {prompt: Graph results, filenames: '"*.png"',
+            name: graph_outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastx_nucleotide_distribution.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastx_nucleotide_distribution.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2478']
+topics: ['EDAM_topic:3168']
+command: fastx_nucleotide_distribution_graph.sh
+env: {}

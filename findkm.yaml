@@ -1,0 +1,126 @@
+!mobyle/program
+name: findkm
+title: findkm
+description: Calculate and plot enzyme reaction data
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter {prompt: Enzyme kinetics data (application-specific)
+                file, format: '("", " -infile=" + str(value))[value is not None]',
+            simple: true, argpos: 1, mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: S/v vs s
+            format: (" -noplot", "")[ bool(value) ]
+            argpos: 2
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 3
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: findkm.outfile}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graphlb output format
+            format: (" -graphlb=" + str(vdef), " -graphlb=" + str(value))[value is
+                not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: graphlb
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 5
+            name: xy_goutfile
+            command: false
+            type: !mobyle/stringtype {default: findkm_xygraph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond: {graphlb: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond: {graphlb: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                - {graphlb: ps}
+                - {graphlb: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond: {graphlb: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond: {graphlb: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"findkm.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"findkm.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0334']
+topics: ['EDAM_topic:0132']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/findkm.html', 'http://emboss.sourceforge.net/docs/themes']
+command: findkm
+env: {}

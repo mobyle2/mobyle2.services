@@ -1,0 +1,79 @@
+!mobyle/program
+name: dssp
+title: DSSP
+description: Definition of secondary structure of proteins given a set of 3D coordinates
+authors: W.Kabsch, C. Sander
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: PDB File, format: '( " -- " , " " + str(value)
+            )[ value is not None ]', simple: true, argpos: 10, name: pdbfile, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: or you can instead enter a PDB id.
+        format: ( "" , "cat /path/to/Pdb/databank/dir/pdb" + str( value ).lower()
+            + ".ent | " )[ value is not None ]
+        simple: true
+        argpos: -1
+        name: pdbid
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Disables the calculation of accessible surface (-na)
+            format: ( "" , " -na " )[ value ]
+            argpos: 1
+            name: surface
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Classic (pre-July 1995) format (-c)
+            format: ( "" , " -c " )[ value ]
+            argpos: 1
+            name: classic
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Adds information about disulfide bonds to output file (-ssa)
+            format: ( "" , " -ssa " )[ value ]
+            argpos: 1
+            name: disulfide
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Renames residues with incomplete sidechains to 'X' (-x)
+            format: ( "" , " -x " )[ value ]
+            argpos: 1
+            name: sidechains2X
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Keeps an additional AltLoc indicator at the line ends (-alt2)
+            format: ( "" , " -alt2 " )[ value ]
+            argpos: 1
+            name: altLoc
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dssp.out"'
+        name: outfile
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dssp.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Kabsch,W. and Sander,C. (1983) Biopolymers 22, 2577-2637.',
+    url: null}
+homepage_links: ['http://swift.cmbi.ru.nl/gv/dssp/']
+command: dssp
+env: {}
+source_links: ['ftp://ftp.cmbi.ru.nl/pub/molbio/software/']

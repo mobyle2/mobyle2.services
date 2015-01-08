@@ -1,0 +1,51 @@
+!mobyle/program
+name: align_reorder
+title: alignment entries reordering
+description: Reorders the entries of an MSA
+authors: "N\xE9ron, B."
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: alignment
+        format: '" -a " + str( value )'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: fasta_align
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        prompt: sequences
+        format: '" -s " + str( value )'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: fasta_sequences
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: reordered alignment
+        filenames: '"align_reorder.out"'
+        name: reordered_alignment
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"align_reorder.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">This tool reorders the
+    entries of an MSA according to a reference set of sequences.</html:div>
+operations: ['EDAM_operation:2122']
+topics: ['EDAM_topic:0220']
+command: align_reorder
+env: {}

@@ -1,0 +1,156 @@
+!mobyle/program
+name: einverted
+title: einverted
+description: Finds inverted repeats in nucleotide sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Gap penalty
+            format: ("", " -gap=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: gap
+            command: false
+            type: !mobyle/integertype {default: 12}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum score threshold
+            format: ("", " -threshold=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: threshold
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: Match score
+            format: ("", " -match=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: match
+            command: false
+            type: !mobyle/integertype {default: 3}
+        - !mobyle/inputprogramparameter
+            prompt: Mismatch score
+            format: ("", " -mismatch=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: mismatch
+            command: false
+            type: !mobyle/integertype {default: -4}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Maximum separation between the start of repeat and the end of
+                the inverted repeat (the default is 2000 bases).
+            prompt: Maximum extent of repeats
+            format: ("", " -maxrepeat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: maxrepeat
+            command: false
+            type: !mobyle/integertype {default: 2000}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 7
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.inv}
+        - !mobyle/inputprogramparameter
+            comment: The sequence of the inverted repeat regions without gap characters.
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 8
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: einverted.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 9
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"einverted.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"einverted.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0379', 'EDAM_operation:0278']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/einverted.html', 'http://emboss.sourceforge.net/docs/themes']
+command: einverted
+env: {}

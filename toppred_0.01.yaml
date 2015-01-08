@@ -1,0 +1,183 @@
+!mobyle/program
+name: toppred
+version: '0.01'
+title: TopPred
+description: Topology prediction of membrane proteins
+authors: Heijne, Wallin, Claros, Deveaud, Schuerer
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Command
+        format: '"toppred"'
+        argpos: 0
+        name: toppred
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Sequence
+        format: '" "+ str( value )'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: query
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/inputprogramparameter
+        prompt: Produce hydrophobicity graph image (-g)
+        simple: true
+        name: graph_output
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Produce image of each topology (-t)
+        format: (" -t none","")[ value ]
+        simple: true
+        argpos: 7
+        name: topo_output
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Hydrophobicity scale (-H)
+            format: ( "" , " -H " + str( value ) )[ value is not None and value !=
+                vdef ]
+            argpos: 1
+            name: scale
+            command: false
+            type: !mobyle/stringtype
+                default: GES-scale
+                options:
+                - {label: KD-scale (Kyte and Doolittle), value: KD-scale}
+                - {label: GVH-scale (Gunnar von Heijne), value: GVH-scale}
+                - {label: GES-scale (Goldman Engelman Steitz), value: GES-scale}
+        - !mobyle/inputprogramparameter
+            prompt: 'Organism: eukaryot (default is prokaryot) (-e)'
+            format: ( "" , " -e" )[ value ]
+            argpos: 1
+            name: organism
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Certain cutoff (-c)
+            format: ( "" , " -c " + str(value) ) [ value is not None and value!= vdef
+                ]
+            argpos: 2
+            name: certain
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparameter
+            prompt: Putative cutoff (-p)
+            format: ( "" , " -p " + str(value) )[ value is not None and value != vdef
+                ]
+            argpos: 2
+            name: putative
+            command: false
+            type: !mobyle/floattype {default: 0.6}
+        - !mobyle/inputprogramparameter
+            prompt: 'Core window size: (-n)'
+            format: ( "" , " -n " + str(value) )[ value is not None and value != vdef
+                ]
+            argpos: 2
+            name: core
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: 'Wedge window size: (-q)'
+            format: ( "" , " -q " + str(value) )[ value is not None and value != vdef
+                ]
+            argpos: 2
+            name: triangle
+            command: false
+            type: !mobyle/integertype {default: 5}
+        - !mobyle/inputprogramparameter
+            prompt: Critical loop length (-s)
+            format: ( "" , " -s " + str(value) )[ value is not None and value != vdef
+                ]
+            argpos: 2
+            name: loop_length
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            prompt: Critical transmembrane spacer (-d)
+            format: ( "" , " -d " + str( value ) )[ value is not None and value!=
+                vdef ]
+            argpos: 2
+            name: Segment_distance
+            command: false
+            type: !mobyle/integertype {default: 2}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output format (-O)
+            format: ( "" , " -O " + str(value) )[ value is not None and value != vdef
+                ]
+            argpos: 5
+            name: outformat
+            command: false
+            type: !mobyle/stringtype
+                default: new
+                options:
+                - {label: New text output format (new), value: new}
+                - {label: HTML, value: html}
+                - {label: Output format of the old toppred implementation (old), value: old}
+        - !mobyle/inputprogramparameter
+            prompt: Hydrophobicity Profile file format (-g)
+            format: ( " -g none" , " -g " + str(value) )[ graph_output ]
+            argpos: 7
+            name: profile_format
+            precond: graph_output
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: PNG output (png), value: png}
+                - {label: PostScript output (ps), value: ps}
+                - {label: PPM output (ppm), value: ppm}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Graphic output files, filenames: '''*.''
+            + profile_format', name: graphicfiles, precond: graph_output}
+    - !mobyle/outputprogramparameter {prompt: Hydrophobicity output files, filenames: '''*.hydro*''',
+        name: hydrophobicity_files}
+    - !mobyle/outputprogramparameter
+        prompt: Output file in html format
+        filenames: '''*.html'''
+        name: html_file
+        precond: {outformat: html}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"toppred.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"toppred.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0269']
+topics: ['EDAM_topic:0820']
+references:
+- {doi: null, label: 'von Heijne, G. (1992) Membrane Protein Structure Prediction:
+        Hydrophobicity Analysis and the ''Positive Inside'' Rule. J.Mol.Biol. 225,
+        487-494.', url: null}
+- {doi: null, label: 'Claros, M.G., and von Heijne, G. (1994) TopPred II: An Improved
+        Software For Membrane Protein Structure Predictions. CABIOS 10, 685-686.',
+    url: null}
+- {doi: null, label: 'Deveaud and Schuerer (Institut Pasteur) new implementation of
+        the original toppred program, based on G. von Heijne algorithm.', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/toppred/toppred.pdf']
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/toppred/']

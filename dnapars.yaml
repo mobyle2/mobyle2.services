@@ -1,0 +1,459 @@
+!mobyle/program
+name: dnapars
+title: dnapars
+description: DNA Parsimony Program
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"dnapars <dnapars.params"'
+        argpos: 0
+        name: dnapars
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: The input file must contained aligned sequences in PHYLIP format
+            obtained by sequence alignment programs.
+        prompt: Alignment File (infile)
+        format: '"ln -s " + str( infile ) + " infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:1383']
+        ctrls:
+        -   message: the name of this data can't be "infile","outfile","outtree","intree"
+            test:
+                value:
+                    '#nin': [outfile, infile, outtree, intree]
+    - !mobyle/inputprogramparagraph
+        prompt: Parsimony options
+        name: dnapars_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use Threshold parsimony (T)
+            format: ( "" , "T\n" + str( threshold ) + "\n" )[ value ]
+            argpos: 2
+            paramfile: dnapars.params
+            name: use_threshold
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Thresholds less than or equal to 1.0 do not have any meaning
+                and should not be used: they will result in a tree dependent only
+                on the input order of species and not at all on the data'
+            prompt: Value for threshold parsimony
+            argpos: 3
+            paramfile: dnapars.params
+            mandatory: true
+            name: threshold
+            precond: use_threshold
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Use Transversion parsimony (N)
+            format: ( "" , "N\n" )[ value ]
+            argpos: 5
+            paramfile: dnapars.params
+            name: use_transversion
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options ( multiple dataset )
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            comment: By selecting this option, the bootstrap will be performed on
+                your sequence file. So you don't need to perform a separated seqboot
+                before.Don't give an already bootstrapped file to the program, this
+                won't work!You can't use "Randomize options" and "Bootstrap options"
+                at the same time.
+            prompt: Perform a bootstrap before analysis
+            format: ( "" , "seqboot <seqboot.params && mv outfile seqboot.outfile
+                && rm infile  && ln -s seqboot.outfile infile && " )[ value ]
+            simple: true
+            argpos: -5
+            name: seqboot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "1. The bootstrap. Bootstrapping was invented by Bradley Efron\
+                \ in 1979, and its use in phylogeny estimation was introduced by me\
+                \ (Felsenstein, 1985b). It involves creating a new data set by sampling\
+                \ N characters randomly with replacement, so that the resulting data\
+                \ set has the same size as the original, but some characters have\
+                \ been left out and others are duplicated. The random variation of\
+                \ the results from analyzing these bootstrapped data sets can be shown\
+                \ statistically to be\n              typical of the variation that\
+                \ you would get from collecting new data sets. The method assumes\
+                \ that the characters evolve independently, an assumption that may\
+                \ not be realistic for many kinds of data.2. Delete-half-jackknifing.\
+                \ This alternative to the bootstrap involves sampling a random half\
+                \ of the characters, and including them in the data but dropping the\
+                \ others. The resulting data sets are half the size of the original,\
+                \ and no characters are duplicated. The random variation from doing\
+                \ this should be very similar to that obtained from the bootstrap.\
+                \ The method is advocated by Wu (1986).3. Permuting species for each\
+                \ characters. This method of resampling (well, OK, it may not be best\
+                \ to call it resampling) was introduced by Archie (1989) and Faith\
+                \ (1990; see also Faith and Cranston, 1991). It involves permuting\
+                \ the columns of the data matrix separately. This produces data matrices\
+                \ that have the same number and kinds of characters but no taxonomic\
+                \ structure. It is used for different purposes than the bootstrap,\
+                \ as it tests not the variation around an estimated tree but the hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, then we can argue that\
+                \ there is some taxonomic structure in the data (though perhaps it\
+                \ might be just the presence of aa pair of sibling species).4. Permuting\
+                \ characters order. This simply permutes the order of the characters,\
+                \ the same reordering being applied to all species. For many methods\
+                \ of tree inference this will make no difference to the outcome (unless\
+                \ one has rates of evolution correlated among adjacent sites). It\
+                \ is included as a possible step in carrying out a permutation test\
+                \ of homogeneity of characters (such as the Incongruence Length Difference\
+                \ test).5. Permuting characters separately for each species. This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before. It shuffles\
+                \ the character order separately for each species."
+            prompt: Resampling methods (J)
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            mandatory: true
+            name: Method
+            precond: seqboot
+            command: false
+            type: !mobyle/stringtype {default: bootstrap}
+        - !mobyle/inputprogramparameter
+            prompt: How many replicates (R)
+            format: ( "" , "R\n" + str( value ) +"\n" )[ value is not None and value
+                != vdef ]
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            name: replicates
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed (must be odd)
+            format: str( value ) + "\n"
+            simple: true
+            argpos: 1010
+            paramfile: seqboot.params
+            mandatory: true
+            name: seqboot_seed
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of times to jumble
+            simple: true
+            name: seqboot_times2jumble
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            format: '"M\nD\n" + str( replicates ) + "\n" + str(seqboot_seed) + "\n"+
+                str( seqboot_times2jumble ) + "\n"'
+            argpos: 1
+            paramfile: dnapars.params
+            name: multiple_dataset
+            precond: seqboot
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            format: '"Y\n"'
+            argpos: 1000
+            paramfile: seqboot.params
+            name: bootconfirm
+            precond: seqboot
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            format: '"0\n"'
+            argpos: -1
+            paramfile: seqboot.params
+            name: bootterminal_type
+            precond: seqboot
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Compute a consensus tree
+            format: ( "" , " && cp infile dnapars.infile && cp dnapars.outtree intree
+                && consense <consense.params && mv outtree consense.outtree && mv
+                outfile consense.outfile" )[ value ]
+            simple: true
+            argpos: 100
+            name: consense
+            precond:
+                '#and': [seqboot, print_treefile]
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        comment: Use these options only if you have only one data set
+        prompt: Randomize options ( one dataset )
+        name: jumble_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Randomize (jumble) input order (J)
+            format: ( "" , "J\n" + str( jumble_seed ) + "\n" + str( jumble_times )
+                +"\n" )[ value and not seqboot ]
+            argpos: 20
+            paramfile: dnapars.params
+            name: jumble
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed for jumble (must be odd)
+            mandatory: true
+            name: jumble_seed
+            precond: jumble
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of times to jumble
+            mandatory: true
+            name: jumble_times
+            precond: jumble
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: User tree options
+        name: user_tree_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'To give your tree to the program, you must normally put it in
+                the alignment file, after the sequences, preceded by a line indicating
+                how many trees you give.Here, this will be automatically appended:
+                just give a treefile and the number of trees in it.'
+            prompt: 'Use User tree (default: no, search for best tree) (U)'
+            format: ( "" , "U\n" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: user_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Give a tree whenever the infile does not already contain the
+                tree.
+            prompt: User Tree file
+            format: ( "" , "ln -s " + str( tree_file ) + " intree; " )[ value is not
+                None ]
+            argpos: -1
+            mandatory: true
+            name: tree_file
+            precond: user_tree
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+            ctrls:
+            -   message: the name of this data can't be "infile","outfile","outtree","intree"
+                test:
+                    value:
+                        '#nin': [outfile, infile, outtree, intree]
+    - !mobyle/inputprogramparagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use weights for sites (W)
+            format: ( "" , "W\n" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: weights
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Weights file
+            format: ( "" , "ln -s " + str( weights_file ) + " weights; " )[ value
+                is not None ]
+            argpos: -1
+            mandatory: true
+            name: weights_file
+            precond: weights
+            command: false
+            ctrls:
+            -   message: the name of this data can't be "infile","outfile","outtree","intree"
+                test:
+                    value:
+                        '#nin': [outfile, infile, outtree, intree]
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ( "3\n" , "")[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out steps in each site (4)
+            format: ( "" , "4\n" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: print_steps
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print sequences at all nodes of tree (5)
+            format: ( "" , "5\n" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: print_sequences
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a tree file (outtree) (a
+                standard representation of trees where the tree is specified by a
+                nested pairs of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (6)
+            format: ( "6\n" , "" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The O (Outgroup) option specifies which species is to have the
+                root of the tree be on the line leading to it.For example, if the
+                outgroup is a species "Mouse" then the root of the tree will be placed
+                in the middle of the branch which is connected to this species, with
+                Mouse branching off on one side of the root and the lineage leading
+                to the rest of the tree on the other.This option is toggle on by choosing
+                the number of the outgroup (the species being taken in the numerical
+                order that they occur in the input file).Outgroup-rooting will not
+                be attempted  if it is a user-defined tree, despite your invoking
+                the option.When it is used, the tree as printed out is still listed
+                as being an unrooted tree, though the outgroup is connected to the
+                bottommost node so that it is easy to visually convert the tree into
+                rooted form.
+            prompt: Outgroup species (J)
+            format: ( "" , "O\n" + str( value ) + "\n" )[ value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: dnapars.params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: dnapars.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: dnapars.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_confirm
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -2
+        paramfile: consense.params
+        name: consense_terminal_type
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"O\n" + str( outgroup ) + "\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_outgroup
+        precond:
+            '#and':
+            - consense
+            - outgroup
+            -   outgroup: {'#gt': '1'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Outfile, filenames: '''dnapars.outfile''',
+        argpos: 40, name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Tree file
+        filenames: '''dnapars.outtree'''
+        argpos: 50
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: seqboot outfile, filenames: '"seqboot.outfile"',
+        argpos: 40, name: seqboot_out, precond: seqboot}
+    - !mobyle/outputprogramparameter {prompt: Consense outfile, filenames: '"consense.outfile"',
+        name: consense_outfile, precond: consense}
+    - !mobyle/outputprogramparameter
+        prompt: Consense tree file
+        filenames: '"consense.outtree"'
+        name: consense_treefile
+        precond: consense
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dnapars.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dnapars.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: This   program  carries  out   unrooted  parsimony (analogous to Wagner trees)
+    (Eck and Dayhoff, 1966; Kluge and Farris, 1969) on DNA sequences.  The method
+    of Fitch (1971) is used to count the number of changes of base needed on a given
+    tree.
+operations: ['EDAM_operation:0545']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/dnapars.html']
+env: {}

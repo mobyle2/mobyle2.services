@@ -1,0 +1,42 @@
+!mobyle/program
+name: gruppi
+version: '1.0'
+title: gruppi
+description: clusters of binding sites
+authors: Marco Pontoglio
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"gruppi /path/to/the/needed/matrix.list"'
+        name: gruppi
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Sequences
+        format: '" " + str(sequences)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: sequences
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1948']
+            data_terms: ['EDAM_data:2977']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Gruppi output
+        filenames: '"gruppi.out"'
+        name: output
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"gruppi.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/GenSoft/unix/nucleic_acid/']

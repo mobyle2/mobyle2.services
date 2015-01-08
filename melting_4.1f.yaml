@@ -1,0 +1,150 @@
+!mobyle/program
+name: melting
+version: 4.1f
+title: MELTING
+description: enthalpy, entropy and melting temperature
+authors: N. Le Novere
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"melting -q -v"'
+        argpos: 0
+        name: melting
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Hybridisation type (-H)
+        format: '" -H" + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: hybridation_type
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose an hybidation type, value: 'null'}
+            - {label: Dna/Dna, value: dnadna}
+            - {label: Dna/Rna, value: dnarna}
+            - {label: Rna/Rna, value: rnarna}
+    - !mobyle/inputprogramparameter
+        prompt: Nearest Neighbor parameters set (-A)
+        format: ( "" , " -A" + str(value) )[ value is not None and value != vdef]
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: nnfile
+        command: false
+        type: !mobyle/stringtype
+            default: default
+            options:
+            - {label: Default, value: default}
+            - {label: Allawi et al 1997, value: all97a.nn}
+            - {label: Breslauer et al 1986, value: bre86a.nn}
+            - {label: Freier et al 1986, value: fre86a.nn}
+            - {label: SantaLucia et al 1996, value: san96a.nn}
+            - {label: Sugimoto et al 1995, value: sug95a.nn}
+            - {label: Sugimoto et al 1996, value: sug96a.nn}
+            - {label: Xia et al 1998, value: xia98a.nn}
+    - !mobyle/inputprogramparameter
+        prompt: Sequence string (-S)
+        format: '" -S" + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Complementary sequence (-C)
+        format: ( "" , " -C" + str(value) )[ value is not None ]
+        argpos: 1
+        name: complement_string
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: Value must be greater than 0.0 and lower than 10.0
+        prompt: Salt concentration (-N)
+        format: '" -N" + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: salt_concentration
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparameter
+        comment: Value must be greater than 0.0 and lower than 0.1
+        prompt: Nucleic acid concentration in excess (-P)
+        format: ("", " -P" + str(value))[value is not None]
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: nucacid_concentration
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparameter
+        prompt: Nucleic acid correction factor (-F)
+        format: ( "" , " -F" + str(value) )[ value is not None ]
+        argpos: 1
+        name: correction_factor
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparameter
+        prompt: Salt correction (-K)
+        format: ( "" , " -K" + str(value) )[ value is not None ]
+        argpos: 1
+        name: salt_correction
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: null, value: 'null'}
+            - {label: Wetmur 1991, value: wet91a}
+            - {label: SantaLucia et al. 1996, value: san96a}
+            - {label: SantaLucia 1998, value: san98a}
+    - !mobyle/inputprogramparameter
+        prompt: Force approximative temperature computation (-x)
+        format: ( "" , " -x" )[ value ]
+        argpos: 1
+        name: approx
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Use parameters for dangling ends (dnadnade.nn) (-D)?
+        format: ( "" , " -Ddnadnade.nn " )[ value ]
+        argpos: 1
+        name: dangling_ends
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Use parameters for mismatches (dnadnamm.nn) (-M)?
+        format: ( "" , " -Mdnadnamm.nn " )[ value ]
+        argpos: 1
+        name: mismatches
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"melting.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"melting.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0455']
+topics: ['EDAM_topic:0077']
+references:
+- {doi: null, label: 'Nicolas Le Novere (2001), MELTING, computing the melting temperature
+        of nucleic acid duplex. Bioinformatics 17(12), 1226-1227', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/melting/melting.pdf']
+homepage_links: ['http://www.ebi.ac.uk/~lenov/meltinghome.html']
+env: {}
+source_links: ['http://www.ebi.ac.uk/~lenov/SOFTWARES/']

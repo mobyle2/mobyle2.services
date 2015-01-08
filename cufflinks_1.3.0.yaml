@@ -1,0 +1,458 @@
+!mobyle/program
+name: cufflinks
+version: 1.3.0
+title: Cufflinks
+description: Cufflinks assembles transcripts, estimates their abundances, and tests
+    for differential expression and regulation in RNA-Sequence samples. It accepts
+    aligned RNA-Sequence reads and assembles the alignments into a parsimonious set
+    of transcripts. Cufflinks then estimates the relative abundances of these transcripts
+    based on how many reads support each one.
+authors: Trapnell C., Williams B.A., Pertea G., Mortazavi A.M., Kwan G., van Baren
+    M.J., Salzberg S.L., Wold B. & Pachter L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        argpos: 999
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Supply the SAM/BAM format file. you can use the accepted.bam
+                file from tophat
+            prompt: 'Aligned reads file (BAM/SAM format):'
+            format: '" " + str( value )'
+            simple: true
+            argpos: 40
+            mandatory: true
+            name: input_align
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Number of threads to run
+            format: ''' -p 5'''
+            name: num_threads
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Tells Cufflinks to use the supplied reference annotation (a GFF
+                file) to estimate isoform expression. It will not assemble novel transcripts,
+                and the program will ignore alignments not structurally compatible
+                with any reference transcript.
+            prompt: Quantitate against reference transcript annotations (-G/--GTF)
+                <reference_annotation.(gtf/gff)>
+            format: ("", " -G " + str(value)) [value is not None]
+            name: gtf_annotation
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Tells Cufflinks to use the supplied reference annotation (GFF)
+                to guide RABT assembly. Reference transcripts will be tiled with faux-reads
+                to provide additional information in assembly. Output will include
+                all reference transcripts as well as any novel genes and isoforms
+                that are assembled.
+            prompt: Use reference transcript annotation to guide assembly (-g/--GTF-guide)
+            format: ("", " -g " + str(value)) [value is not None]
+            name: guide_reference_annotation
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Tells Cufflinks to ignore all reads that could have come from
+                transcripts in this GTF file. We recommend including any annotated
+                rRNA, mitochondrial transcripts other abundant transcripts you wish
+                to ignore in your analysis in this file. Due to variable efficiency
+                of mRNA enrichment methods and rRNA depletion kits, masking these
+                transcripts often improves the overall robustness of transcript abundance
+                estimates.
+            prompt: Ignore all alignment within transcripts in this file (-M/--mask-file)
+            format: ("", " -M " + str(value)) [value is not None]
+            name: mask_file
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Providing Cufflinks with a multifasta file via this option instructs
+                it to run our new bias detection and correction algorithm which can
+                significantly improve accuracy of transcript abundance estimates.
+            prompt: Use bias correction - reference fasta required (-b/--frag-bias-correct)
+            format: ("", " -b " + str(value)) [value is not None]
+            name: frag_bias_correct
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Tells Cufflinks to do an initial estimation procedure to more
+                accurately weight reads mapping to multiple locations in the genome.
+            prompt: Use rescue method for multi-reads (more accurate) (-u/--multi-read-correct)
+            format: ("", " -u ")[value]
+            name: multi_read_correct
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "In cases where Cufflinks cannot determine the platform and protocol\
+                \ used to generate input reads, you can supply this information manually,\
+                \ which will allow Cufflinks to infer source strand information with\
+                \ certain protocols. The available options are listed below. For paired-end\
+                \ data, we currently only support protocols where reads are point\
+                \ towards each other. 1) fr-unstranded (default, e.g. Standard Illumina):\
+                \ Reads from the left-most end of the fragment (in transcript coordinates)\
+                \ map to the transcript strand, and the right-most end maps to the\
+                \ opposite strand.  2) fr-firststrand (e.g. dUTP, NSR, NNSR): Same\
+                \ as above except we enforce the rule that the right-most end of the\
+                \ fragment (in transcript coordinates) is the first sequenced (or\
+                \ only sequenced for single-end reads). Equivalently, it is assumed\
+                \ that only the strand generated during first strand synthesis is\
+                \ sequenced. 3) fr-secondstrand\t(e.g. Directional Illumina (Ligation),\
+                \ Standard SOLiD): Same as above except we enforce the rule that the\
+                \ left-most end of the fragment (in transcript coordinates) is the\
+                \ first sequenced (or only sequenced for single-end reads). Equivalently,\
+                \ it is assumed that only the strand generated during second strand\
+                \ synthesis is sequenced."
+            prompt: Library used for input reads (--library-type)
+            format: ("", " --library-type " + str(value)) [value is not None]
+            name: library_type
+            command: false
+            type: !mobyle/stringtype
+                default: fr-unstranded
+                options:
+                - {label: FF First Strand, value: ff-firststrand}
+                - {label: FF Second Strand, value: ff-secondstrand}
+                - {label: FF Unstranded, value: ff-unstranded}
+                - {label: FR First Strand, value: fr-firststrand}
+                - {label: FR Second Strand, value: fr-secondstrand}
+                - {label: FR Unstranded, value: fr-unstranded}
+                - {label: Transfrags, value: transfrags}
+    - !mobyle/inputprogramparagraph
+        prompt: Abundance Estimation Options
+        name: EstimationOptions
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'This is the expected (mean) fragment length. The default is
+                200bp. Note: Cufflinks now learns the fragment length mean for each
+                SAM file, so using this option is no longer recommended with paired-end
+                reads. It is recommended to enter values here if the input BAM file
+                is small and using a paired-end alignment file.'
+            prompt: Average fragment length (unpaired reads only) (-m/--frag-len-mean)
+            format: ('', ' -m ' + str(value))[value is not None and value != vdef]
+            name: frag_len_mean
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'The standard deviation for the distribution on fragment lengths.
+                The default is 80bp.  Note: Cufflinks now learns the fragment length
+                standard deviation for each SAM file, so using this option is no longer
+                recommended with paired-end reads.'
+            prompt: Fragment length std deviation (unpaired reads only) (-s/--frag-len-std-dev)
+            format: ('', ' -s ' + str(value))[value is not None and value != vdef]
+            name: frag_len_std_dev
+            command: false
+            type: !mobyle/integertype {default: 80}
+        - !mobyle/inputprogramparameter
+            comment: With this option, Cufflinks normalizes by the upper quartile
+                of the number of fragments mapping to individual loci instead of the
+                total number of sequenced fragments. This can improve robustness of
+                differential expression calls for less abundant genes and transcripts.
+            prompt: Use upper-quartile normalization (-N/--upper-quartile-norm)
+            format: ("", " -option_quartile_norm")[value]
+            argpos: 7
+            name: upper_quartile_norm
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the number of iterations allowed during maximum likelihood
+                estimation of abundances. Default: 5,000'
+            prompt: Maximum iterations allowed for MLE calculation (--max-mle-iterations)
+            format: ("", " --max-mle-iterations " + str(value)) [value is not None]
+            name: max_mle_iterations
+            command: false
+            type: !mobyle/integertype {default: 5000}
+        - !mobyle/inputprogramparameter
+            prompt: Number of importance samples for MAP estimation (--num-importance-samples)
+            format: ('', ' --num-importance-samples ' + str(value))[value is not None
+                and value != vdef]
+            name: num_importance_samples
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            comment: With this option, Cufflinks counts only those fragments compatible
+                with some reference transcript towards the number of mapped hits used
+                in the FPKM denominator. This option can be combined with -N/--upper-quartile-norm.
+                It is inactive by default, and can only be used in combination with
+                --GTF. Use with either RABT or ab initio assembly is not supported.
+            prompt: Count hits compatible with reference RNAs only (--compatible-hits-norm)
+            format: ("", " --compatible-hits-norm")[value]
+            name: compatible_hits_norm
+            precond:
+                gtf_annotation: {'#ne': None}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: With this option, Cufflinks counts all fragments, including those
+                not compatible with any reference transcript, towards the number of
+                mapped hits used in the FPKM denominator. This option can be combined
+                with -N/--upper-quartile-norm. It is active by default.
+            prompt: Count all hits for normalization (--total-hits-norm)
+            format: ("", " --total-hits-norm")[value]
+            name: total_hits_norm
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Assembly Options
+        name: AssemblyOptions
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Cufflinks will report transfrags in GTF format, with a prefix
+                given by this option. The default prefix is "CUFF".
+            prompt: Assembled transcripts have this iD prefix (-L/--label)
+            format: ("", " -L " + str(value)) [value is not None and value != vdef]
+            name: label
+            command: false
+            type: !mobyle/stringtype {default: CUFF}
+        - !mobyle/inputprogramparameter
+            comment: After calculating isoform abundance for a gene, Cufflinks filters
+                out transcripts that it believes are very low abundance, because isoforms
+                expressed at extremely low levels often cannot reliably be assembled,
+                and may even be artifacts of incompletely spliced precursors of processed
+                transcripts. This parameter is also used to filter out introns that
+                have far fewer spliced alignments supporting them. The default is
+                0.1, or 10% of the most abundant isoform (the major isoform) of the
+                gene.
+            prompt: Suppress transcripts below this abundance level (-F/--min-isoform-fraction,
+                <0.0-1.0>)
+            format: ("" , " -F "+str(value) )[value is not None and value != vdef]
+            argpos: 5
+            name: max_isoform_frac
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+            ctrls:
+            -   message: requires a float value between 0.0 and 1.0
+                test:
+                    '#and':
+                    -   value: {'#gte': '0.0'}
+                    -   value: {'#lte': '1.0'}
+        - !mobyle/inputprogramparameter
+            comment: Some RNA-Seq protocols produce a significant amount of reads
+                that originate from incompletely spliced transcripts, and these reads
+                can confound the assembly of fully spliced mRNAs. Cufflinks uses this
+                parameter to filter out alignments that lie within the intronic intervals
+                implied by the spliced alignments. The minimum depth of coverage in
+                the intronic region covered by the alignment is divided by the number
+                of spliced reads, and if the result is lower than this parameter value,
+                the intronic alignments are ignored. The default is 15%.
+            prompt: Suppress intra-intronic transcripts below this level (-j/--pre-mrna-fraction,
+                <0.0-1.0>)
+            format: ("" , " -j "+str(value) )[value is not None and value != vdef]
+            argpos: 6
+            name: opt_pre_mrna_frac
+            command: false
+            type: !mobyle/floattype {default: 0.15}
+            ctrls:
+            -   message: requires a float value between 0.0 and 1.0
+                test:
+                    '#and':
+                    -   value: {'#gte': '0.0'}
+                    -   value: {'#lte': '1.0'}
+        - !mobyle/inputprogramparameter
+            comment: The maximum intron length. Cufflinks will not report transcripts
+                with introns longer than this, and will ignore SAM alignments with
+                REF_SKIP CIGAR operations longer than this. The default is 300,000.
+            prompt: Ignore alignments with gaps longer than this (-I/--max-intron-length)
+            format: ("" , " -I "+str(value) )[value is not None and value != vdef]
+            argpos: 4
+            name: option_max_intron
+            command: false
+            type: !mobyle/integertype {default: 300000}
+        - !mobyle/inputprogramparameter
+            comment: 'The alpha value for the binomial test used during false positive
+                spliced alignment filtration. Default: 0.001'
+            prompt: Alpha for junction binomial test filter (-a/--junc-alpha, <0.0-1.0>
+            format: ("", " -a " + str(value)) [value is not None and value != vdef]
+            name: junc_alpha
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+            ctrls:
+            -   message: requires a float value between 0.0 and 1.0
+                test:
+                    '#and':
+                    -   value: {'#gte': '0.0'}
+                    -   value: {'#lte': '1.0'}
+        - !mobyle/inputprogramparameter
+            comment: 'Spliced reads with less than this percent of their length on
+                each side of the junction are considered suspicious and are candidates
+                for filtering prior to assembly. Default: 0.09.'
+            prompt: Percent read overhang taken as suspiciously small (-A/--small-anchor-fraction,
+                <0.0-1.0>)
+            format: ("", " -A " + str(value)) [value is not None and value != vdef]
+            name: small_anchor_fraction
+            command: false
+            type: !mobyle/floattype {default: 0.09}
+            ctrls:
+            -   message: requires a float value between 0.0 and 1.0
+                test:
+                    '#and':
+                    -   value: {'#gte': '0.0'}
+                    -   value: {'#lte': '1.0'}
+        - !mobyle/inputprogramparameter
+            comment: 'Assembled transfrags supported by fewer than this many aligned
+                RNA-Seq fragments are not reported. Default: 10.'
+            prompt: Minimum number of fragments needed For new transfrags (--min-frags-per-transfrag)
+            format: ("", " --min-frags-per-transfrag " + str(value)) [value is not
+                None and value != vdef]
+            name: min_frags
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: The number of bp allowed to enter the intron of a transcript
+                when determining if a read or another transcript is mappable to/compatible
+                with it. The default is 8 bp based on the default bowtie/TopHat parameters.
+            prompt: Number of terminal exon bp to tolerate in introns (--overhang-tolerance)
+            format: ("", " --overhang-tolerance " + str(value)) [value is not None
+                and value != vdef]
+            name: overhang_tolerance
+            command: false
+            type: !mobyle/integertype {default: 8}
+        - !mobyle/inputprogramparameter
+            comment: Maximum genomic length allowed for a given bundle. The default
+                is 3,500,000 bp.
+            prompt: Maximum genomic length allowed for a given bundle (--max-bundle-length)
+            format: ("", " --max-bundle-length " + str(value)) [value is not None
+                and value != vdef]
+            name: max_bundle_length
+            command: false
+            type: !mobyle/integertype {default: 3500000}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the maximum number of fragments a locus may have before
+                being skipped. Skipped loci are listed in skipped.gtf. Default: 1,000,000'
+            prompt: Maximum fragments allowed in a bundle before skipping (--max-bundle-frags)
+            format: ("", "  --max-bundle-frags " + str(value)) [value is not None
+                and value != vdef]
+            name: max_bundle_frags
+            command: false
+            type: !mobyle/integertype {default: 500000}
+        - !mobyle/inputprogramparameter
+            comment: Minimum intron size allowed in genome. The default is 50 bp.
+            prompt: Minimum intron size allowed in genome (--min-intron-length)
+            format: ("", " --min-intron-length " + str(value)) [value is not None
+                and value != vdef]
+            name: min_intron_length
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            comment: Minimum average coverage required to attempt 3' trimming. The
+                default is 10.
+            prompt: Minimum average coverage required to attempt 3' trimming (--trim-3-avgcov-thresh)
+            format: ("", " --trim-3-avgcov-thresh " + str(value)) [value is not None
+                and value != vdef]
+            name: avgcov_thresh
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: The fraction of average coverage below which to trim the 3' end
+                of an assembled transcript. The default is 0.1.
+            prompt: Fraction of average coverage below which to trim 3' end (--trim-3-dropoff-frac)
+            format: ("", " --trim-3-dropoff-frac " + str(value)) [value is not None
+                and value != vdef]
+            name: dropoff_frac
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+    - !mobyle/inputprogramparagraph
+        prompt: Reference Annotation Based Transcript (RABT) Assembly Options
+        name: ReferenceBasedAssemblyOptions
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option disables tiling of the reference transcripts with
+                faux reads. Use this if you only want to use sequencing reads in assembly
+                but do not want to output assembled transcripts that lay within reference
+                transcripts. All reference transcripts in the input annotation will
+                also be included in the output.
+            prompt: Disable tiling by faux reads (--no-faux-reads)
+            format: ("", " --no-faux-reads")[value]
+            name: no_faux_reads
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The number of bp allowed to overhang the 3' end of a reference
+                transcript when determining if an assembled transcript should be merged
+                with it (ie, the assembled transcript is not novel). The default is
+                600 bp.
+            prompt: Overhang allowed on 3' end when merging with reference (--3-overhang-tolerance)
+            format: ("", " --3-overhang-tolerance " + str(value)) [value is not None
+                and value != vdef]
+            name: three_overhang_tolerance
+            command: false
+            type: !mobyle/integertype {default: 600}
+        - !mobyle/inputprogramparameter
+            comment: The number of bp allowed to enter the intron of a reference transcript
+                when determining if an assembled transcript should be merged with
+                it (ie, the assembled transcript is not novel). The default is 50
+                bp.
+            prompt: Overhang allowed inside reference intron when merging (--intron-overhang-tolerance)
+            format: ("", " --intron-overhang-tolerance " + str(value)) [value is not
+                None and value != vdef]
+            name: intron_overhang_tolerance
+            command: false
+            type: !mobyle/integertype {default: 30}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output2
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Sets the name of the directory in which Cufflinks will write
+                all of its output. The default is "./".
+            prompt: Write all output files to this directory (-o)
+            format: '" -o ./"'
+            name: output_dir
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output2
+        argpos: 12
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: GTF Out
+            filenames: '"transcripts.gtf"'
+            name: gtf_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Isoforms tracking file
+            filenames: '"isoforms.fpkm_tracking"'
+            name: iso_track
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: FPKM tracking file
+            filenames: '"genes.fpkm_tracking"'
+            name: fpkm_track
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cufflinks.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cufflinks.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2495']
+topics: ['EDAM_topic:0203']
+command: cufflinks
+env: {}

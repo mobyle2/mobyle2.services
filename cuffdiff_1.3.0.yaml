@@ -1,0 +1,296 @@
+!mobyle/program
+name: cuffdiff
+version: 1.3.0
+title: cuffdiff
+description: Cuffdiff is part of Cufflinks. It finds significant changes in transcript
+    expression, splicing, and promoter use.
+authors: Trapnell C., Williams B.A., Pertea G., Mortazavi A.M., Kwan G., van Baren
+    M.J., Salzberg S.L., Wold B. & Pachter L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Initial command
+        format: '"cuffdiff"'
+        argpos: 0
+        name: cufflinks_cmd
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        argpos: 999
+        children:
+        - !mobyle/inputprogramparameter
+            comment: A transcript annotation file produced by cufflinks, cuffcompare,
+                or other source.
+            prompt: Transcripts
+            format: '" " + str( value )'
+            simple: true
+            argpos: 30
+            mandatory: true
+            name: input_0
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Aligned RNA-Sequence reads in SAM/BAM format
+            format: '" " + str(value)'
+            simple: true
+            argpos: 35
+            mandatory: true
+            name: input_align
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Aligned RNA-Sequence reads in SAM/BAM format (2)
+            format: '" " + str(value)'
+            simple: true
+            argpos: 36
+            mandatory: true
+            name: input_align2
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Value of random number generator seed (--seed)
+            format: ('', ' --seed ' + str(value))[value is not None and value != vdef]
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: Instructs Cuffdiff to analyze the provided samples as a time
+                series, rather than testing for differences between all pairs of samples.
+                Samples should be provided in increasing time order at the command
+                line (e.g first timepoint SAM, second timepoint SAM, etc.)
+            prompt: Treat samples as a time-series (-T/--time-series)
+            format: ('',' -T ')[value]
+            name: time_series
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The minimum number of alignments in a locus that is needed to
+                conduct significance testing on changes in that locus observed between
+                samples. If no testing is performed, changes in the locus are deemed
+                not signficant, and the locus' observed changes don't contribute to
+                correction for multiple testing. The default is 10 fragment alignments.
+            prompt: Minimum number of alignments in a locus for testing (-c/--min-alignment-count)
+            format: ('', ' -c ' + str(value))[value is not None and value != vdef]
+            name: min_alignment_count
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: The allowed false discovery rate - the default is 0.05
+            prompt: False discovery rate used in testing (--FDR)
+            format: ('', ' --FDR ' + str(value))[value is not None and value != vdef]
+            name: fdr
+            command: false
+            type: !mobyle/floattype {default: 0.05}
+        - !mobyle/inputprogramparameter
+            comment: Tells Cuffdiff to ignore all reads that could have come from
+                transcripts in this GTF file. We recommend including any annotated
+                rRNA, mitochondrial transcripts, and other abundant transcripts you
+                wish to ignore in your analysis in this file. Due to variable efficiency
+                of mRNA enrichment methods and rRNA depletion kits, masking these
+                transcripts often improves the overall robustness of transcript abundance
+                estimates.
+            prompt: Ignore all alignment within transcripts in this file (-M/--mask-file)
+            format: ('', ' -M ' + str(value))[value is not None]
+            simple: true
+            name: mask_file
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Use bias correction - reference fasta required (-b/--frag-bias-correct)
+            format: ('', ' -b ' + str(value))[value is not None]
+            name: frag_bias_correct
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Tells Cufflinks to do an initial estimation procedure to more
+                accurately weight reads mapping to multiple locations in the genome
+            prompt: Use 'rescue method' for multi-reads [more accurate] (-u/--multi-read-correct)
+            format: ('',' -u')[value]
+            name: multi_read_correct
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: With this option, Cufflinks normalizes by the upper quartile
+                of the number of fragments mapping to individual loci instead of the
+                total number of sequenced fragments. This can improve robustness of
+                differential expression calls for less abundant genes and transcripts.
+            prompt: Use upper-quartile normalization (-N/--upper-quartile-norm)
+            format: ("", " -N")[value]
+            name: upper_quartile_norm
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Specify a label for each sample, which will be included in various
+                output files produced by Cuffdiff. This option should have a string
+                of comma-delimited names corresponding to the names of the input files.
+            prompt: Specify label for each sample (-L/--labels)
+            format: ('', ' -L ' + str(value))[value is not None]
+            name: label
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Use this many threads to align reads - the default is 1
+            prompt: Number of threads used during quantification (-p/--num-threads)
+            format: ('', ' -p ' + str(value))[value is not None and value != vdef]
+            name: num_threads
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced Options
+        name: AdvancedOptions
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Library type (--library-type)
+            format: ('', ' --library-type ' + str(value))[value is not None and value
+                != vdef]
+            name: library_type
+            command: false
+            type: !mobyle/stringtype
+                default: fr-unstranded
+                options:
+                - {label: FF First Strand, value: ff-firststrand}
+                - {label: FF Second Strand, value: ff-secondstrand}
+                - {label: FF Unstranded, value: ff-unstranded}
+                - {label: FR First Strand, value: fr-firststrand}
+                - {label: FR Second Strand, value: fr-secondstrand}
+                - {label: FR Unstranded, value: fr-unstranded}
+                - {label: Transfrags, value: transfrags}
+        - !mobyle/inputprogramparameter
+            comment: 'This is the expected (mean) fragment length. The default is
+                200bp. Note: Cufflinks now learns the fragment length mean for each
+                SAM file, so using this option is no longer recommended with paired-end
+                reads. It is recommended to enter values here if the input BAM file
+                is small and using a paired-end alignment file.'
+            prompt: Average fragment length [unpaired reads only] (-m/--frag-len-mean)
+            format: ('', ' -m ' + str(value))[value is not None and value != vdef]
+            name: frag_len_mean
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: 'The standard deviation for the distribution on fragment lengths.
+                The default is 80bp. Note: Cufflinks now learns the fragment length
+                standard deviation for each SAM file, so using this option is no longer
+                recommended with paired-end reads.'
+            prompt: Fragment length standard deviation [unpaired reads only] (-s/--frag-len-std-dev)
+            format: ('', ' -s ' + str(value))[value is not None and value != vdef]
+            name: frag_len_std_dev
+            command: false
+            type: !mobyle/floattype {default: 80.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Sets the number of importance samples generated for each locus
+                during abundance estimation. Default: 1000'
+            prompt: Number of importance samples for MAP restimation (--num-importance-samples)
+            format: ('', ' --number-importance-samples ' + str(value))[value is not
+                None and value != vdef]
+            name: number_importance_samples
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            prompt: Number of bootstrap replications (--num-bootstrap-samples)
+            format: ('', ' --num-bootstrap-samples ' + str(value))[value is not None
+                and value != vdef]
+            name: num_bootstrap_samples
+            command: false
+            type: !mobyle/integertype {default: 20}
+        - !mobyle/inputprogramparameter
+            prompt: Fraction of fragments in each bootstrap sample (--bootstrap-fraction)
+            format: ('', ' --bootstrap-fraction ' + str(value))[value is not None
+                and value != vdef]
+            name: bootstrap_fraction
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparameter
+            comment: Sets the number of iterations allowed during maximum likelihood
+                estimation of abundances. The default is 5000.
+            prompt: Maximum iterations allowed for MLE calculation (--max-mle-iterations)
+            format: ('', ' --max-mle-iterations ' + str(value))[value is not None
+                and value != vdef]
+            name: max_mle_iterations
+            command: false
+            type: !mobyle/integertype {default: 5000}
+        - !mobyle/inputprogramparameter
+            prompt: Count hits compatible with reference RNAs only (--compatible-hits-norm)
+            format: ('',' --compatible-hits-norm')[value]
+            name: compatible_hits_norm
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: With this option, Cufflinks counts all fragments, including those
+                not compatible with any reference transcript, towards the number of
+                mapped fragments used in the FPKM denominator. This option can be
+                combined with -N/--upper-quartile-norm. It is inactive by default.
+            prompt: Count all hits for normalization (--total-hits-norm)
+            format: ('',' --total-hits-norm')[value]
+            name: total_hits_norm
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Use the Poisson fragment dispersion model instead of learning
+                one in each condition
+            prompt: Don't fit fragment counts for overdispersion? (--poisson-dispersion)
+            format: ('',' --poisson-dispersion')[value]
+            name: poisson_dispersion
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Cuffdiff will output a file for each condition (called <sample>_counts.txt)
+                containing the fragment counts, fragment count variances, and fitted
+                variance model
+            prompt: Print count tables used to fit overdispersion (--emit-count-tables)
+            format: ('',' --emit-count-tables')[value]
+            name: emit_count_tables
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum fragments allowed in a bundle before skipping (--max-bundle-frags)
+            format: ('', ' --max-bundle-frags ' + str(value))[value is not None and
+                value != vdef]
+            name: max_bundle_frags
+            command: false
+            type: !mobyle/integertype {default: 500000}
+    - !mobyle/inputprogramparameter
+        comment: Sets the name of the directory in which Cufflinks will write all
+            of its output. The default is "./".
+        prompt: Enter experiment name (-o)
+        format: ''' -o ./'''
+        name: output_dir
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: FPKM tracking file 1
+        filenames: '"*.count_tracking"'
+        name: result_files
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cuffdiff.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cuffdiff.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2495']
+topics: ['EDAM_topic:0203']
+env: {}

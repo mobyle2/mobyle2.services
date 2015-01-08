@@ -1,0 +1,211 @@
+!mobyle/program
+name: dialign
+version: 2.2.1
+title: DIALIGN
+description: DNA and protein sequence alignment based on segment-to-segment comparison
+authors: Morgenstern, Dress, Werner
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequences
+        format: '" " + str(value)'
+        simple: true
+        argpos: 100
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Nucleic acid or protein alignment (-n)
+        format: ( ""  , " -n" )[ value is not None and value != vdef]
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: protein_dna
+        command: false
+        type: !mobyle/stringtype
+            default: p
+            options:
+            - {label: Protein (p), value: p}
+            - {label: Nucleic (n), value: n}
+    - !mobyle/inputprogramparagraph
+        prompt: Others options
+        name: dialign_opt
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Threshold (-thr)
+            format: ( ""  , " -thr " + str(value) )[ value is not None and value !=
+                vdef]
+            name: threshold
+            command: false
+            type: !mobyle/floattype {default: 0.0}
+        - !mobyle/inputprogramparameter
+            comment: '"maximum or minimum linkage" clustering used to construct sequence
+                tree (instead of UPGMA).'
+            prompt: Clustering type used to construct sequence tree
+            format: ( ""  , " -" +str(value) )[ value is not None and value !=vdef]
+            name: cluster
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: UPGMA, value: 'null'}
+                - {label: Maximum linkage (-max_link), value: max_link}
+                - {label: Minimum linkage (-min_link), value: min_link}
+        - !mobyle/inputprogramparameter
+            comment: "iterative scoring scheme (fragment scores are based on\n   \
+                \              conditional probabilities given the previously aligned\n\
+                \                 fragments. I.e. the probability of a fragment --\
+                \ and\n                 therefore its score -- is not based on the\
+                \ probability\n                 of random occurrence in the input\
+                \ sequences but rather on\n                 the probability of occurrence\
+                \ between those fragments\n                 that have already been\
+                \ accepted in previous iteration\n                 steps)."
+            prompt: Iterative scoring scheme (-it)
+            format: ( ""  , " -it" )[ value ]
+            name: iterative
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "overlap weights switched off (by default,\n                \
+                \ overlap weights are used if up to 35 sequences are\n           \
+                \      aligned). This option speeds up the alignment but may lead\n\
+                \                 to reduced alignment quality."
+            prompt: Overlap weights (-iw)
+            format: ( ""  , " -iw" )[ value ]
+            name: overlap
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparagraph
+            prompt: DNA options
+            name: dna_opt
+            precond: {protein_dna: n}
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Input sequences are nucleic acid sequences and `nucleic acid
+                    segments' are translated to `peptide segments'.
+                prompt: Translation of nucleotide diagonals into peptide diagonals
+                    (-nt)
+                format: ( ""  , " -nt" )[ value ]
+                name: translation
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: If segments are translated, not only the `Watson strand'
+                    but also the `Crick strand' is looked at
+                prompt: Strand to looked at Watson and Crick strands (-cs)
+                format: ( ""  , " -cs" )[ value ]
+                name: translation_strand
+                precond:
+                    '#or': [translation, mix]
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: '`mixed alignments'' consisting of P-fragments and N-fragments
+                    if nucleic acid sequences are aligned.'
+                prompt: Mixed alignments (-ma)
+                format: ( ""  , " -ma" )[ value ]
+                name: mix
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: "Non-translated nucleic acid fragments are taken\n      \
+                    \           into account only if they start with at least two\
+                    \ matches.\n                 Speeds up DNA alignment at the expense\
+                    \ of sensitivity."
+                prompt: Dna alignment speed up (-ds)
+                format: ( ""  , " -ds" )[ value ]
+                name: speed
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: "combines the following options:\n                 -ma, -it,\
+                    \ -thr 2, -lmax 30, -smin 8, -nta, -ff,\n                 -fop,\
+                    \ -ff, -cs, -ds, -pst"
+                prompt: Long genomic sequences (-lgs)
+                format: ( ""  , " -lgs" )[ value ]
+                name: long_genomic
+                precond: {'#not': long_genomic_pep}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: Like "-lgs" but with all segment pairs assessed at the  peptide
+                    level (rather than 'mixed alignments' as with the"-lgs" option).
+                    Therefore faster than -lgs but not very sensitive for non-coding
+                    regions.
+                prompt: Long genomic sequences (-lfs_t)
+                format: ( ""  , " -lgs_t" )[ value ]
+                name: long_genomic_pep
+                precond: {'#not': long_genomic}
+                command: false
+                type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'The number of `*'' characters below the alignment reflects the
+                degree of local similarity among sequences. More precisely: They represent
+                the sum of `weights'' of diagonals connecting residues at the respective
+                position.By default, no stars are used but numbers between 0 and 9,
+                instead.'
+            prompt: Maximum number of * characters representing degree similarity
+                (-stars)
+            format: ( ""  , " -stars " + str(value) )[ value is not None]
+            name: max_simil
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: residues not belonging to selected fragments are replaced by
+                `*' characters in output alignment (rather than being printed in lower-case
+                characters)
+            prompt: Mask not aligned residues (-mask)
+            format: ( ""  , " -mask" )[ value ]
+            name: mask
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Be aware that only upper-case letters are regarded to be aligned
+                in fasta output file.
+            prompt: Alignment in fasta format (-fa)
+            format: ( ""  , " -fa" )[ value ]
+            name: fasta
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: '"*.cw"', name: ali}
+    - !mobyle/outputprogramparameter
+        prompt: fasta alignment file
+        filenames: '"*.fa"'
+        name: fasta_alignment
+        precond: fasta
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dialign.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dialign.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0492']
+topics: ['EDAM_topic:0182']
+references:
+- {doi: null, label: 'B. Morgenstern (1999). DIALIGN 2: improvement of the segment-to-segment
+        approach to multiple sequence alignment. Bioinformatics 15, 211 - 218.', url: null}
+homepage_links: ['http://dialign.gobics.de/']
+command: dialign
+env: {}
+source_links: ['http://dialign.gobics.de/download/']

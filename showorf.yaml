@@ -1,0 +1,159 @@
+!mobyle/program
+name: showorf
+title: showorf
+description: Display a nucleotide sequence and translation in pretty format
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Select frames to translate (value from 0 to 6)
+            format: ("", " -frames=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: frames
+            command: false
+            type: !mobyle/stringtype
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: None, value: '0'}
+                - {label: F1, value: '1'}
+                - {label: F2, value: '2'}
+                - {label: F3, value: '3'}
+                - {label: R1, value: '4'}
+                - {label: R2, value: '5'}
+                - {label: R3, value: '6'}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic codes
+            format: ("", " -table=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: table
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 4
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: showorf.outfile}
+        - !mobyle/inputprogramparameter
+            prompt: Add a ruler
+            format: (" -noruler", "")[ bool(value) ]
+            argpos: 5
+            name: ruler
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Number translations
+            format: (" -noplabel", "")[ bool(value) ]
+            argpos: 6
+            name: plabel
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Number dna sequence
+            format: (" -nonlabel", "")[ bool(value) ]
+            argpos: 7
+            name: nlabel
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Width of screen (value greater than or equal to 10)
+            format: ("", " -width=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: width
+            command: false
+            type: !mobyle/integertype {default: 50}
+            ctrls:
+            -   message: Value greater than or equal to 10 is required
+                test:
+                    value: {'#gte': '10'}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 9
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"showorf.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"showorf.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0371', 'EDAM_operation:0564', 'EDAM_operation:0436']
+topics: ['EDAM_topic:0108']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/showorf.html', 'http://emboss.sourceforge.net/docs/themes']
+command: showorf
+env: {}

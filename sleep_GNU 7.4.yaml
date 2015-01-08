@@ -1,0 +1,45 @@
+!mobyle/program
+name: sleep
+version: GNU 7.4
+title: sleep
+description: delay for a specified amount of time
+authors: GNU
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Time to sleep
+        format: '" " + str(value)'
+        argpos: 5
+        name: time
+        command: false
+        type: !mobyle/floattype {default: 10.0}
+    - !mobyle/inputprogramparameter
+        prompt: Suffix
+        format: ("", str(value))[value is not None and value!=vdef]
+        argpos: 6
+        name: suffix
+        command: false
+        type: !mobyle/stringtype
+            default: s
+            options:
+            - {label: seconds, value: s}
+            - {label: minutes, value: m}
+            - {label: hours, value: h}
+            - {label: days, value: d}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"sleep.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"sleep.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: sleep
+env: {}

@@ -1,0 +1,380 @@
+!mobyle/program
+name: seqgen
+version: 1.3.2
+title: SeqGen
+description: Sequence-Generator
+authors: A. Rambaut, N. C. Grassly
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"seq-gen"'
+        argpos: 0
+        name: seqgen
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input tree file
+        format: '"< " + str(value)'
+        simple: true
+        argpos: 0
+        mandatory: true
+        name: intree
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910', 'EDAM_format:1912']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set the length in nucleotides
+                that each simulated sequence should be.
+            prompt: Sequence length (-l)
+            format: ("" , " -l " + str(value))[ value is not None and value != vdef]
+            name: Length
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies how many separate datasets should be simulated
+                for each tree in the tree file.
+            prompt: Number of simulated datasets per tree (-n)
+            format: ("" , " -n " + str(value))[ value is not None and value != vdef]
+            name: datasets
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: Number of partion specifies how many partitions of each data
+                set should be simulated. each partition must have its own tree and
+                number specifying how many sites are in partition. Multiple sets of
+                trees are being inputed with varying numbers of partitions, then this
+                should specify the maximum number of partitions that will be required
+            prompt: Number of partitions for each dataset (-p)
+            format: ("" , " -p " + str(value))[ value is not None and value != vdef]
+            name: partition_numb
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set a value with which to scale
+                the branch lengths in order to make them equal the expected number
+                of substitutions per site for each branch. Basically Seq-Gen multiplies
+                each branch length by this value.For example if you give an value
+                of 0.5 then each branch length would be halved before using it to
+                simulate the sequences.
+            prompt: Scale branch lengths  (number greater > 0) (-s)
+            format: ("" , " -s " + str(value))[ value is not None and value != vdef]
+            name: scale_branch
+            precond:
+                scale_tree: {'#eq': None}
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set a value which is the desired
+                length of each tree in units of substitutions per site. The term 'tree
+                length' here is the distance from the root to any one of the tips
+                in units of mean number of substitutions per site. This option can
+                only be used when the input trees are rooted and ultrametric (no difference
+                in rate amongst the lineages). This has the effect of making all the
+                trees in the input file of the same length before simulating data.The
+                option multiplies each branch length by a value equal to SCALE divided
+                by the actual length of the tree.
+            prompt: Total tree scale  (a decimal number greater > 0)  (-d)
+            format: ("" , " -d " + str(value))[ value is not None ]
+            name: scale_tree
+            precond:
+                scale_branch: {'#ne': '1.0'}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: 'This option allows the user to use a supplied sequence as the
+                ancestral sequence at the root (otherwise a random sequence is used).
+                The value is an integer number greater than zero which refers to one
+                of the sequences supplied as input with the tree.Method: The user
+                can supply a sequence alignment as input, as well as the trees. This
+                should be in relaxed PHYLIP format. The trees can then be placed in
+                this file at the end, after a line stating how many trees there are.
+                The file may look like this:4 50Taxon1 ATCTTTGTAGTCATCGCCGTATTAGCATTCTTAGATCTAATaxon2
+                ATCCTAGTAGTCGCTTGCGCACTAGCCTTCCGAAATCTAGTaxon3 ACTTCTGTGTTTACTGAGCTACTAGCTTCCCTAAATCTAGTaxon4
+                ATTCCTATATTCGCTAATTTCTTAGCTTTCCTGAATCTGG1(((Taxon1:0.2,Taxon2:0.2):0.1,Taxon3:0.3):0.1,Taxon4:0.4);Note
+                that the labels in the alignment do not have to match those in the
+                tree (the ones in the tree will be used for output)   there doesn''t
+                even have to be the same number of taxa in the alignment as in the
+                trees. The sequence length supplied by the alignment will be used
+                to obtain the simulated sequence length (unless the  l option is set).
+                The  k option also refers to one of the sequences to specify the ancestral
+                sequence. (see Appendix A)'
+            prompt: Ancestral Sequence number (-k)
+            format: ("" , " -k " + str(value))[ value is not None ]
+            name: input_seq
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Substitution model options
+        name: substitution
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Model of  substitution (-m)
+            format: ( ""  , " -m " + str(value) )[ value is not None ]
+            name: model
+            command: false
+            type: !mobyle/stringtype
+                default: JTT
+                options:
+                - {label: JTT, value: JTT}
+                - {label: WAG, value: WAG}
+                - {label: PAM, value: PAM}
+                - {label: BLOSUM, value: BLOSUM}
+                - {label: MTREV, value: MTREV}
+                - {label: GENERAL, value: GENERAL}
+                - {label: F84 (nucleic), value: F84}
+                - {label: HKY (nucleic), value: HKY}
+                - {label: GTR (nucleic), value: GTR}
+        - !mobyle/inputprogramparameter
+            comment: Using this option the user may specify a shape for the gamma
+                rate heterogeneity. The default is no site-specific rate heterogeneity.
+                Enter a decimal number.
+            prompt: Shape of the gamma distribution to use  with  gamma rate heterogeneity
+                (-a)
+            format: ("" , " -a " + str(value))[ value is not None ]
+            argpos: 1
+            name: shape
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Using this option the user may specify the number of categories
+                for the discrete gamma rate heterogeneity model. The default is no
+                site-specific rate heterogeneity (or the continuous model if only
+                the -a option is specified. Enter an integer number between 2 and
+                32
+            prompt: Number of categories  for  the  discrete gamma  rate  heterogeneity
+                model (-g)
+            format: ("" , " -g " + str(value))[ value is not None ]
+            argpos: 1
+            name: categories
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Specify the proportion of sites that should be invariable. These
+                sites will be chosen randomly with this expected frequency. The default
+                is no invariable sites. Invariable sites are sites thar cannot change
+                as opposed to sites which don't exhibit any changes due to chance
+                (and perhaps a low rate). Enter a real number between 0.0 and  1.0
+            prompt: Proportion of sites that should be invariable (-i)
+            format: ("" , " -i " + str(value))[ value is not None and value != vdef]
+            argpos: 1
+            name: invar_site
+            command: false
+            type: !mobyle/floattype {default: 0.0}
+    - !mobyle/inputprogramparagraph
+        prompt: Nucleotid model specific options
+        name: nucleotide_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparagraph
+            comment: Using this option the user may specify the relative rates for
+                each codon position. This allows codon-specific rate heterogeneity
+                to be simulated. The default is no site-specific rate heterogeneity.You
+                can only have codon rates when using nucleotide models of substitution.
+            prompt: Rates for codon position heterogeneity (-c)
+            name: rate
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Enter a decimal numberYou can only have codon rates when
+                    using nucleotide models of substitution.
+                prompt: First position
+                format: '""'
+                name: rate1
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                comment: Enter a decimal number
+                prompt: Second position
+                format: '""'
+                name: rate2
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                comment: Enter a decimal number
+                prompt: Third position (enter a decimal number)
+                format: '""'
+                name: rate3
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Rates
+                format: '" -c %f %f %f " %(rate1,rate2,rate3)'
+                name: rateAll
+                precond:
+                    '#and':
+                    -   rate1: {'#ne': None}
+                    -   rate2: {'#ne': None}
+                    -   rate3: {'#ne': None}
+                command: false
+                hidden: true
+                type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set a value for the transition
+                transversion ratio (TS/TV). This is only valid when either the HKY
+                or F84 model has been selected.
+            prompt: Transition transversion ratio (TS/TV) for HKY or F84 model (-t)
+            format: ("" , " -t " + str(value))[ value is not None ]
+            name: transratio
+            precond:
+                '#or':
+                - {model: HKY}
+                - {model: F84}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set 6 values for the general reversable
+                model's rate matrix. This is only valid when either the REV model
+                has been selected.The values are six decimal numbers for the rates
+                of transition from A to C, A to G, A to T, C to G, C to T and G to
+                T respectively, separated by spaces or commas. The matrix is symmetrical
+                so the reverse transitions equal the ones set (e.g. C to A equals
+                A to C) and therefore only six values need be set. These values will
+                be scaled such that the last value (G to T) is 1.0 and the others
+                are set relative to this.
+            prompt: 6 values  for  the general reversable model's rate matrix (ACTG
+                x ACTG)  separated by one space (-r)
+            format: ("" , " -r " + str(value))[ value is not None and value != vdef]
+            argpos: 1
+            name: matrix
+            command: false
+            type: !mobyle/stringtype {default: '1.0,1.0,1.0,1.0,1.0,1.0'}
+        - !mobyle/inputprogramparagraph
+            comment: This option is used to specify the relative frequencies of the
+                four nucleotides. By default, Seq-Gen will assume these to be equal.
+                If the given values don't sum to 1.0 then they will be scaled so that
+                they do.You must give the frequencies for the 4 nucleotides
+            prompt: Relative frequencies of nucleotides (-f)
+            name: frequencies
+            argpos: 1
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Frequencies of the A nucleotide
+                format: '""'
+                name: freqA
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Frequencies of the C nucleotide
+                format: '""'
+                name: freqC
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Frequencies of the G nucleotide
+                format: '""'
+                name: freqG
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Frequencies of the T nucleotide
+                format: '""'
+                name: freqT
+                command: false
+                type: !mobyle/floattype {}
+            - !mobyle/inputprogramparameter
+                prompt: Frequencies
+                format: '" -f " + str(freqA) + "," + str(freqC) + "," + str(freqG)
+                    + "," + str(freqT)'
+                name: freqAll
+                precond:
+                    '#and':
+                    -   freqA: {'#ne': None}
+                    -   freqC: {'#ne': None}
+                    -   freqG: {'#ne': None}
+                    -   freqT: {'#ne': None}
+                command: false
+                hidden: true
+                type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Miscellaneous options
+        name: miscellaneous_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option allows to specify a seed for the random number generator.
+                Using the same seed (with the same input) will result in identical
+                simulated datasets. This is useful because you can recreate a set
+                of simulations, you must use exactly the same model options
+            prompt: Random number seed (-z)
+            format: ("" , "-z " + str(value))[ value is not None ]
+            name: random_seed
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output file format (-o)
+            format: ("" , " -o" + str(value))[ value is not None and value != vdef]
+            name: output_format
+            command: false
+            type: !mobyle/stringtype
+                default: p
+                options:
+                - {label: PHYLIP (p), value: p}
+                - {label: Relaxed PHYLIP (r), value: r}
+                - {label: NEXUS (n), value: n}
+        - !mobyle/inputprogramparameter
+            prompt: Non verbose output (-q)
+            format: ("" , " -q")[ value ]
+            argpos: 1
+            name: quiet
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option allows to obtain the sequences for each of the internal
+                nodes in the tree. The sequences are written out along with the sequences
+                for the tips of the tree in relaxed PHYLIP format.
+            prompt: Write the ancestral sequences (-wa)
+            format: ("" , " -wa")[ value ]
+            name: write_ancest
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This option allows to obtain the relative\n\t      rate of substitution\
+                \ for each sites as used in each\n\t      simulation. This will go\
+                \ to stderr and will be produced\n\t      for each replicate simulation."
+            prompt: Write the sites rates (-wr)
+            format: ("" , " -wr")[ value ]
+            name: write_sites
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 1
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Output alignment file
+            filenames: '"seqgen.out"'
+            name: outfile
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"seqgen.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: Seq-Gen is a program that will simulate the evolution of nucleotide or amino
+    acid sequences along a phylogeny, using common models of the substitution process.
+references:
+- {doi: null, label: 'Rambaut, A. and Grassly, N. C. (1996) Seq-Gen: An application
+        for the Monte Carlo simulation of DNA sequence evolution along phylogenetic
+        trees. Comput. Appl. Biosci.', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/seq-gen/index.html']
+homepage_links: ['http://tree.bio.ed.ac.uk/software/seqgen/']
+env: {}
+source_links: ['http://tree.bio.ed.ac.uk/download.html?name=seqgen&version=v1.3.2&id=41&num=1']

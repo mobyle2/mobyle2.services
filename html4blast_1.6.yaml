@@ -1,0 +1,88 @@
+!mobyle/program
+name: html4blast
+version: '1.6'
+title: html4blast
+description: HTML blast results formatter
+authors: Nicolas Joly
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"html4blast"'
+        argpos: 1
+        name: html4blast
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Blast input file
+        format: '" %s" % str(value)'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: input
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/inputprogramparameter
+        prompt: Database links
+        argpos: 2
+        name: links
+        command: false
+        type: !mobyle/stringtype {default: golden}
+    - !mobyle/inputprogramparameter
+        prompt: Graphical alignment summary (-g)
+        format: ("" , " -g")[ value ]
+        argpos: 3
+        name: graph
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Draw one HSP per graphic line  (-l)
+        format: ("" , " -l")[ value ]
+        argpos: 4
+        name: hspline
+        precond: graph
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Generate query based images names (-q)
+        format: ("" , " -q")[ value ]
+        argpos: 5
+        name: queryimagename
+        precond: graph
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Outfile name (-o)
+        format: ("", " -o " + str(value))[value is not None and value != vdef]
+        argpos: 6
+        name: outfile
+        command: false
+        type: !mobyle/stringtype {default: blast.html}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: outfile
+        name: output
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter {filenames: '"*.gif"', name: image, precond: graph,
+        hidden: true}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"html4blast.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"html4blast.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0565']
+topics: ['EDAM_topic:0092']
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/html4blast/']

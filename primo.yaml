@@ -1,0 +1,100 @@
+!mobyle/program
+name: primo
+title: PRIMO
+description: A primer design tool
+authors: Kupfer, Li
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence data
+        format: '" "+str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: input_file_name
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparameter
+        format: '" -all"'
+        argpos: 10
+        name: all
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Cover template with walking-primers on both strands (-cover)
+        format: ( "" , " -cover" )[ value ]
+        argpos: 10
+        name: cover
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Print formatted/annotated sequence to log file (-print)
+        format: ( "" , " -print" )[ value ]
+        argpos: 10
+        name: print
+        precond: {'#not': cover}
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter {prompt: Regions file (-read), format: '( "" ,
+            " -read " + str(value) )[ value is not None ]', argpos: 10, name: regions_file,
+        command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Use quality data? (-noqual)
+        format: ( " -noqual" , "" )[ value ]
+        argpos: 10
+        name: qual_file
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter {prompt: Repeats file, format: '( "" , "ln -s
+            " +str(value)+ " human.rep; " )[ value is not None ]', argpos: -10, name: repeats_file,
+        command: false}
+    - !mobyle/inputprogramparameter {prompt: Oligo file, format: '( "" , "ln -s "
+            +str(value)+ " oligo.screen; " )[ value is not None ]', argpos: -10, name: oligo_file,
+        command: false}
+    - !mobyle/inputprogramparameter
+        format: '"ln -s "+str(regions_file) + " " + str(input_file_name) + ".regions
+            && "'
+        argpos: -10
+        name: rf
+        precond:
+            regions_file: {'#ne': None}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"ln -s "+str(qual_file) + " " + str(input_file_name) + ".qual &&
+            "'
+        argpos: -10
+        name: qf
+        precond: qual_file
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output files, filenames: '"oligo.cri"',
+        name: results_files}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"primo.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"primo.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0308']
+topics: ['EDAM_topic:3032']
+references:
+- {doi: null, label: 'P. Li, K. C. Kupfer, C. J. Davies, D. Burbee, G. A. Evans, and
+        H. R. Garner. PRIMO: A primer design program that applies base quality statistics
+        for automated large-scale DNA sequencing. Genomics 40:476-485 (1997).', url: null}
+command: primo
+env: {}

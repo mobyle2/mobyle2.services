@@ -1,0 +1,184 @@
+!mobyle/program
+name: polydot
+title: polydot
+description: Draw dotplots for all-against-all comparison of a sequence set
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            comment: File containing a sequence alignment
+            prompt: Sequences option
+            format: ("", " -sequences=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequences
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Word size (value greater than or equal to 2)
+            format: ("", " -wordsize=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: wordsize
+            command: false
+            type: !mobyle/integertype {default: 6}
+            ctrls:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This specifies the size of the gap that is used to separate the
+                individual dotplots in the display. The size is measured in  residues,
+                as displayed in the output.
+            prompt: Gap (in residues) between dotplots (value greater than or equal
+                to 0)
+            format: ("", " -gap=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: gap
+            command: false
+            type: !mobyle/integertype {default: 10}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Draw a box around each dotplot
+            format: (" -noboxit", "")[ bool(value) ]
+            argpos: 4
+            name: boxit
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Dump all matches as feature files
+            format: ("", " -dumpfeat")[ bool(value) ]
+            argpos: 5
+            name: dumpfeat
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output feature file (outfeat)
+            format: ("" , " -outfeat=" + str(value))[value is not None]
+            argpos: 6
+            name: outfeat
+            precond: dumpfeat
+            command: false
+            type: !mobyle/stringtype {default: polydot.outfeat}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the feature output format
+            format: ("", " -offormat=" + str(value))[value is not None and value!=vdef]
+            argpos: 7
+            name: offormat_outfeat
+            precond: dumpfeat
+            command: false
+            type: !mobyle/stringtype
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            simple: true
+            argpos: 8
+            mandatory: true
+            name: graph
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 9
+            name: goutfile
+            command: false
+            type: !mobyle/stringtype {default: polydot_graph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter {prompt: Outfeat_out option, filenames: outfeat,
+            name: outfeat_out}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: outgraph_png
+            precond: {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: outgraph_gif
+            precond: {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: outgraph_ps
+            precond:
+                '#or':
+                - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: outgraph_meta
+            precond: {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: outgraph_data
+            precond: {graph: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"polydot.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"polydot.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0490']
+topics: ['EDAM_topic:0159']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/polydot.html', 'http://emboss.sourceforge.net/docs/themes']
+command: polydot
+env: {}

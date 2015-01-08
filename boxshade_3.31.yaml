@@ -1,0 +1,628 @@
+!mobyle/program
+name: boxshade
+version: '3.31'
+title: BOXSHADE
+description: printouts from multiple-aligned protein or DNA sequences
+authors: Hofmann, Baron
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"boxshade <boxshade.params"'
+        argpos: 0
+        name: boxshade
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Alignment File
+        format: str(value) + "\n"
+        simple: true
+        argpos: 1
+        paramfile: boxshade.params
+        mandatory: true
+        name: alignment
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1982']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        format: '"2\n"'
+        argpos: 2
+        paramfile: boxshade.params
+        name: input_format
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output_params
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output format
+            format: str(value) + "\n"
+            argpos: 3
+            paramfile: boxshade.params
+            mandatory: true
+            name: output_format
+            command: false
+            type: !mobyle/stringtype
+                default: e
+                options:
+                - {label: POSTSCRIPT (1), value: '1'}
+                - {label: Encapsulated POSTSCRIPT (2), value: '2'}
+                - {label: HPGL (3), value: '3'}
+                - {label: RTF (Rich Text Format) (4), value: '4'}
+                - {label: ANSI-screen (PC-version) (6), value: '6'}
+                - {label: VT100-screen (DEC-version) (7), value: '7'}
+                - {label: ReGIS-screen (25 lines each) (8), value: '8'}
+                - {label: ReGIS-file (without breaks) (9), value: '9'}
+                - {label: LJ250-printer file (a), value: a}
+                - {label: FIG file (for XFIG) (c), value: c}
+                - {label: PICT file (d), value: d}
+                - {label: HTML (e), value: e}
+        - !mobyle/inputprogramparameter
+            prompt: Should sequence name be printed
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 13
+            paramfile: boxshade.params
+            name: print_name
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display ruler line
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 6
+            paramfile: boxshade.params
+            name: ruler
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Should position numbers be printed?
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 14
+            paramfile: boxshade.params
+            name: print_position
+            precond: {'#not': ruler}
+            command: false
+            hidden: true
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: How many sequence characters per line
+            format: str( value ) + "\n"
+            argpos: 12
+            paramfile: boxshade.params
+            name: sequence_characters
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            prompt: How many lines between two sequence blocks
+            format: str(value) + "\n"
+            argpos: 17
+            paramfile: boxshade.params
+            name: lines
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Character size in Points (except for HTML and ASCII output formats)
+            format: str(value) + "\n"
+            argpos: 28
+            paramfile: boxshade.params
+            name: character_size
+            precond:
+                output_format:
+                    '#nin': ['8', '9', b, e]
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Save Shading/Text
+            format: str(value) + "\n"
+            argpos: 29
+            paramfile: boxshade.params
+            mandatory: true
+            name: save_shading
+            precond: {output_format: d}
+            command: false
+            type: !mobyle/stringtype
+                default: T
+                options:
+                - {label: Save shading (S), value: S}
+                - {label: Save Shading+Text (T), value: T}
+        - !mobyle/inputprogramparameter
+            prompt: Rotate plot
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 31
+            paramfile: boxshade.params
+            name: rotate
+            precond:
+                '#or':
+                - {output_format: '1'}
+                - {output_format: '3'}
+                - {output_format: d}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Sequence properties
+        name: sequence_params
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Special label for similar residues
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 18
+            paramfile: boxshade.params
+            name: label_similar
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Special label for identical residues in all sequences
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 19
+            paramfile: boxshade.params
+            name: label_identical
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display consensus line
+            format: ( "n\n" , "y\n .*\n" )[ value ]
+            argpos: 5
+            paramfile: boxshade.params
+            name: consensus
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The threshold is the fraction of residues that must be identical
+                or similar for shading to occur.
+            prompt: Identity threshold
+            format: str(value) + "\n"
+            argpos: 10
+            paramfile: boxshade.params
+            name: threshold
+            precond:
+                output_format: {'#ne': b}
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+        - !mobyle/inputprogramparagraph
+            prompt: Letters foreground and background colors
+            name: letters
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Background for different residues
+                format: str(value) + "\n"
+                argpos: 20
+                paramfile: boxshade.params
+                mandatory: true
+                name: different_background
+                precond:
+                    output_format: {'#ne': b}
+                command: false
+                type: !mobyle/stringtype
+                    default: W
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: White (W), value: W}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 (darkest)', value: '4'}
+                    - {label: Red (R), value: R}
+                    - {label: Green (G), value: G}
+                    - {label: Blue (L), value: L}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Cyan (C), value: C}
+            - !mobyle/inputprogramparameter
+                prompt: Foreground for different residues (lowercase choices mean
+                    lowercase letters in the sequence)
+                format: str(value) + "\n"
+                argpos: 21
+                paramfile: boxshade.params
+                mandatory: true
+                name: different_foreground
+                command: false
+                type: !mobyle/stringtype
+                    default: B
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: Black (b), value: b}
+                    - {label: White (W), value: W}
+                    - {label: White (w), value: w}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 = darkest', value: '4'}
+                    - {label: 'Gray value: 5 (lowercase)', value: '5'}
+                    - {label: 'Gray value: 6 (lowercase)', value: '6'}
+                    - {label: 'Gray value: 7 (lowercase)', value: '7'}
+                    - {label: 'Gray value: 8 = darkest (lowercase)', value: '8'}
+                    - {label: Red (R), value: R}
+                    - {label: Red (r), value: r}
+                    - {label: Green (G), value: G}
+                    - {label: Green (g), value: g}
+                    - {label: Blue (L), value: L}
+                    - {label: Blue (l), value: l}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Yellow (y), value: y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Magenta (m), value: m}
+                    - {label: Cyan (C), value: C}
+                    - {label: Cyan (c), value: c}
+            - !mobyle/inputprogramparameter
+                prompt: Background for identical residues
+                format: str(value) + "\n"
+                argpos: 22
+                paramfile: boxshade.params
+                mandatory: true
+                name: identical_background
+                precond:
+                    output_format: {'#ne': b}
+                command: false
+                type: !mobyle/stringtype
+                    default: B
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: White (W), value: W}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 (darkest)', value: '4'}
+                    - {label: Red (R), value: R}
+                    - {label: Green (G), value: G}
+                    - {label: Blue (L), value: L}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Cyan (C), value: C}
+            - !mobyle/inputprogramparameter
+                prompt: Foreground for identical residues (lowercase choices mean
+                    lowercase letters in the sequence)
+                format: str(value) + "\n"
+                argpos: 23
+                paramfile: boxshade.params
+                mandatory: true
+                name: identical_foreground
+                command: false
+                type: !mobyle/stringtype
+                    default: W
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: Black (b), value: b}
+                    - {label: White (W), value: W}
+                    - {label: White (w), value: w}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 = darkest', value: '4'}
+                    - {label: 'Gray value: 5 (lowercase)', value: '5'}
+                    - {label: 'Gray value: 6 (lowercase)', value: '6'}
+                    - {label: 'Gray value: 7 (lowercase)', value: '7'}
+                    - {label: 'Gray value: 8 = darkest (lowercase)', value: '8'}
+                    - {label: Red (R), value: R}
+                    - {label: Red (r), value: r}
+                    - {label: Green (G), value: G}
+                    - {label: Green (g), value: g}
+                    - {label: Blue (L), value: L}
+                    - {label: Blue (l), value: l}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Yellow (y), value: y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Magenta (m), value: m}
+                    - {label: Cyan (C), value: C}
+                    - {label: Cyan (c), value: c}
+            - !mobyle/inputprogramparameter
+                prompt: Background for similar residues
+                format: str(value) + "\n"
+                argpos: 24
+                paramfile: boxshade.params
+                mandatory: true
+                name: similar_background
+                precond:
+                    '#and':
+                    - label_similar
+                    -   output_format: {'#ne': b}
+                command: false
+                type: !mobyle/stringtype
+                    default: '1'
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: White (W), value: W}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 (darkest)', value: '4'}
+                    - {label: Red (R), value: R}
+                    - {label: Green (G), value: G}
+                    - {label: Blue (L), value: L}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Cyan (C), value: C}
+            - !mobyle/inputprogramparameter
+                prompt: Foreground for similar residues (lowercase choices mean lowercase
+                    letters in the sequence)
+                format: str(value) + "\n"
+                argpos: 25
+                paramfile: boxshade.params
+                mandatory: true
+                name: similar_foreground
+                precond: label_similar
+                command: false
+                type: !mobyle/stringtype
+                    default: B
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: Black (b), value: b}
+                    - {label: White (W), value: W}
+                    - {label: White (w), value: w}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 = darkest', value: '4'}
+                    - {label: 'Gray value: 5 (lowercase)', value: '5'}
+                    - {label: 'Gray value: 6 (lowercase)', value: '6'}
+                    - {label: 'Gray value: 7 (lowercase)', value: '7'}
+                    - {label: 'Gray value: 8 = darkest (lowercase)', value: '8'}
+                    - {label: Red (R), value: R}
+                    - {label: Red (r), value: r}
+                    - {label: Green (G), value: G}
+                    - {label: Green (g), value: g}
+                    - {label: Blue (L), value: L}
+                    - {label: Blue (l), value: l}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Yellow (y), value: y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Magenta (m), value: m}
+                    - {label: Cyan (C), value: C}
+                    - {label: Cyan (c), value: c}
+            - !mobyle/inputprogramparameter
+                prompt: Background for conserved residues (if special label for identical
+                    residues)
+                format: str(value) + "\n"
+                argpos: 26
+                paramfile: boxshade.params
+                mandatory: true
+                name: conserved_background
+                precond:
+                    '#and':
+                    - label_identical
+                    -   output_format: {'#ne': b}
+                command: false
+                type: !mobyle/stringtype
+                    default: '1'
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: White (W), value: W}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 (darkest)', value: '4'}
+                    - {label: Red (R), value: R}
+                    - {label: Green (G), value: G}
+                    - {label: Blue (L), value: L}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Cyan (C), value: C}
+            - !mobyle/inputprogramparameter
+                prompt: Foreground for conserved residues (lowercase choices mean
+                    lowercase letters in the sequence)
+                format: str(value) + "\n"
+                argpos: 27
+                paramfile: boxshade.params
+                mandatory: true
+                name: conserved_foreground
+                precond: label_identical
+                command: false
+                type: !mobyle/stringtype
+                    default: B
+                    options:
+                    - {label: Black (B), value: B}
+                    - {label: Black (b), value: b}
+                    - {label: White (W), value: W}
+                    - {label: White (w), value: w}
+                    - {label: 'Gray value: 1', value: '1'}
+                    - {label: 'Gray value: 2', value: '2'}
+                    - {label: 'Gray value: 3', value: '3'}
+                    - {label: 'Gray value: 4 = darkest', value: '4'}
+                    - {label: 'Gray value: 5 (lowercase)', value: '5'}
+                    - {label: 'Gray value: 6 (lowercase)', value: '6'}
+                    - {label: 'Gray value: 7 (lowercase)', value: '7'}
+                    - {label: 'Gray value: 8 = darkest (lowercase)', value: '8'}
+                    - {label: Red (R), value: R}
+                    - {label: Red (r), value: r}
+                    - {label: Green (G), value: G}
+                    - {label: Green (g), value: g}
+                    - {label: Blue (L), value: L}
+                    - {label: Blue (l), value: l}
+                    - {label: Yellow (Y), value: Y}
+                    - {label: Yellow (y), value: y}
+                    - {label: Magenta (M), value: M}
+                    - {label: Magenta (m), value: m}
+                    - {label: Cyan (C), value: C}
+                    - {label: Cyan (c), value: c}
+        - !mobyle/inputprogramparagraph
+            prompt: Comparison to a single sequence
+            name: single_comparison
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Similarity to a single sequence
+                format: ( "n\n" , "y\n" )[ value ]
+                argpos: 4
+                paramfile: boxshade.params
+                name: single
+                precond:
+                    output_format: {'#ne': b}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Which sequence (give its number)
+                format: str(value) + "\n"
+                argpos: 40
+                paramfile: boxshade.params
+                mandatory: true
+                name: seq_no
+                precond: single
+                command: false
+                type: !mobyle/integertype {default: 1}
+            - !mobyle/inputprogramparameter
+                prompt: Hide this sequence
+                format: ( "n\n" , "y\n" )[ value ]
+                argpos: 41
+                paramfile: boxshade.params
+                name: hide
+                precond: single
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show this sequence in all-normal rendition
+                format: ( "n\n" , "y\n" )[ value ]
+                argpos: 42
+                paramfile: boxshade.params
+                name: show_normal
+                precond: single
+                command: false
+                type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Create identity / similarity matrix
+            format: ( "n\n" , "y\n" )[ value ]
+            argpos: 34
+            paramfile: boxshade.params
+            name: matrix
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.result\n"'
+        argpos: 32
+        paramfile: boxshade.params
+        name: outfileName
+        precond:
+            '#and':
+            -   output_format: {'#ne': '1'}
+            -   output_format: {'#ne': e}
+            -   output_format: {'#ne': '2'}
+            -   output_format: {'#ne': d}
+            -   output_format: {'#ne': c}
+            -   output_format: {'#ne': '4'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.ps\n"'
+        argpos: 33
+        paramfile: boxshade.params
+        name: psFileName
+        precond:
+            '#or':
+            - {output_format: '1'}
+            - {output_format: '2'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.html\n"'
+        argpos: 33
+        paramfile: boxshade.params
+        name: htmlFileName
+        precond: {output_format: e}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.rtf\n"'
+        argpos: 33
+        paramfile: boxshade.params
+        name: rtfFileName
+        precond: {output_format: '4'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.fig\n"'
+        argpos: 33
+        paramfile: boxshade.params
+        name: figFileName
+        precond: {output_format: c}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.pict\n"'
+        argpos: 33
+        paramfile: boxshade.params
+        name: pictFileName
+        precond: {output_format: d}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"boxshade.matrix\n"'
+        argpos: 35
+        paramfile: boxshade.params
+        name: matrixFileName
+        precond: matrix
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: '"boxshade.result"'
+        name: outFile
+        precond:
+            '#and':
+            -   output_format: {'#ne': '1'}
+            -   output_format: {'#ne': e}
+            -   output_format: {'#ne': '2'}
+            -   output_format: {'#ne': d}
+            -   output_format: {'#ne': c}
+            -   output_format: {'#ne': '4'}
+    - !mobyle/outputprogramparameter
+        prompt: Postscript output file
+        filenames: '"boxshade.ps"'
+        name: psFile
+        precond:
+            '#or':
+            - {output_format: '1'}
+            - {output_format: '2'}
+    - !mobyle/outputprogramparameter
+        prompt: Html output file
+        filenames: '"boxshade.html"'
+        name: htmlFile
+        precond: {output_format: e}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Rich text format output file
+        filenames: '"boxshade.rtf"'
+        name: rtfFile
+        precond: {output_format: '4'}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Xfig output file
+        filenames: '"boxshade.fig"'
+        name: figFile
+        precond: {output_format: c}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Picture in pict format
+        filenames: '"boxshade.pict"'
+        name: pictFile
+        precond: {output_format: d}
+    - !mobyle/outputprogramparameter {prompt: Output matrix, filenames: '"boxshade.matrix"',
+        name: matrixFile, precond: matrix}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"boxshade.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"boxshade.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0565']
+topics: ['EDAM_topic:0092']
+homepage_links: ['http://www.ch.embnet.org/software/BOX_form.html']
+env: {}
+source_links: ['ftp://www.isrec.isb-sib.ch/pub/software/unix/boxshade/']

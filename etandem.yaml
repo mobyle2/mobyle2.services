@@ -1,0 +1,169 @@
+!mobyle/program
+name: etandem
+title: etandem
+description: Finds tandem repeats in a nucleotide sequence
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Minimum repeat size (Integer, 2 or higher)
+            format: ("", " -minrepeat=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: minrepeat
+            command: false
+            type: !mobyle/integertype {default: 10}
+            ctrls:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+        - !mobyle/inputprogramparameter
+            comment: Same as -minrepeat
+            prompt: Maximum repeat size (Integer, same as -minrepeat or higher)
+            format: ("", " -maxrepeat=" + str(value))[value is not None]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: maxrepeat
+            precond: minrepeat
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Threshold score
+            format: ("", " -threshold=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: threshold
+            command: false
+            type: !mobyle/integertype {default: 20}
+        - !mobyle/inputprogramparameter
+            prompt: Allow n as a mismatch
+            format: ("", " -mismatch")[ bool(value) ]
+            argpos: 5
+            name: mismatch
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Allow uniform consensus
+            format: ("", " -uniform")[ bool(value) ]
+            argpos: 6
+            name: uniform
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 7
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: report.tan}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the report output format
+            format: ("", " -rformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: rformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: TABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (origfile)
+            format: ("" , " -origfile=" + str(value))[value is not None]
+            argpos: 9
+            name: origfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.oldtan}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+        - !mobyle/outputprogramparameter
+            prompt: Origfile_out option
+            filenames: origfile
+            name: origfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"etandem.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"etandem.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0379']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/etandem.html', 'http://emboss.sourceforge.net/docs/themes']
+command: etandem
+env: {}

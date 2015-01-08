@@ -1,0 +1,239 @@
+!mobyle/program
+name: gff2ps
+title: gff2ps
+description: Produces PostScript graphical output from GFF-files
+authors: Josep Francesc ABRIL FERRANDO, Roderic GUIGO SERRA
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: GFF file, format: '" "+str(value)', simple: true,
+        argpos: 100, mandatory: true, name: gff_file, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Modify page size (-s)
+            format: ( "" , " -s "+str(value) )[ value is not None and value != vdef]
+            name: page_size
+            command: false
+            type: !mobyle/stringtype {default: a4}
+        - !mobyle/inputprogramparameter
+            prompt: Switches page orientation to Portrait (default is Landscape) (-p)
+            format: ( "" , " -p" )[ value ]
+            name: orientation
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Sets how many pages are needed to split your output (-P)
+            format: ( "" , " -P " +str(value) )[ value is not None and value != vdef]
+            name: split
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Zoom first nucleotide (default is sequence origin) (-S)
+            format: ( "" , " -S " + str(value) )[ value is not None ]
+            name: zoom_first
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Zoom last nucleotide (default is sequence length) (-E)
+            format: ( "" , " -E " + str(value) )[ value is not None ]
+            name: zoom_last
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Sets blocks per page (-B)
+            format: ( "" , " -B " + str(value) )[ value is not None and value != vdef]
+            name: blocks
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Sets nucleotides per line (default is the largest sequence position
+                from input gff-files) (-N)
+            format: ( "" , " -N " + str(value) )[ value is not None ]
+            name: nuc_per_line
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Blocks from left to right and from top to bottom (default is top
+                to bottom first) (-b)
+            format: ( "" , " -b" )[ value ]
+            name: blocks_from_left_to_right
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch off Header (Title area) (-L)
+            format: ( "" , " -L" )[ value ]
+            name: no_headers
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Defining title (default is input gff filename) (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None ]
+            name: set_title
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Does not show page numbering (-l)
+            format: ( "" , " -l" )[ value ]
+            name: no_page_nb
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Does not show date (-O)
+            format: ( "" , " -O" )[ value ]
+            name: no_date
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Does not show time (-o)
+            format: ( "" , " -o" )[ value ]
+            name: no_time
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch off CopyRight line on plot (-a)
+            format: ( "" , " -a" )[ value ]
+            name: no_copyright
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Color Options
+        name: color_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for FOREGROUND (-G)
+            format: ( "" , " -G " + str(value) )[ value is not None and value != vdef]
+            name: fg_color_name
+            command: false
+            type: !mobyle/stringtype {default: black}
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for BACKGROUND (-g)
+            format: ( "" , " -g " + str(value) )[ value is not None and value != vdef]
+            name: bg_color_name
+            command: false
+            type: !mobyle/stringtype {default: white}
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for frame 0 (-0)
+            format: ( "" , " -0 " + str(value) )[ value is not None and value != vdef]
+            name: f0_color_name
+            command: false
+            type: !mobyle/stringtype {default: blue}
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for frame 1 (-1)
+            format: ( "" , " -1 " + str(value) )[ value is not None and value != vdef]
+            name: f1_color_name
+            command: false
+            type: !mobyle/stringtype {default: red}
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for frame 2 (-2)
+            format: ( "" , " -2 " + str(value) )[ value is not None and value != vdef]
+            name: f2_color_name
+            command: false
+            type: !mobyle/stringtype {default: green}
+        - !mobyle/inputprogramparameter
+            prompt: Sets color for frame . (-3)
+            format: ( "" , " -3 " + str(value) )[ value is not None and value != vdef]
+            name: f_color_name
+            command: false
+            type: !mobyle/stringtype {default: orange}
+    - !mobyle/inputprogramparagraph
+        prompt: Tickmark Options
+        name: tickmark_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Number of major tickmarks per line (-M)
+            format: ( "" , " -M " + str(value) )[ value is not None and value != vdef]
+            name: major_tickmarks
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: Default is nucleotide length for lines divided by major tickmarks
+                number (see option -T).
+            prompt: Major tickmarks scale in nucleotides (-K)
+            format: ( "" , " -K " + str(value) )[ value is not None ]
+            name: major_tickmarks_scale
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of minor tickmarks between major tickmarks (-m)
+            format: ( "" , " -m " + str(value) )[ value is not None and value != vdef]
+            name: minor_tickmarks
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            comment: Default is major tickmarks size divided by minor tickmarks number
+                (see option -t).
+            prompt: Minor tickmarks scale in nucleotides (-k)
+            format: ( "" , " -k " + str(value) )[ value is not None ]
+            name: minor_tickmarks_scale
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Display elements Options
+        name: element_options
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Switch off displaying forward-strand(Watson) elements (-w)
+            format: ( "" , " -w" )[ value ]
+            name: no_forward_strand
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch off displaying reverse-strand(Crick) elements (-c)
+            format: ( "" , " -c" )[ value ]
+            name: no_reverse_strand
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch off displaying strand-independent elements (-i)
+            format: ( "" , " -i" )[ value ]
+            name: no_strand_independent
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Switch off labels for element positions (-n)
+            format: ( "" , " -n" )[ value ]
+            name: no_label
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other Options
+        name: other_options
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Create a new default customfile (-D)
+            format: ( "" , " -D gff2psrc" )[ value ]
+            name: default_custom_file
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {prompt: Your custom rc file (-C), format: '(
+                "" , " -C " + str(value) )[ value is not None ]', name: user_custom_file,
+            command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript output file, filenames: '"gff2ps.ps"',
+        argpos: 1000, name: outfile}
+    - !mobyle/outputprogramparameter {prompt: Custom output file, filenames: '"gff2psrc"',
+        name: custom_file, precond: default_custom_file}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"gff2ps.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"gff2ps.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+documentation_links: ['http://genome.imim.es/software/gfftools/GFF2PS.html']
+command: gff2ps
+env: {}

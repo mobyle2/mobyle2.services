@@ -1,0 +1,94 @@
+!mobyle/program
+name: redata
+title: redata
+description: Retrieve information from REBASE restriction enzyme database
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Enter the name of the restriction enzyme that you wish to get
+                details of. The names often have a 'I' in them - this is a  capital
+                'i', not a '1' or an 'l'. The names are case-independent  ('AaeI'
+                is the same as 'aaei')
+            prompt: Restriction enzyme name
+            format: ("", " -enzyme=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: enzyme
+            command: false
+            type: !mobyle/stringtype {default: BamHI}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Show other enzymes with this specificity. (Isoschizomers)
+            prompt: Show isoschizomers
+            format: (" -noisoschizomers", "")[ bool(value) ]
+            argpos: 2
+            name: isoschizomers
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show references
+            format: (" -noreferences", "")[ bool(value) ]
+            argpos: 3
+            name: references
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show suppliers
+            format: (" -nosuppliers", "")[ bool(value) ]
+            argpos: 4
+            name: suppliers
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 5
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: redata.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 6
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"redata.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"redata.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0280']
+topics: ['EDAM_topic:0100']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/redata.html', 'http://emboss.sourceforge.net/docs/themes']
+command: redata
+env: {}

@@ -1,0 +1,197 @@
+!mobyle/program
+name: scangen
+version: '1.0'
+title: scangen
+description: Genomewide identification of cisregulatory motifs and modules
+authors: H Rouault, K Mazouni, L Couturier, V Hakim and V Schweisguth
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Execution mode
+        format: ( "" , " " + str(value) )[ value is not None and value !=vdef]
+        simple: true
+        mandatory: true
+        name: model
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choice, value: 'null'}
+            - {label: 'motgen: Generate motifs from a training set', value: --motgen}
+            - {label: 'scangen: Find instances of a list of motifs in the genome',
+                value: null}
+    - !mobyle/inputprogramparagraph
+        prompt: General options
+        name: general
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Width of the motif
+            format: ( "" , " -w " + str( value ) )[value is not None]
+            simple: true
+            name: width
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Threshold used for motif scanning
+            format: ( "" , " -t " + str( value ) )[value is not None]
+            simple: true
+            name: threeshold
+            command: false
+            type: !mobyle/floattype {default: 13.0}
+        - !mobyle/inputprogramparameter
+            prompt: Extent of the motif search within an alignment
+            format: ( "" , " -x " + str( value ) )[value is not None]
+            simple: true
+            name: extent
+            command: false
+            type: !mobyle/integertype {default: 20}
+    - !mobyle/inputprogramparagraph
+        prompt: Modgen options
+        name: motgen
+        precond: {model: --motgen}
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Evolutionary model used for motif generation
+            format: ( "" , " -e " + str(value) )[ value is not None and value !=vdef]
+            name: evolutionary
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Felsenstein model, value: '1'}
+                - {label: Halpern-bruno model, value: '2'}
+        - !mobyle/inputprogramparameter
+            comment: list of sequence coordinates in the format:sequence_name chromosome_arm
+                start_pos stop_pos
+            prompt: File of enhancer coordinates
+            format: ( "" , " --coord-file " + str( value ) )[value is not None]
+            name: coord_file
+            precond:
+                align_file: {'#eq': None}
+            command: false
+        - !mobyle/inputprogramparameter
+            prompt: Data filter
+            format: '" && gawk ''$3<1000 {print $2,$0}'' motmeldb.txt | sort -g |
+                sed  -e ''s,^.* ,,'' > bestmotspval.dat  && distinfo -t 9.0 -w 10
+                bestmotspval.dat > finalMotifs.dat"'
+            name: filter
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Filer to Graphic
+            format: '" && gawk ''{print $8,$9,$10,$11}'' finalMotifs.dat > matrices.txt"'
+            name: filter2graph
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Graph output format
+            name: graph_format
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: png, value: png}
+                - {label: pdf, value: pdf}
+        - !mobyle/inputprogramparameter
+            prompt: Graph output width motif
+            mandatory: true
+            name: graph_word
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Graphic plot
+            format: '" && motpic-warg -w %s -f %s matrices.txt" % (graph_word,graph_format)'
+            name: graphic
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Scangen options
+        name: scangen
+        precond: {model: ' '}
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Width of selected enhancers
+            format: ( "" , " -s " + str( value ) )[value is not None and value !=vdef]
+            name: scanwidth
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            prompt: Step of scanned genome
+            format: ( "" , " --scanstep=" + str( value ) )[value is not None and value
+                !=vdef]
+            name: scanstep
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: Number of motifs to consider
+            format: ( "" , " -n " + str( value ) )[value is not None and value !=vdef]
+            name: nbmots
+            command: false
+            type: !mobyle/integertype {default: 20}
+            ctrls:
+            -   message: Value greater than or equal to 15 is required
+                test:
+                    value: {'#gte': '15'}
+        - !mobyle/inputprogramparameter {prompt: File containing a list of genes annotated
+                with a relevant phenotype, format: '" -p /path/to/scangen/dir/pheno.txt"',
+            name: phenotype, command: false, hidden: true}
+        - !mobyle/inputprogramparameter {prompt: File containing a list of motif definitons,
+            format: '( "" , " -m " + str( value ) )[value is not None]', name: motifs,
+            command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Modgen options
+        name: motgen
+        precond: {model: --motgen}
+        argpos: 2
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Distinfo output file
+            filenames: '"finalMotifs.dat"'
+            name: distinfo
+            precond: {model: --motgen}
+        - !mobyle/outputprogramparameter
+            prompt: Graph output
+            filenames: '"mat-auto-0*"'
+            name: GraphOutput0
+            precond: {model: --motgen}
+        - !mobyle/outputprogramparameter
+            prompt: Graph output
+            filenames: '"mat-auto-1*"'
+            name: GraphOutput1
+            precond: {model: --motgen}
+    - !mobyle/outputprogramparagraph
+        prompt: Scangen options
+        name: scangen
+        precond: {model: ' '}
+        argpos: 2
+        children:
+        - !mobyle/outputprogramparameter {prompt: Scangen output file, filenames: '"hist*"',
+            name: scangenOutfile}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"scangen.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"scangen.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: "Genomewide identification of cis regulatory motifs and modules\
+        \ underlying gene coregulation\n      using statistics and phylogeny, National\
+        \ Academy of Sciences of the United States of America. August 17, 2010 vol.\
+        \ 107 no. 33 14615-14620", url: null}
+command: scangen
+env: {}

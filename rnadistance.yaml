@@ -1,0 +1,181 @@
+!mobyle/program
+name: rnadistance
+title: RNAdistance
+description: Calculate distances between RNA secondary structures
+authors: Hofacker, Fontana, Hofacker, Stadler
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"RNAdistance "'
+        name: rnadistance
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {comment: 'The program accepts structures in bracket
+            format, where matching brackets symbolize base pairs and unpaired bases
+            are represented by a dot ''.'', or coarse grained representations where
+            hairpins, interior loops, bulges, multiloops, stacks and external bases
+            are represented by (H), (I), (B), (M), (S), and (E), respectively. These
+            can be optionally weighted. Full structures can be represented in the
+            same fashion using the identifiers (U) and (P) for unpaired and paired
+            bases, respectively. Examples:.((..(((...)))..((..)))). full structure
+            (usual format);(U)((U2)((U3)P3)(U2)((U2)P2)P2) HIT structure;((H)(H)M)
+            or ((((H)S)((H)S)M)S) coarse grained structure;(((((H3)S3)((H2)S2)M4)S2)E2)
+            weighted coarse grained.', prompt: RNA structures File, format: '" < "
+            +str(value)', simple: true, argpos: 1000, mandatory: true, name: struct,
+        command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: others_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Use the full, HIT, weighted coarse, or coarse representation
+                to calculate the distance. Capital letters indicate string alignment
+                otherwise tree editing is used. Any combination of distances can be
+                specified.  -DP  selects  the  base pair distance. The default if
+                "f".
+            prompt: Representation for distance calculation (-D)
+            format: ( "" , " -D" +str(value) )[ value is not None and value != vdef]
+            name: distance
+            command: false
+            type: !mobyle/stringtype
+                default: f
+                options:
+                - {label: Full tree editing (f), value: f}
+                - {label: Full string alignment (F), value: F}
+                - {label: HIT tree editing (h), value: h}
+                - {label: HIT string alignment (H), value: H}
+                - {label: Weighted coarse tree editing (w), value: w}
+                - {label: Weighted coarse string alignment (W), value: W}
+                - {label: Coarse tree editing (c), value: c}
+                - {label: Coarse string alignment (C), value: C}
+                - {label: Selects the base pair distance (P), value: P}
+        - !mobyle/inputprogramparameter
+            comment: 'p: compare  the  structures pairwise (p), that is first with
+                2nd, third with 4th etc. This is the default.m: calculate the distance
+                matrix between all structures. The output is formatted as a lower
+                triangle matrix.f: compare each structure to the first one.c: compare
+                continuously, that is i-th with (i+1)th structure.'
+            prompt: Which comparisons (-X)
+            format: ( "" , " -X" +str(value) )[ value is not None and value != vdef]
+            name: compare
+            command: false
+            type: !mobyle/stringtype
+                default: p
+                options:
+                - {label: 'Pairwise (1st/2nd, 3rd/4th etc) (p)', value: p}
+                - {label: Distance matrix between all structures (m), value: m}
+                - {label: Each structure to the first one (f), value: f}
+                - {label: 'Continuously, that is i-th with (i+1)th structure (c)',
+                    value: c}
+        - !mobyle/inputprogramparagraph
+            comment: Only when  comparison between all structures is requested (-Xm).
+                This uses AnalyseDists distributed with the Vienna package.
+            prompt: Analyse the distance matrix
+            name: matrix_options
+            precond: {compare: m}
+            argpos: 2000
+            children:
+            - !mobyle/inputprogramparameter
+                comment: AnalyseDists reads a distance matrix (given as lower triangle
+                    matrix) from stdin and writes a split decomposition and a cluster
+                    analysis of this distance matrix to stdout.
+                prompt: Do this analysis (AnalyseDists program)?
+                format: ("", " | AnalyseDists")[value]
+                name: do_analyse
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: AnalyseDist methods to be used (-X)
+                format: ("", " -X"+str(value))[ value is not None and value != vdef]
+                argpos: 2001
+                name: Method
+                command: false
+                type: !mobyle/stringtype
+                    default: 'Null'
+                    options:
+                    - {label: Choose an analysis methods, value: 'Null'}
+                    - {label: Split decomposition (s), value: s}
+                    - {label: Cluster analysis using Ward's method (w), value: w}
+                    - {label: Cluster analysis using Saitou's neighbour joining method
+                            (n), value: n}
+        - !mobyle/inputprogramparameter
+            prompt: Use the Bruce Shapiro's cost matrix for comparing coarse structures
+                (-S)
+            format: ( "" , " -S" )[ value ]
+            name: shapiro
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Print an 'alignment' with gaps of the structures, to show matching
+                substructures. The aligned structures are written to file, if specified.
+                Otherwise output is written to stdout, unless the -Xm option is set
+                in which case 'backtrack.file' is used.
+            prompt: Structure alignment file (-B)
+            format: ( "" , " -B " +str(value) )[ value is not None]
+            name: alignment_name
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Other options
+        name: others_options
+        argpos: 2
+        children:
+        - !mobyle/outputprogramparagraph
+            comment: Only when  comparison between all structures is requested (-Xm).
+                This uses AnalyseDists distributed with the Vienna package.
+            prompt: Analyse the distance matrix
+            name: matrix_options
+            precond: {compare: m}
+            argpos: 2000
+            children:
+            - !mobyle/outputprogramparameter
+                prompt: Postcript output file
+                filenames: '"*.ps"'
+                name: psfiles
+                precond:
+                    '#and':
+                    - {compare: m}
+                    -   Method: {'#ne': s}
+        - !mobyle/outputprogramparameter
+            prompt: Alignment output file
+            filenames: str(alignment_name)
+            name: ali_outfile
+            precond:
+                alignment_name: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnadistance.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnadistance.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAdistance reads  RNA  secondary structures  from stdin and  calculates
+    one or more measures  for their dissimilarity, based  on  tree  or  string  editing  (alignment).  In  addition  it
+    calculates a "base pair distance" given by the number of base pairs present in
+    one structure, but not the other. For structures of different length base pair
+    distance is not recommended.
+operations: ['EDAM_operation:0500']
+topics: ['EDAM_topic:0880']
+references:
+- {doi: null, label: 'Shapiro B A, (1988) An algorithm for comparing multiple RNA
+        secondary structures, CABIOS 4, 381-393 Shapiro B A, Zhang K (1990) Comparing
+        multiple RNA secondary structures using tree comparison, CABIOS 6, 309-318',
+    url: null}
+- {doi: null, label: 'Fontana W, Konings D A M, Stadler P F, Schuster P, (1993) Statistics
+        of RNA secondary structures, Biopolymers 33, 1389-1404 I.L. Hofacker, W. Fontana,
+        P.F. Stadler, S. Bonhoeffer, M. Tacker, P. Schuster (1994) Fast Folding and
+        Comparison of RNA Secondary Structures. Monatshefte f. Chemie 125, 167-188',
+    url: null}
+env: {}

@@ -1,0 +1,51 @@
+!mobyle/program
+name: nw_cat
+version: GNU 7.4
+title: nw_cat
+description: concatenate phylogenetic tree files
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: enter a phylogenetic tree
+        prompt: First treeset
+        format: '" " + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: input
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        comment: type any kind of text
+        prompt: Second treeset
+        format: ("" , " " + str(value))[value is not None]
+        simple: true
+        argpos: 2
+        name: input_2
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output treeset
+        filenames: '"nw_cat.out"'
+        argpos: 1
+        name: output
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"nw_cat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2409']
+topics: ['EDAM_topic:0220']
+command: cat
+env: {}

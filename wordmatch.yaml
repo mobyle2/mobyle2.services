@@ -1,0 +1,211 @@
+!mobyle/program
+name: wordmatch
+title: wordmatch
+description: Finds regions of identity (exact matches) of two sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Asequence option
+            format: ("", " -asequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: asequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Bsequence option
+            format: ("", " -bsequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: bsequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Word size (value greater than or equal to 2)
+            format: ("", " -wordsize=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: wordsize
+            command: false
+            type: !mobyle/integertype {default: 4}
+            ctrls:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Dump matches as alignments
+            format: (" -nodumpalign", "")[ bool(value) ]
+            argpos: 4
+            name: dumpalign
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output alignment file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 5
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: wordmatch.align}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the alignment output format
+            format: ("", " -aformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: aformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: MATCH
+                options:
+                - {label: Fasta, value: FASTA}
+                - {label: Msf, value: MSF}
+                - {label: Pair, value: PAIR}
+                - {label: Markx0, value: MARKX0}
+                - {label: Markx1, value: MARKX1}
+                - {label: Markx2, value: MARKX2}
+                - {label: Markx3, value: MARKX3}
+                - {label: Markx10, value: MARKX10}
+                - {label: Srs, value: SRS}
+                - {label: Srspair, value: SRSPAIR}
+                - {label: Score, value: SCORE}
+                - {label: Unknown, value: UNKNOWN}
+                - {label: Multiple, value: MULTIPLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Match, value: MATCH}
+        - !mobyle/inputprogramparameter
+            comment: Statistics on distribution of kmers and matches
+            prompt: Logfile option
+            format: ("" , " -logfile=" + str(value))[value is not None]
+            argpos: 7
+            name: logfile
+            command: false
+            type: !mobyle/stringtype {default: wordmatch.logfile}
+        - !mobyle/inputprogramparameter
+            prompt: Dump matches as feature files
+            format: (" -nodumpfeat", "")[ bool(value) ]
+            argpos: 8
+            name: dumpfeat
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output feature file (aoutfeat)
+            format: ("" , " -aoutfeat=" + str(value))[value is not None]
+            argpos: 9
+            name: aoutfeat
+            command: false
+            type: !mobyle/stringtype {default: wordmatch.aoutfeat}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the feature output format
+            format: ("", " -offormat=" + str(value))[value is not None and value!=vdef]
+            argpos: 10
+            name: offormat_aoutfeat
+            command: false
+            type: !mobyle/stringtype
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output feature file (boutfeat)
+            format: ("" , " -boutfeat=" + str(value))[value is not None]
+            argpos: 11
+            name: boutfeat
+            command: false
+            type: !mobyle/stringtype {default: wordmatch.boutfeat}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the feature output format
+            format: ("", " -offormat=" + str(value))[value is not None and value!=vdef]
+            argpos: 12
+            name: offormat_boutfeat
+            command: false
+            type: !mobyle/stringtype
+                default: GFF
+                options:
+                - {label: Gff, value: GFF}
+                - {label: Embl, value: EMBL}
+                - {label: Swissprot, value: SWISSPROT}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 13
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                aformat_outfile:
+                    '#in': [FASTA, MSF]
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out2 option
+            filenames: outfile
+            name: outfile_out2
+            precond:
+                aformat_outfile:
+                    '#in': [PAIR, MARKX0, MARKX1, MARKX2, MARKX3, MARKX10, SRS, SRSPAIR,
+                        SCORE, UNKNOWN, MULTIPLE, SIMPLE, MATCH]
+        - !mobyle/outputprogramparameter
+            prompt: Logfile_out option
+            filenames: logfile
+            name: logfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {prompt: Aoutfeat_out option, filenames: aoutfeat,
+            name: aoutfeat_out}
+        - !mobyle/outputprogramparameter {prompt: Boutfeat_out option, filenames: boutfeat,
+            name: boutfeat_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"wordmatch.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"wordmatch.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0288']
+topics: ['EDAM_topic:0159']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/wordmatch.html', 'http://emboss.sourceforge.net/docs/themes']
+command: wordmatch
+env: {}

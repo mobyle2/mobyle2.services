@@ -1,0 +1,99 @@
+!mobyle/program
+name: netNglyc
+version: 1.0a
+title: netNglyc
+description: predict N-glycosylation sites in proteins.
+authors: Ramneek Gupta, ramneek@cbs.dtu.dk
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"netNglyc "'
+        name: netnglyc
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input Sequence
+        format: '" " + str( value )'
+        simple: true
+        argpos: 50
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        comment: "Generate  graphics,  plotting  the N-glycosylation potential and\
+            \ the thresh\u2010\n              old(s) against the residue number of\
+            \ each predicted site. Two files will  be\n              produced for\
+            \ each input sequence, one in PostScript and the other in GIF."
+        prompt: generate graphics (-g).
+        format: ( "" , "-g " )[ bool( value ) ]
+        argpos: 10
+        name: graphics
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        comment: "Show  additional thresholds (0.32, 0.75 and 0.90) in the graphs.\
+            \ This option\n              is ignored unless -g is also given."
+        prompt: Show additional thresholds (0.32, 0.75, 0.90) in the graph(s).
+        format: ( "" , "-a " )[ bool( value ) ]
+        argpos: 20
+        name: threshold
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        comment: "Predict on all asparagines in the input. Note that asparagines that\
+            \  do  not\n              occur  within the Asn-Xaa-Ser/Thr sequon are\
+            \ unlikely to be glycosylated, no\n              matter what the prediction\
+            \ score.  The default is to  predict  only  on  the\n              asparagines\
+            \ in the Asn-Xaa-Ser/Thr triplet."
+        prompt: Predict on all Asn residues (-f).
+        format: ( "","-f ")[ bool( value ) ]
+        argpos: 30
+        name: aspargine
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>Each\
+            \ input sequence is displayed with  the  predicted  \n        N-glycosylation\
+            \ sites highlighted. For each site the following is shown:</html:p><html:ul><html:li>sequence\
+            \ name</html:li><html:li>position in the sequence</html:li><html:li>sequence\
+            \ motif</html:li><html:li>N-glycosylation potential</html:li><html:li>Jury\
+            \ agreement, 9 networks</html:li><html:li>Prediction strength (+, ++ or\
+            \ +++)</html:li></html:ul></html:div>"
+        prompt: netNglyc report.
+        filenames: '"netNglyc.out"'
+        name: results
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter {comment: "plotting the N-glycosylation potential\
+            \ and the threshold(s) against the residue\n              number of each\
+            \ predicted site.", prompt: graphic in PostScript, filenames: '"*.ps"',
+        name: postscript, precond: graphics}
+    - !mobyle/outputprogramparameter {comment: "plotting the N-glycosylation potential\
+            \ and the threshold(s) against the residue\n              number of each\
+            \ predicted site.", prompt: graphic in GIF, filenames: '"*.gif"', name: gif,
+        precond: graphics}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"netNglyc.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "netNglyc predicts N-glycosylation sites in human proteins using artificial\
+    \ neural networks that examine the\n       sequence context of Asn-Xaa-Ser/Thr\
+    \ sequons where Xaa  is  any  amino  acid  but  proline."
+operations: ['EDAM_operation:0417']
+topics: ['EDAM_topic:0601']
+references:
+- {doi: null, label: "Prediction of N-glycosylation sites in human proteins.\n   \
+        \              R. Gupta, E. Jung and S. Brunak.\n                 In preparation,\
+        \ 2004.", url: null}
+documentation_links: ['http://www.cbs.dtu.dk/services/NetNGlyc/']
+env: {}
+source_links: ['http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?netNglyc']

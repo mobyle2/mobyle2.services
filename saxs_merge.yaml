@@ -1,0 +1,536 @@
+!mobyle/program
+name: saxs_merge
+title: saxs_merge
+description: Statistical merge of SAXS curves
+authors: 'Yannick G. Spill, Seung Joong Kim, Dina Schneidman-Duhovny, Daniel
+
+    Russel, Ben Webb, Andrej Sali and Michael Nilges'
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Required parameters
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: stop after the given step
+            format: ( "" , " --stop="+value )[value is not None and value != vdef
+                ]
+            simple: true
+            argpos: 200
+            name: stop
+            command: false
+            type: !mobyle/stringtype
+                default: merging
+                options:
+                - {label: clean up, value: cleanup}
+                - {label: fitting, value: fitting}
+                - {label: rescaling, value: rescaling}
+                - {label: classification, value: classification}
+                - {label: merging, value: merging}
+        - !mobyle/inputprogramparameter
+            prompt: Cleanup step comes after rescaling step (default is False)
+            format: ( "" , " --postpone_cleanup ")[ value ]
+            simple: true
+            name: postpone_cleanup
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_1))[value is not None]', simple: true, argpos: 10,
+            mandatory: true, name: SAXS_1, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            simple: true
+            argpos: 11
+            name: nb_expe_1
+            precond:
+                SAXS_1: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_2))[value is not None]', simple: true, argpos: 20,
+            mandatory: true, name: SAXS_2, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            simple: true
+            argpos: 21
+            name: nb_expe_2
+            precond:
+                SAXS_2: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_3))[value is not None]', simple: true, argpos: 30,
+            name: SAXS_3, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            simple: true
+            argpos: 31
+            name: nb_expe_3
+            precond:
+                SAXS_3: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_4))[value is not None]', simple: true, argpos: 40,
+            name: SAXS_4, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            simple: true
+            argpos: 41
+            name: nb_expe_4
+            precond:
+                SAXS_4: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_5))[value is not None]', simple: true, argpos: 50,
+            name: SAXS_5, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            simple: true
+            argpos: 51
+            name: nb_expe_5
+            precond:
+                SAXS_5: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_6))[value is not None]', argpos: 60, name: SAXS_6,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            argpos: 61
+            name: nb_expe_6
+            precond:
+                SAXS_6: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_7))[value is not None]', argpos: 70, name: SAXS_7,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            argpos: 71
+            name: nb_expe_7
+            precond:
+                SAXS_7: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_8))[value is not None]', argpos: 80, name: SAXS_8,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            argpos: 81
+            name: nb_expe_8
+            precond:
+                SAXS_8: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_9))[value is not None]', argpos: 90, name: SAXS_9,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            argpos: 91
+            name: nb_expe_9
+            precond:
+                SAXS_9: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter {prompt: SAXS curves, format: '( "" , " %s=%d
+                "%(value , nb_expe_10))[value is not None]', argpos: 100, name: SAXS_10,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: number of recordings
+            argpos: 101
+            name: nb_expe_10
+            precond:
+                SAXS_10: {'#ne': None}
+            command: false
+            type: !mobyle/integertype {default: 10}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced parameters
+        name: advanced
+        children:
+        - !mobyle/inputprogramparagraph
+            prompt: General
+            name: advanced_general
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: First line of output files is a header
+                format: ( "" , " --header ")[ value ]
+                name: general_header
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Output data files for parsed input files as well.
+                format: ( "" , " --allfiles ")[ value ]
+                name: allfiles
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml"><html:ul><html:li>'sparse'
+                    is for q,I,err columns</html:li><html:li>'normal' adds eorigin,
+                    eoriname and eextrapol (default)</html:li><html:li>'full' outputs
+                    all flag</html:li></html:ul></html:div>
+                prompt: Set the output level
+                format: ( "" , " --outlevel="+value)[ value is not None and value
+                    != vdef]
+                name: outlevel
+                command: false
+                type: !mobyle/stringtype
+                    default: normal
+                    options:
+                    - {label: sparse, value: sparse}
+                    - {label: normal, value: normal}
+                    - {label: full, value: full}
+        - !mobyle/inputprogramparagraph
+            comment: "Discard or keep SAXS curves' points based on their SNR.\n  \
+                \                   Points with an error of zero are discarded as\
+                \ well"
+            prompt: Cleanup (Step 1)
+            name: advanced_cleanup
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: type I error (default 1e-7)
+                format: ( "" , " --aalpha="+str(value))[ value is not None and value
+                    != vdef]
+                name: aalpha
+                command: false
+                type: !mobyle/floattype {default: 1.0e-07}
+        - !mobyle/inputprogramparagraph
+            comment: Estimate the mean function and the noise level of each SAXS curve.
+            prompt: Fitting (Step 2)
+            name: advanced_fitting
+            children:
+            - !mobyle/inputprogramparameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">Which
+                    mean parameters are optimized.<html:ul><html:li>One of Flat (the
+                    offset parameter A is optimized)</html:li><html:li>Simple (default,
+                    optimizes A, G and Rg)</html:li><html:li>Generalized (optimizes
+                    G, Rg and d)</html:li><html:li>Full (optimizes G, Rg, d and s)</html:li></html:ul></html:div>
+                prompt: boptimize
+                format: ("" , " --boptimize="+str(value))[value is not None and value
+                    != vdef]
+                name: boptimize
+                command: false
+                type: !mobyle/stringtype
+                    default: Simple
+                    options:
+                    - {label: Flat, value: Flat}
+                    - {label: Simple, value: Simple}
+                    - {label: Generalized, value: Generalized}
+                    - {label: Full, value: Full}
+            - !mobyle/inputprogramparameter
+                comment: "Perform model comparison, which allows to choose a\n   \
+                    \                      mean function that does not overfit the\
+                    \ data. If\n                         bcomp is given, boptimize\
+                    \ is taken to be the most\n                         complex model.\
+                    \ (Default: don't perform it.)"
+                prompt: Perform model comparison
+                format: ( "" , " --bcomp ")[ value is not None and value != vdef ]
+                name: bcomp
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Compute error bars on all parameters even in case where model
+                    comparison was disabled.
+                format: ( "" , " --berror ")[ value ]
+                name: berror
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                format: '" --blimit_fitting=%d "%(value)'
+                name: blimit_fitting
+                command: false
+                hidden: true
+                type: !mobyle/integertype {default: 2000}
+            - !mobyle/inputprogramparameter
+                format: '" --blimit_hessian=80 "'
+                name: blimit_hessian
+                command: false
+                hidden: true
+                type: !mobyle/integertype {}
+        - !mobyle/inputprogramparagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+                curve.
+            prompt: Rescaling (Step 3)
+            name: advanced_rescaling
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Which rescaling model to use to calculate gamma.
+                format: ( "" , " --cmodel=$value ")[value]
+                name: cmodel
+                command: false
+                type: !mobyle/stringtype
+                    default: normal
+                    options:
+                    - {label: normal, value: normal}
+                    - {label: normal-offset, value: normal-offset}
+                    - {label: lognormal, value: lognormal}
+        - !mobyle/inputprogramparagraph
+            comment: Classify the mean curves by comparing them using a two-sided
+                two-sample student t test
+            prompt: Classification (Step 4)
+            name: advanced_classification
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: type I error (default 0.05)
+                format: ( "" , " --dalpha="+str(value) )[ value is not None and value
+                    != vdef]
+                name: dalpha
+                command: false
+                type: !mobyle/floattype {default: 0.05}
+        - !mobyle/inputprogramparagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+            prompt: Merging (Step 5)
+            name: advanced_merging
+            children:
+            - !mobyle/inputprogramparameter
+                comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">Which
+                    mean parameters are optimized.<html:ul><html:li>One of Flat (the
+                    offset parameter A is optimized)</html:li><html:li>Simple (optimizes
+                    A, G and Rg)</html:li><html:li>Generalized (default, optimizes
+                    G, Rg and d)</html:li><html:li>Full (optimizes G, Rg, d and s)</html:li></html:ul></html:div>
+                prompt: eoptimize
+                format: ("" , " --eoptimize="+str(value))[value is not None and value
+                    != vdef]
+                name: eoptimize
+                command: false
+                type: !mobyle/stringtype
+                    default: Generalized
+                    options:
+                    - {label: Flat, value: Flat}
+                    - {label: Simple, value: Simple}
+                    - {label: Generalized, value: Generalized}
+                    - {label: Full, value: Full}
+            - !mobyle/inputprogramparameter
+                comment: "Perform model comparison, which allows to choose a\n   \
+                    \                      mean function that does not overfit the\
+                    \ data. If\n                         ecomp is given, eoptimize\
+                    \ is taken to be the most\n                         complex model.\
+                    \ (Default: don't perform it.)"
+                prompt: Perform model comparison
+                format: ( "" , " --ecomp ")[ value is not None and value != vdef ]
+                name: ecomp
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Compute error bars on all parameters even in case where model
+                    comparison was disabled.
+                format: ( "" , " --eerror ")[ value ]
+                name: eerror
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                format: '" --elimit_fitting=%d "%(value)'
+                name: elimit_fitting
+                command: false
+                hidden: true
+                type: !mobyle/integertype {default: 2000}
+            - !mobyle/inputprogramparameter
+                format: '" --elimit_hessian=80 "'
+                name: elimit_hessian
+                command: false
+                hidden: true
+                type: !mobyle/integertype {}
+            - !mobyle/inputprogramparameter
+                prompt: Don't extrapolate at all, even at low angle.
+                format: ( "" , " --enoextrapolate ")[value]
+                name: enoextrapolate
+                command: false
+                type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Expert parameters
+        name: expert
+        children:
+        - !mobyle/inputprogramparagraph
+            prompt: General
+            name: advanced_general
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Skip next option and use q values of the first datafile instead.
+                name: use_npoints
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Number of points to output for the mean function.
+                format: ( " --npoints=-1 " , " --npoints="+str(value) )[use_npoints
+                    and value > 0]
+                name: npoints
+                command: false
+                type: !mobyle/integertype {default: 200}
+            - !mobyle/inputprogramparameter
+                prompt: lower bound for lambda parameter in steps 2 and 5
+                format: ( "" , " --lambdamin="+str(value))[value is not None and value
+                    != vdef]
+                name: lambdamin
+                command: false
+                type: !mobyle/floattype {default: 0.005}
+        - !mobyle/inputprogramparagraph
+            comment: "Discard or keep SAXS curves' points based on their SNR.\n  \
+                \                   Points with an error of zero are discarded as\
+                \ well"
+            prompt: Cleanup (Step 1)
+            name: expert_cleanup
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: when a value after CUT is discarded, the rest of the curve
+                    is discarded as well (default is 0.1)
+                format: ( "" , " --acutoff="+str(value))[ value is not None and value
+                    != vdef]
+                name: acutof
+                command: false
+                type: !mobyle/floattype {default: 0.1}
+        - !mobyle/inputprogramparagraph
+            comment: Estimate the mean function and the noise level of each SAXS curve.
+            prompt: Fitting (Step 2)
+            name: expert_fitting
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: "Average over all possible parameters instead of just\n  \
+                    \                      taking the most probable set of parameters."
+                format: ( "" , " --baverage ")[ value is not None and value!= vdef
+                    ]
+                name: baverage
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Initial value for d
+                format: ( "", " --bd="+str(value))[ value is not None and value !=
+                    vdef ]
+                name: bd
+                command: false
+                type: !mobyle/floattype {default: 4.0}
+            - !mobyle/inputprogramparameter
+                prompt: Initial value for s
+                format: ( "", " --bs="+str(value))[ value is not None and value !=
+                    vdef ]
+                name: bs
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+        - !mobyle/inputprogramparagraph
+            comment: Find the most probable scaling factor of all curves wrt the first
+            prompt: Rescaling (Step 3)
+            name: expert_rescaling
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Define which input curve the other curves will be recaled
+                    to.
+                format: ( "" , " --creference="+str(value))[value is not None and
+                    value != vdef]
+                name: creference
+                command: false
+                type: !mobyle/stringtype
+                    default: last
+                    options:
+                    - {label: last, value: last}
+                    - {label: first, value: first}
+            - !mobyle/inputprogramparameter
+                prompt: Number of points to use to compute gamma (default 200)
+                format: ( "", " --cnpoints="+str(value))[value is not None and value
+                    != vdef]
+                name: cnpoints
+                command: false
+                type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparagraph
+            comment: Collect compatible data and produce best estimate of mean function.
+            prompt: Merging (Step 5)
+            name: expert_merging
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: "Average over all possible parameters instead of just\n  \
+                    \                      taking the most probable set of parameters."
+                format: ( "" , " --eaverage ")[ value is not None and value!= vdef
+                    ]
+                name: eaverage
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: "Example: if NUM=50 and the highest acceptable data\n   \
+                    \                        point is at q=0.3, the mean will be estimated\
+                    \ up to q=0.45.\n                           Default is 0 (just\
+                    \ extrapolate at low angle)."
+                prompt: Extrapolate NUM percent outside of the curve's bounds.
+                format: ( "", " --eextrapolate="+str(value))[value is not None and
+                    value != vdef]
+                name: eextrapolate
+                command: false
+                type: !mobyle/integertype {default: 0}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: sparse_output
+        precond: {outlevel: sparse}
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: '"summary.txt"'
+            name: sparse_summary
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {comment: "selection de donn\xE9es d'entr\xE9\
+                es 3 cols q i err", prompt: Merged data, filenames: '"data_merged.dat"',
+            name: sparse_merge}
+        - !mobyle/outputprogramparameter {comment: interpolation 3 cols q i err, prompt: Interpolation,
+            filenames: '"mean_merged.dat"', name: sparse_mean}
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: normal_output
+        precond: {outlevel: normal}
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: '"summary.txt"'
+            name: normal_summary
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {comment: "selection de donn\xE9es d'entr\xE9\
+                es q i err eorigin eoriname eextrapol", prompt: Merged data, filenames: '"data_merged.dat"',
+            name: normal_merge}
+        - !mobyle/outputprogramparameter {comment: interpolation q i err eorigin eoriname
+                eextrapol, prompt: Interpolation, filenames: '"mean_merged.dat"',
+            name: normal_mean}
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: full_output
+        precond: {outlevel: full}
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Report
+            filenames: '"summary.txt"'
+            name: full_summary
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {comment: q i err eorigin eoriname eextrapol,
+            prompt: Merged data, filenames: '"data_merged.dat"', name: full_merge}
+        - !mobyle/outputprogramparameter {comment: q i err eorigin eoriname eextrapol,
+            prompt: Interpolation, filenames: '"mean_merged.dat"', name: full_mean}
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: all_files_output
+        precond: allfiles
+        children:
+        - !mobyle/outputprogramparameter {prompt: Merged data, filenames: '"data_*"',
+            name: all_file_data}
+        - !mobyle/outputprogramparameter {prompt: Interpolation, filenames: '"mean_*"',
+            name: all_files_mean}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"saxs_merge.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"saxs_merge.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0536']
+topics: ['EDAM_topic:1317']
+command: saxs_merge.py
+env: {}

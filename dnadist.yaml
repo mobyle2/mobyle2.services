@@ -1,0 +1,365 @@
+!mobyle/program
+name: dnadist
+title: dnadist
+description: Compute distance matrix from nucleotide sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"dnadist <dnadist.params"'
+        argpos: 0
+        name: dnadist
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: The input file must contained aligned sequences in PHYLIP format
+            obtained by sequence alignment programs.
+        prompt: Alignment File
+        format: '"ln -s " + str( infile ) + " infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:1383']
+        ctrls:
+        -   message: the name of this data can't be "infile" or "outfile"
+            test:
+                value:
+                    '#nin': [infile, outfile]
+    - !mobyle/inputprogramparagraph
+        prompt: Dnadist options
+        name: dnadist_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Distance (D)
+            argpos: 1
+            paramfile: dnadist.params
+            name: distance
+            command: false
+            type: !mobyle/stringtype {default: F84}
+        - !mobyle/inputprogramparameter
+            comment: "The T option in this program does not stand for Threshold, but\
+                \ instead is the Transition/transversion option.\n             The\
+                \ user is prompted for a real number greater than 0.0, as the expected\
+                \ ratio of transitions to transversions. \n             Note that\
+                \ this is not the ratio of the first to the second kinds of events,\
+                \ but the resulting expected ratio of transitions to transversions.\
+                \ \n             The exact relationship between these two quantities\
+                \ depends on the frequencies in the base pools. \n             The\
+                \ default value of the T parameter if you do not use the T option\
+                \ is 2.0."
+            prompt: Transition/transversion ratio (T)
+            format: ( "" , "T\n"+ str( value )+"\n" )[value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: dnadist.params
+            name: ratio
+            precond:
+                '#or':
+                - {distance: F84}
+                - {distance: K}
+            command: false
+            type: !mobyle/floattype {default: 2.0}
+            ctrls:
+            -   message: Transition/transversion ratio (T) must be a real number greater
+                    than 0.0
+                test:
+                    value: {'#gte': '0.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Gamma distributed rates across sites (G)
+            argpos: 5
+            paramfile: dnadist.params
+            name: gamma
+            precond:
+                '#or':
+                - {distance: F84}
+                - {distance: K}
+                - {distance: JC}
+            command: false
+            type: !mobyle/stringtype {default: 'No'}
+        - !mobyle/inputprogramparameter
+            comment: In gamma distribution parameters, this is 1/(square root of alpha)
+            prompt: Coefficient of variation of substitution rate among sites (must
+                be positive) (if Gamma)
+            format: ( "" , str( value ) + "\n" )[ value is not None ]
+            argpos: 1010
+            paramfile: dnadist.params
+            mandatory: true
+            name: variation_coeff
+            precond:
+                gamma: {'#ne': 'No'}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Fraction of invariant sites (if Gamma)
+            format: ( "" , str( value ) + "\n" )[ value is not None ]
+            argpos: 1011
+            paramfile: dnadist.params
+            mandatory: true
+            name: invariant_sites
+            precond: {gamma: GI}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparagraph
+            comment: These must add to 1
+            prompt: Base frequencies for A, C, G, T/U (if not empirical)
+            name: ACGT_frequencies
+            precond: {distance: F84}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Use empirical base frequencies (F)
+                argpos: 1
+                paramfile: dnadist.params
+                name: empirical_frequencies
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Base frequencies for A
+                format: '""'
+                argpos: 2
+                mandatory: true
+                name: A_frequency
+                precond: {'#not': empirical_frequencies}
+                command: false
+                type: !mobyle/floattype {default: 0.25}
+            - !mobyle/inputprogramparameter
+                prompt: Base frequencies for C
+                format: '""'
+                argpos: 2
+                mandatory: true
+                name: C_frequency
+                precond: {'#not': empirical_frequencies}
+                command: false
+                type: !mobyle/floattype {default: 0.25}
+            - !mobyle/inputprogramparameter
+                prompt: Base frequencies for G
+                format: '""'
+                argpos: 2
+                mandatory: true
+                name: G_frequency
+                precond: {'#not': empirical_frequencies}
+                command: false
+                type: !mobyle/floattype {default: 0.25}
+            - !mobyle/inputprogramparameter
+                prompt: Base frequencies for T/U
+                format: '""'
+                argpos: 2
+                mandatory: true
+                name: T_frequency
+                precond: {'#not': empirical_frequencies}
+                command: false
+                type: !mobyle/floattype {default: 0.25}
+            - !mobyle/inputprogramparameter
+                format: '"F\n" + str( A_frequency ) + " " + str( C_frequency ) + "
+                    " + str( G_frequency ) + " " + str( T_frequency ) + "\n"'
+                argpos: 2
+                paramfile: dnadist.params
+                name: base_frequencies
+                precond: {'#not': empirical_frequencies}
+                command: false
+                hidden: true
+                type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use weights for sites (W)
+            format: ( "" , "W\n" )[ value ]
+            argpos: 1
+            paramfile: dnadist.params
+            name: weights
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "It selects a set of sites to be analyzed, ignoring the others.\
+                \ \n            The sites selected are those with weight 1.\n    \
+                \        The weights in it are a simple string of digits. \n     \
+                \       Blanks in the weightfile are skipped over and ignored, and\
+                \ the weights can continue to a new line."
+            prompt: Weights file
+            format: ( "" , " ln -s " + str( weights_file ) + " weights && " )[ value
+                is not None]
+            argpos: -1
+            mandatory: true
+            name: weights_file
+            precond: weights
+            command: false
+            ctrls:
+            -   message: the name of this data can't be "infile" or "outfile"
+                test:
+                    value:
+                        '#nin': [infile, outfile]
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            comment: By selecting this option, the bootstrap will be performed on
+                your sequence file. So you don't need to perform a separated seqboot
+                before.Don't give an already bootstrapped file to the program, this
+                won't work!
+            prompt: Perform a bootstrap before analysis
+            format: ( "" , "seqboot < seqboot.params && mv outfile seqboot.outfile
+                && rm infile && ln -s seqboot.outfile infile && " )[ value ]
+            simple: true
+            argpos: -5
+            name: seqboot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "1. The bootstrap. Bootstrapping was invented by Bradley Efron\
+                \ in 1979, and its use in phylogeny estimation was introduced by me\
+                \ (Felsenstein, 1985b). It involves creating a new data set by sampling\
+                \ N characters randomly with replacement, so that the resulting data\
+                \ set has the same size as the original, but some characters have\
+                \ been left out and others are duplicated. The random variation of\
+                \ the results from analyzing these bootstrapped data sets can be shown\
+                \ statistically to be\n              typical of the variation that\
+                \ you would get from collecting new data sets. The method assumes\
+                \ that the characters evolve independently, an assumption that may\
+                \ not be realistic for many kinds of data.2. Delete-half-jackknifing.\
+                \ This alternative to the bootstrap involves sampling a random half\
+                \ of the characters, and including them in the data but dropping the\
+                \ others. The resulting data sets are half the size of the original,\
+                \ and no characters are duplicated. The random variation from doing\
+                \ this should be very similar to that obtained from the bootstrap.\
+                \ The method is advocated by Wu (1986).3. Permuting species for each\
+                \ characters. This method of resampling (well, OK, it may not be best\
+                \ to call it resampling) was introduced by Archie (1989) and Faith\
+                \ (1990; see also Faith and Cranston, 1991). It involves permuting\
+                \ the columns of the data matrix separately. This produces data matrices\
+                \ that have the same number and kinds of characters but no taxonomic\
+                \ structure. It is used for different purposes than the bootstrap,\
+                \ as it tests not the variation around an estimated tree but the hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, then we can argue that\
+                \ there is some taxonomic structure in the data (though perhaps it\
+                \ might be just the presence of aa pair of sibling species).4. Permuting\
+                \ characters order. This simply permutes the order of the characters,\
+                \ the same reordering being applied to all species. For many methods\
+                \ of tree inference this will make no difference to the outcome (unless\
+                \ one has rates of evolution correlated among adjacent sites). It\
+                \ is included as a possible step in carrying out a permutation test\
+                \ of homogeneity of characters (such as the Incongruence Length Difference\
+                \ test).5. Permuting characters separately for each species. This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before. It shuffles\
+                \ the character order separately for each species."
+            prompt: Resampling methods (J)
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            mandatory: true
+            name: Method
+            precond: seqboot
+            command: false
+            type: !mobyle/stringtype {default: bootstrap}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed (must be odd)
+            format: str( value ) +"\n"
+            simple: true
+            argpos: 1000
+            paramfile: seqboot.params
+            mandatory: true
+            name: seqboot_seed
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: How many replicates
+            format: ( "" , "R\n" + str( value ) + "\n" )[ value is not None and value
+                != vdef ]
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            mandatory: true
+            name: replicates
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparameter
+        format: '"y\n"'
+        argpos: 1000
+        paramfile: dnadist.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: dnadist.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"M\nD\n" + str( replicates ) + str("\n")'
+        argpos: 1
+        paramfile: dnadist.params
+        name: multiple_dataset
+        precond:
+            '#and':
+            - seqboot
+            -   replicates: {'#gt': '1'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"y\n"'
+        argpos: 100
+        paramfile: seqboot.params
+        name: seqboot_confirm
+        precond: seqboot
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: seqboot.params
+        name: seqboot_terminal_type
+        precond: seqboot
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Outfile
+        filenames: '"dnadist.outfile"'
+        argpos: 40
+        name: outfile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/outputprogramparameter {prompt: seqboot outfile, filenames: '"seqboot.outfile"',
+        argpos: 40, name: seqboot_out, precond: seqboot}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dnadist.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dnadist.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: 'This program uses nucleotide sequences to compute a distance matrix, under
+    four different models of nucleotide substitution. It can also
+
+    compute a table of similarity between the nucleotide sequences. The distance for
+    each pair of species estimates the total branch length between the two species,
+    and can be used in the distance matrix programs FITCH, KITSCH or NEIGHBOR.'
+operations: ['EDAM_operation:0289']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/dnadist.html']
+env: {}

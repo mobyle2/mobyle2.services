@@ -1,0 +1,73 @@
+!mobyle/program
+name: cosa
+title: cosa
+description: Clustal ouput structural analysis
+authors: T. Rose
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Alignment
+        format: '" "+str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: alig
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1982']
+            data_terms: ['EDAM_data:1384']
+    - !mobyle/inputprogramparameter
+        prompt: Position in the sequence multialignment of the structure used as reference
+        format: '" " + str( value )'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: struct_pos
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter {prompt: PDB entry, format: '" " + str( value
+            )', simple: true, argpos: 3, mandatory: true, name: pdbin, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Name of the output PDB file
+        format: ("", " " + str( value ) )[ value is not None ]
+        argpos: 4
+        name: pdbout
+        command: false
+        type: !mobyle/stringtype {default: tmp_clustal.pdb}
+    - !mobyle/inputprogramparameter
+        prompt: Name of the output result file
+        format: ("" , " " + str( value ) )[ value is not None ]
+        argpos: 5
+        name: txtout
+        command: false
+        type: !mobyle/stringtype {default: tmp_stats.txt}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {comment: "PDB file format of the structure used\
+            \ as reference with \n        the residue occurrence in place of B-factor",
+        prompt: PDB with the residue occurrence, filenames: pdbout, name: default_pdbout}
+    - !mobyle/outputprogramparameter {comment: Vertical sequence alignment and statistics,
+        prompt: Alignment and statistics, filenames: txtout, name: default_txtout}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cosa.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cosa.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: This program gives simple statistics about residue conservation from clustal
+    output files.There is the possibility to redirect the residue frequency at every
+    position of the proteinsequence in the PDB file corresponding to one of the identified
+    sequences of the multiple alignment.This frequency or conservation index is put
+    in place of B-factors and allows spectral coloring according tothe index value
+    in most of pdb structure viewers.
+operations: ['EDAM_operation:2506', 'EDAM_operation:0448']
+topics: ['EDAM_topic:0182']
+command: cosa
+env: {}

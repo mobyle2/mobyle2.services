@@ -1,0 +1,207 @@
+!mobyle/program
+name: cif
+version: 0.2.2
+title: CIF
+description: Cut DNA regions in frame
+authors: E. Quevillon, B. Boeda
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence
+            format: ( "" , " -i " + str( value ) + " " )[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'You can choose between:- blunt : Use blunt cutters- cohesive
+                : Use cohesive cutters- klenow  : Use only 5'' enzymes for Klenow
+                fill-in.[Default all three]'
+            prompt: Type of enzymes (-T)
+            format: ( "" , " -T " + str( value ) )[value != vdef]
+            simple: true
+            name: enztype
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: blunt + cohesive + klenow, value: '0'}
+                - {label: blunt, value: blunt}
+                - {label: cohesive, value: cohesive}
+                - {label: klenow, value: klenow}
+        - !mobyle/inputprogramparameter
+            comment: 'Cohesive enzyme strand to use:- 5''- 3''- both : 5'' and 3''
+                (Default value).(No effect if you choose to use blunt enzymes)'
+            prompt: Cohesive enzyme strand (-S)
+            format: ( "" , " -S " + str( value ) )[value != vdef]
+            simple: true
+            name: strand
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: 5' + 3', value: '0'}
+                - {label: 5', value: '5'}
+                - {label: 3', value: '3'}
+        - !mobyle/inputprogramparameter
+            comment: 'Digestion mode:- double: Report couple of enzymes that digest
+                sequence- simple: Report enzyme name that cut more than one time-
+                both: simple + double (Default value).'
+            prompt: Digestion mode (-D)
+            format: ( "" , " -D " + str( value ) )[value != vdef]
+            simple: true
+            name: digestionmod
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: simple + double, value: '0'}
+                - {label: double, value: double}
+                - {label: simple, value: simple}
+        - !mobyle/inputprogramparameter
+            comment: Use enzymes with minimum length for DNA recognition site.By default,
+                6.
+            prompt: Minimum length of recognition site (-L)
+            format: ( "" , " -L " + str( value ) )[value is not None and value!=vdef]
+            name: Length
+            command: false
+            type: !mobyle/integertype {default: 6}
+        - !mobyle/inputprogramparameter
+            comment: Some cohesive enzymes have variant recognition site like 'GDGCH^C'
+                for Bsp1286I, where:D = not C (A or G or T)H = not G (A or C or T)This
+                option, when set, use of these type of enzymes..By default, this option
+                is off.
+            prompt: Use enzymes with variant recognition site (-V)
+            format: ( "" , " -V " )[value]
+            name: variant
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Some cohesive enzymes have variant recognition site like 'GDGCH^C'\
+                \ for Bsp1286I, where:D = not C (A or G or T)H = not G (A or C or\
+                \ T)Thus, using thoses enzymes may produce a cut in frame but the\
+                \ produced ends may not be \n                compatible together regarding\
+                \ DNA sequence.Requires the '[-V | --variant]' option to work. By\
+                \ default, this option is off."
+            prompt: Report digestions in frame without ends compatibilities (-X)
+            format: ( "" , " -X " )[value]
+            name: exotic
+            precond: {variant: '1'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {comment: 'File with list of compatible cohesive
+                ends.The default list used is given in the program help pages (compatible_cohesive_ends.txt).If
+                you want to give your own list, the format must be as follow:"Enzyme_name:compatEnz1_name,compatEnz2_name,..."',
+            prompt: List of compatible cohesive ends (-C), format: '( "" , " -C "
+                + str( value ) )[value is not None]', name: compat, command: false}
+        - !mobyle/inputprogramparameter {comment: "By default, the program works with\
+                \ a list of enzymes commonly used in laboratory \n          \t\tgiven\
+                \ in the program help pages (paillasse_liste.txt).If you want to give\
+                \ your own list, the format is one enzyme per line.", prompt: Enzyme
+                list to work with (-E), format: '( "" , " -E " + str( value ) )[value
+                is not None]', name: enzlist, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: outputopt
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Sometimes, blunt digestion, after linkage, can produce new codon\
+                \ around the cutting site \n            that leads to stop codon.This\
+                \ option displays such digestions with a tag 'stopCodon' in the output\
+                \ line results.NOTE: This option only works if 'blunt' type is set.\
+                \ By default this option is off, thus \n            if such case happened\
+                \ no results are reported for enzymes digestion."
+            prompt: Show stop codon (-P)
+            format: ( "" , " -P " )[value]
+            name: stop
+            precond:
+                '#or':
+                - {enztype: '0'}
+                - {enztype: blunt}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Enzymes may cut your sequence more than once.This option \n\
+                \            reports the number of time enzyme(s) cut your sequence.\
+                \ [Default off]"
+            prompt: Show cut positions (-N)
+            format: ( "" , " -N " )[value]
+            simple: true
+            name: cut_pos
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Experimental option. [Default off]This option allows, for 'blunt'\
+                \ or 'klenow' analysis to\n            show, in such case, the Amino\
+                \ acid that have been changed due to the ligation between \n     \
+                \       the 2 parts of the DNA after the digestion.It will be shown\
+                \ as OldAA>NewAA (e.g.: G>N)."
+            prompt: Show new generated amino acid (-A)
+            format: ( "" , " -A " )[value]
+            name: mod_aa
+            precond:
+                enztype: {'#ne': cohesive}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Choose the output type that you prefer.- Text output (Default
+                value)- GFF3 output- Image (png): Creates image (png).'
+            prompt: Output style format (-F)
+            format: ( "" , " -F " + str( value ) )[value != vdef]
+            simple: true
+            name: outputstyle
+            command: false
+            type: !mobyle/stringtype
+                default: text
+                options:
+                - {label: Text output, value: text}
+                - {label: GFF3 output, value: gff}
+                - {label: Image (png), value: image}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output image
+        filenames: '"*.png"'
+        name: img
+        precond: {outputstyle: image}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cif.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cif.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "cif (for Cut In Frame) is a tool that works with DNA sequences. It is used\
+    \ to digest\n      your sequences with a pool of restriction enzymes and to search\
+    \ which enzymes cut your\n      sequence keeping your reading frame after ligation\
+    \ without any frame shift produced\n      due to the digestion.This helps users\
+    \ to work with a gene of interest to localize potential region(s) that\n     \
+    \ could be removed from the final protein to check if regions have an impact or\
+    \ not on\n      the final gene product. It can also allow to identify vital region(s)\
+    \ for the gene."
+operations: ['EDAM_operation:0431']
+topics: ['EDAM_topic:0160']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/cif/cif.html', 'http://bioweb2.pasteur.fr/docs/cif/compatible_cohesive_ends.txt',
+    'http://bioweb2.pasteur.fr/docs/cif/paillasse_liste.txt']
+command: cif
+env: {}

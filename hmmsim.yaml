@@ -1,0 +1,487 @@
+!mobyle/program
+name: hmmsim
+title: HMMSIM
+description: Collect profile HMM score distributions on random sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: HMM file, format: '" "+str(value)', simple: true,
+        argpos: 30, mandatory: true, name: hmmfile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: General options
+        name: generalOptions
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Collect expected Viterbi alignment length statistics from each\
+                \ simulated sequence.\n            This only works with Viterbi scores\
+                \ (the default; see --vit). Two additional fields are\n          \
+                \  printed in the output table for each model: the mean length of\
+                \ Viterbi alignments,\n            and the standard deviation."
+            prompt: Obtain alignment length statistics (-a)
+            format: ( "" , " -a" )[ value ]
+            name: aln
+            precond: {altSco: --vit}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Verbose: print scores (-v)'
+            format: ( "" , " -v" )[ value ]
+            name: verbose
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Length of random target sequences (-L)
+            format: ( "" , " -L " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: Length
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Number of random target sequences (-N)
+            format: ( "" , " -N " + str(value) )[ value is not None and value !=vdef]
+            name: number
+            command: false
+            type: !mobyle/integertype {default: 1000}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced options
+        name: AdvancedOptions
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "H3 only uses multihit local alignment ( --fs mode), and this\
+                \ is where we believe the statistical fits. Unihit\n            local\
+                \ alignment scores (Smith/Waterman; --sw mode) also obey our statistical\
+                \ conjectures. Glocal alignment\n            statistics (either multihit\
+                \ or unihit) are still not adequately understood nor adequately fitted.fs:\
+                \ Collect multihit local alignment scores. This is the default. 'fs\
+                \ comes from HMMER2'\n            s historical terminology for multihit\
+                \ local alignment as 'fragment search mode'.sw: Collect unihit local\
+                \ alignment scores. The H3 J state is disabled. 'sw' comes from\n\
+                \            HMMER2's historical terminology for unihit local alignment\
+                \ as 'Smith/Waterman search mode'.ls Collect multihit glocal alignment\
+                \ scores. In glocal (global/local) alignment, the entire\n       \
+                \     model must align, to a subsequence of the target. The H3 local\
+                \ entry/exit transition\n            probabilities are disabled. 'ls'\
+                \ comes from HMMER2's historical terminology\n            for multihit\
+                \ local alignment as 'local search mode'.s: Collect unihit glocal\
+                \ alignment scores. Both the H3 J state and local entry/exit transition\n\
+                \            probabilities are disabled. 's' comes from HMMER2's historical\
+                \ terminology\n            for unihit glocal alignment."
+            prompt: Alternative alignment styles
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef
+                ]
+            name: altAln
+            command: false
+            type: !mobyle/stringtype
+                default: --fs
+                options:
+                - {label: multihit local alignment (fs), value: --fs}
+                - {label: unihit local alignment (sw), value: --sw}
+                - {label: multihit glocal alignment (ls), value: --ls}
+        - !mobyle/inputprogramparameter
+            comment: "vit: Collect Viterbi maximum likelihood alignment scores. This\
+                \ is the default.fwd: Collect Forward log-odds likelihood scores,\
+                \ summed over alignment ensemble.hyb: Collect 'Hybrid' scores, as\
+                \ described in papers by Yu and Hwa (for instance, Bioinformatics\n\
+                \            18:864, 2002). These involve calculating a Forward matrix\
+                \ and taking the\n            maximum cell value. The number itself\
+                \ is statistically somewhat unmotivated, but\n            the distribution\
+                \ is expected be a well-behaved extreme value distribution (Gumbel).msv:\
+                \ Collect MSV (multiple ungapped segment Viterbi) scores, using H3's\
+                \ main acceleration\n            heuristic.fast: For any of the above\
+                \ options, use H3's optimized production implementation (using\n \
+                \           SIMD vectorization). The default is to use the 'generic'\
+                \ implementation (slow and\n            non-vectorized). The optimized\
+                \ implementations sacrifice a small amount of numerical\n        \
+                \    precision. This can introduce confounding noise into statistical\
+                \ simulations\n            and fits, so when one gets super-concerned\
+                \ about exact details, it's better to be\n            able to factor\
+                \ that source of noise out."
+            prompt: Option controlling scoring algorithm
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef
+                ]
+            name: altSco
+            command: false
+            type: !mobyle/stringtype
+                default: --vit
+                options:
+                - {label: Score sequences with the Viterbi algorithm (vit), value: --vit}
+                - {label: Score sequences with the Forward algorithm (fwd), value: --fwd}
+                - {label: Score sequences with the Hybrid algorithm (hyd), value: --hyd}
+                - {label: Score sequences with the MSV algorithm (msv), value: --msv}
+                - {label: Use the optimized versions of the above (fast), value: --fast}
+    - !mobyle/inputprogramparagraph
+        prompt: Controlling range of fitted tail masses
+        name: controlMasse
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Set the lower bound on the tail mass distribution. (The default\
+                \ is 0.02 for the default\n            single tail mass.)"
+            prompt: Set lower bound tail mass for fwd,island (--tmin)
+            format: ( "" , " --tmin " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: tmin
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+        - !mobyle/inputprogramparameter
+            comment: "Set the upper bound on the tail mass distribution. (The default\
+                \ is 0.02 for the default\n            single tail mass.)"
+            prompt: Set upper bound tail mass for fwd,island (--tmax)
+            format: ( "" , " --tmax " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: tmax
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+        - !mobyle/inputprogramparameter
+            comment: "Set the number of tail masses to sample, starting from --tmin\
+                \ and ending at --tmax.\n            The default is 1, for the default\
+                \ 0.02 single tail mass."
+            prompt: Set number of tail probs to try (--tpoints)
+            format: ( "" , " --tpoints " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: tpoints
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: "Sample a range of tail masses with uniform linear spacing. The\
+                \ default is to use\n            uniform logarithmic spacing."
+            prompt: Use linear not log spacing of tail probs (--tlinear)
+            format: ( "" , " --tlinear" )[ value ]
+            name: tlinear
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        comment: "H3 uses three short random sequence simulations to estimating the\
+            \ location parameters \n        for the expected score distributions for\
+            \ MSV scores, Viterbi scores, and Forward scores. These options \n   \
+            \     allow these simulations to be modified."
+        prompt: Options controlling h3 parameter estimation methods
+        name: ECalibration
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Sets the sequence length in simulation that estimates the location\
+                \ parameter mu\n         for MSV E-values. Default is 200. Enter a\
+                \ value > 0."
+            prompt: Lengt of sequences for MSV Gumbel mu fit (EmL)
+            format: ( "" , " --EmL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EmL
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the number of sequences in simulation that estimates the\
+                \ location parameter\n              mu for MSV E-values. Default is\
+                \ 200. Enter a value > 0."
+            prompt: Number of sequences for MSV Gumbel mu fit (EmN)
+            format: ( "" , " --EmN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EmN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the sequence length in simulation that estimates the location\
+                \ parameter mu\n            for Viterbi E-values. Default is 200.\
+                \ Enter a value > 0"
+            prompt: Lengt of sequences for Viterbi Gumbel mu fit (EvL)
+            format: ( "" , " --EvL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EvL
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the number of sequences in simulation that estimates the\
+                \ location parameter\n          mu for Viterbi E-values. Default is\
+                \ 200. Enter a value > 0."
+            prompt: Number of sequences for Viterbi Gumbel mu fit (EvN)
+            format: ( "" , " --EvN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EvN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the sequence length in simulation that estimates the location\
+                \ parameter tau\n          for Forward E-values. Default is 100. Enter\
+                \ a value > 0"
+            prompt: Lengt of sequences for Forward exp tail tau fit (EfL)
+            format: ( "" , " --EfL " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EfL
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the number of sequences in simulation that estimates the\
+                \ location parameter\n            tau for Forward E-values. Default\
+                \ is 200. Enter a value > 0"
+            prompt: Number of sequences for Forward exp tail tau fit (EfN)
+            format: ( "" , " --EfN " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: EfN
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            comment: "Sets the tail mass fraction to fit in the simulation that estimates\
+                \ the location parameter\n            tau for Forward evalues. Default\
+                \ is 0.04. Enter a value > 0 and < 1"
+            prompt: Tail mass for Forward exponential tail tau fit (Eft)
+            format: ( "" , " --Eft " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: Eft
+            command: false
+            type: !mobyle/floattype {default: 0.04}
+    - !mobyle/inputprogramparagraph
+        prompt: Debugging options
+        name: debugg
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "For debugging the MPI master/worker version: pause after start,\
+                \ to enable the\n            developer to attach debuggers to the\
+                \ running master and worker(s) processes.\n            Send SIGCONT\
+                \ signal to release the pause. (Under gdb: (gdb) signal SIGCONT)\n\
+                \            (Only available if optional MPI support was enabled at\
+                \ compile-time.)"
+            prompt: 'Arrest after start: for debugging MPI under gdb (--stall)'
+            format: ( "" , " --stall" )[ value ]
+            name: stall
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Set the random number seed. The default is 0, which makes the\
+                \ random\n            number generator use an arbitrary seed, so that\
+                \ different runs of hmmsim will\n            almost certainly generate\
+                \ a different statistical sample. For debugging, it is useful\n  \
+                \          to force reproducible results, by fixing a random number\
+                \ seed."
+            prompt: Set random number seed  (--seed)
+            format: ( "" , " --seed " + str(value))[ value is not None and value !=
+                vdef ]
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparagraph
+        comment: These options were used in a small variety of different exploratory
+            experiments.
+        prompt: Experiments options
+        name: expert
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Set the background residue distribution to a uniform distribution,\
+                \ both for purposes\n            of the null model used in calculating\
+                \ scores, and for generating the random sequences.\n            The\
+                \ default is to use a standard amino acid background frequency distribution."
+            prompt: Set uniform background frequencies (--bgflat)
+            format: ( "" , " --bgflat" )[ value ]
+            name: bgflat
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Set the background residue distribution to the mean composition\
+                \ of the profile. This\n            was used in exploring some of\
+                \ the effects of biased composition."
+            prompt: Set bg frequencies to model's average composition (--bgcomp)
+            format: ( "" , " --bgcomp" )[ value ]
+            name: bgcomp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Turn the H3 target sequence length model off. Set the self-transitions\
+                \ for N,C,J\n            and the null model to 350/351 instead; this\
+                \ emulates HMMER2. Not a good idea\n            in general. This was\
+                \ used to demonstrate one of the main H2 vs. H3 differences."
+            prompt: Turn the H3 length model off (--x-no-lengthmode)
+            format: ( "" , " --x-no-lengthmode " )[value ]
+            name: lengthmode
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Set the nu parameter for the MSV algorithm -- the expected number\
+                \ of ungapped\n          local alignments per target sequence. The\
+                \ default is 2.0, corresponding to a E->J transition probability of\
+                \ 0.5. This was used to test whether varying nu has\n          significant\
+                \ effect on result (it doesn't seem to, within reason). This option\
+                \ only\n          works if --msv is selected (it only affects MSV),\
+                \ and it will not work with --fast\n          (because the optimized\
+                \ implementations are hardwired to assume nu=2.0)."
+            prompt: Set nu parameter (expected HSPs) for GMSV (--nu)
+            format: ( "" , " --nu " + str(value) )[ value is not None and value !=vdef
+                ]
+            name: nu
+            precond: {altSco: --msv}
+            command: false
+            type: !mobyle/floattype {default: 2.0}
+        - !mobyle/inputprogramparameter
+            comment: "Set the filter P-value threshold to use in generating filter\
+                \ power files with --ffile. The\n            default is 0.02 (which\
+                \ would be appropriate for testing MSV scores, since this is\n   \
+                \         the default MSV filter threshold in H3's acceleration pipeline.)\
+                \ Other appropriate\n            choices (matching defaults in the\
+                \ acceleration pipeline) would be 0.001 for Viterbi,\n           \
+                \ and 1e-5 for Forward."
+            prompt: Set  P-value threshold for --ffile (--pthresh)
+            format: ( "" , " --pthresh " + str(value) )[ value is not None and value
+                !=vdef ]
+            name: pthresh
+            precond:
+                ffile: {'#ne': None}
+            command: false
+            type: !mobyle/floattype {default: 0.02}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Direct summary output to file, not stdout. (-o)
+            format: ( "" , " -o " + str(value) )[ value is not None ]
+            argpos: 1
+            name: save
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "When collecting Viterbi alignment statistics (the -a option),\
+                \ for each sampled sequence,\n            output two fields per line\
+                \ to a file: the length of the optimal alignment,\n            and\
+                \ the Viterbi bit score. Requires that the -a option is also used."
+            prompt: Output alignment lengths to file (--afile)
+            format: ( "" , " --afile " + str(value) )[ value is not None ]
+            argpos: 1
+            name: afile
+            precond:
+                '#and':
+                - aln
+                - {altSco: --vit}
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Output a rank versus. E-value plot in XMGRACE xy format to file.\
+                \ The x-axis is the\n            rank of this sequence, from highest\
+                \ score to lowest; the y-axis is the E-value calculated\n        \
+                \    for this sequence. E-values are calculated using H3's default\
+                \ procedures (i.e.\n            the 'pmu, plambda' parameters in the\
+                \ output table). You expect a rough match\n            between rank\
+                \ and E-value if E-values are accurately estimated."
+            prompt: Output E vs. E plots to file in xy format (--efile)
+            format: ( "" , " --efile " + str(value) )[ value is not None ]
+            argpos: 1
+            name: efile
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Output a 'filter power' file: for each model, a line with three\
+                \ fields: model\n            name, number of sequences passing the\
+                \ P-value threshold, and fraction of sequences\n            passing\
+                \ the P-value threshold. See --pthresh for setting the P-value\n \
+                \           threshold, which defaults to 0.02 (the default MSV filter\
+                \ threshold in H3). The\n            P-values are as determined by\
+                \ H3's default procedures (the 'pmu,plambda' parameters\n        \
+                \    in the output table). If all is well, you expect to see filter\
+                \ power equal to\n            the predicted P-value setting of the\
+                \ threshold."
+            prompt: 'Output filter fraction: sequences passing P thresh (--ffile)'
+            format: ( "" , " --ffile " + str(value) )[ value is not None ]
+            argpos: 1
+            name: ffile
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Output cumulative survival plots (P(S>x)) to file in XMGRACE\
+                \ xy format.\n            There are three plots: (1) the observed\
+                \ score distribution; (2) the maximum likelihood\n            fitted\
+                \ distribution; (3) a maximum likelihood fit to the location parameter\n\
+                \            (mu/tau) while assuming lambda=log 2."
+            prompt: Output cumulative survival plots (--pfile)
+            format: ( "" , " --pfile " + str(value) )[ value is not None ]
+            argpos: 1
+            name: pfile
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Output the bit scores as a binary array of double-precision\
+                \ floats (8 bytes per score)\n            to file. Programs like Easel's\
+                \ esl-histplot can read such binary files. This is\n            useful\
+                \ when generating extremely large sample sizes."
+            prompt: Output bitscores as binary double vector to file (--xfile)
+            format: ( "" , " --xfile " + str(value) )[ value is not None ]
+            argpos: 1
+            name: xfile
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Direct summary output to file.
+            filenames: str( save )
+            argpos: 1
+            name: save_out
+            precond:
+                save: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Output alignment lengths
+            filenames: str( afile )
+            argpos: 1
+            name: afile_out
+            precond:
+                afile: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Output E vs. E plots to file in xy format
+            filenames: str( efile )
+            argpos: 1
+            name: efile_out
+            precond:
+                efile: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: 'Output filter fraction: sequences passing P thresh'
+            filenames: str( ffile )
+            argpos: 1
+            name: ffile_out
+            precond:
+                ffile: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Output cumulative survival plots
+            filenames: str( pfile )
+            argpos: 1
+            name: pfile_out
+            precond:
+                pfile: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Output bitscores as binary double vector to file
+            filenames: str( xfile )
+            argpos: 1
+            name: xfile_out
+            precond:
+                xfile: {'#ne': None}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"hmmsim.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmsim.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2404']
+topics: ['EDAM_topic:0188']
+command: hmmsim
+env: {}

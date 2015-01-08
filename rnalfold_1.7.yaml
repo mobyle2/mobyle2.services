@@ -1,0 +1,138 @@
+!mobyle/program
+name: rnalfold
+version: '1.7'
+title: RNALfold
+description: Calculate locally stable secondary structures of RNAs
+authors: Ivo L Hofacker, Peter F Stadler
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: RNA Sequence File
+        format: '" < " + str(value)'
+        simple: true
+        argpos: 1000
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set  the  maximum  allowed  separation  of a base pair to span.
+                I.e. no pairs (i,j) with j-i>span will be allowed.
+            prompt: Maximum  allowed  separation  of a base pair to span (-L)
+            format: ( "" , " -L " + str(value))[ value is not None ]
+            name: span
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temperature Celcius
+                (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/floattype {default: 37.0}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'How to treat ''dangling end'' energies for bases adjacent to
+                helices in free ends and multiloops: Normally only unpaired bases
+                can participate in at most one dangling end. With -d2 this check is
+                ignored, this is the default for partition function folding (-p).
+                -d ignores dangling ends altogether. Note that by default pf and mfe
+                folding treat dangling ends differently, use -d2 (or -d) in addition
+                to -p to ensure that both algorithms use the same energy model. The
+                -d2 options is available for RNAfold, RNAeval, and RNAinverse only.'
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Energy parameter file (-P),
+            format: '( "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+    - !mobyle/inputprogramparameter
+        format: '"/path/to/ViennaRNA/readseq/readseq  -f=19 -a "+ str(seq) + " > "+
+            str(seq) +".tmp && (cp "+ str(seq) +" "+ str(seq) +".orig && mv "+ str(seq)
+            +".tmp "+ str(seq) +") ; "'
+        argpos: -10
+        name: readseq
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnalfold.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnalfold.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNALfold computes locally stable RNA secondary structure with a  maximal  base  pair
+    span.Output  consists of a list of secondary structure components of size <= L,
+    one entry per line. Each output line contains the predicted  local  structure  its  energy  in
+    kcal/mol and the starting position of the local structure.
+references:
+- {doi: null, label: 'I.L. Hofacker, B. Priwitzer, and P.F. Stadler "Prediction of
+        Locally Stable RNA Secondary Structures for Genome-Wide Surveys" Bioinformatics,
+        20, 186-190 (2004)', url: null}
+command: RNALfold
+env: {}

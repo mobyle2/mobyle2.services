@@ -1,0 +1,191 @@
+!mobyle/program
+name: windowBed
+version: 2.15.0
+title: 'BEDtools: windowBed'
+description: Examines a "window" around each feature in A and reports all features
+    in B that overlap the window. For each overlap the entire entry in A and B are
+    reported. Similar to intersectBed, windowBed searches for overlapping features
+    in A and B. However, windowBed adds a specified number (1000, by default) of base
+    pairs upstream and downstream of each feature in A. In effect, this allows features
+    in B that are near features in A to be detected.
+authors: Quinlan A.R. & Hall I.M.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file A format
+            simple: true
+            name: file_a_type
+            command: false
+            type: !mobyle/stringtype
+                default: bed
+                options:
+                - {label: BED, value: bed}
+                - {label: GFF, value: gff}
+                - {label: VCF, value: vcf}
+                - {label: BAM (sorted by position), value: bam}
+        - !mobyle/inputprogramparameter
+            comment: BED/GFF/VCF format file
+            prompt: Genome annotation data A [BED/GFF/VCF format] (-a)
+            format: '" -a " + str(value)'
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: input_fileA_bed
+            precond:
+                file_a_type: {'#ne': bam}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: BAM format file
+            prompt: Genome annotation data A [BAM format] (-abam)
+            format: '" -abam " + str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_fileA_bam
+            precond: {file_a_type: bam}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Genome Annotation data B (BED/GFF/VCF format) [-b]
+            format: '" -b " + str( value )'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_fileB_bed
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Overlap Output Options (-sm, -Sm, -u, -c, -v)
+            format: ("", " " + str(value))[value is not None and value != vdef]
+            argpos: 11
+            name: overlap_output_options
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Select an overlap output option, value: 'null'}
+                - {label: Report hits in B that overlap A on the same strand (-sm),
+                    value: -sm}
+                - {label: Report hits in B that overlap A on the  opposite strand
+                        (-Sm), value: -Sm}
+                - {label: Report the fact that at least one overlap was found in B
+                        (-u), value: -u}
+                - {label: Report the number of hits in B while restricting to -f.
+                        Report 0 for A entries that have no overlap with B (-c), value: -c}
+                - {label: Only report those entries in A that have _no overlaps_ with
+                        B (-v)., value: -v}
+        - !mobyle/inputprogramparameter
+            comment: Base pairs added upstream (left of) of each entry in A when searching
+                for overlaps in B. Allows one to create assymetrical windows. Default
+                is 1000bp.
+            prompt: 'Number of base pairs added upstream: (-l)'
+            format: ("" , " -l "+str(value) )[value is not None and value != vdef]
+            argpos: 9
+            name: upstream_offset
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            comment: Base pairs added downstream (right of) of each entry in A when
+                searching for overlaps in B. Allows one to create assymetrical windows.
+                Default is 1000bp.
+            prompt: 'Number of base pairs added downstream: (-r)'
+            format: ("" , " -r "+str(value) )[value is not None and value != vdef]
+            argpos: 10
+            name: downstream_offset
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            comment: Define -l and -r based on strand.  For example if used, -l 500
+                for a negative-stranded feature will add 500 bp downstream. - Default
+                = disabled.
+            prompt: Are the upstream and downstream values are strand specific? [-sw]
+            format: ('',' -sw ')[value == 1]
+            name: strand_specificity
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print the header from the A file prior to results. (-header)
+            format: ('',' -header ')[value == 1]
+            name: header
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The BED or BAM format can be chosen only if the input is BAM
+                file.
+            prompt: Output format
+            format: ("", " -bed ")[ value == "bed"]
+            simple: true
+            name: output_format
+            precond: {file_a_type: bam}
+            command: false
+            type: !mobyle/stringtype
+                default: bam
+                options:
+                - {label: BED, value: bed}
+                - {label: BAM, value: bam}
+        - !mobyle/inputprogramparameter
+            prompt: 'Enter output file prefix:'
+            format: (" > " + str(vdef) , " > " + str(value))[value is not None] +
+                (".bed",".bam")[file_a_type == "bam" and output_format == "bam"]
+            simple: true
+            argpos: 50
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: window_data}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: Output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: GenomeAnnotation
+            filenames: ("window_data",output_file)[output_file is not None] + ".bam"
+            name: windowBam_out
+            precond:
+                '#and':
+                - {file_a_type: bam}
+                - {output_format: bam}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: GenomeAnnotation
+            filenames: ("window_data",output_file)[output_file is not None] + ".bed"
+            name: windowBed_out
+            precond:
+                file_a_type: {'#ne': bam}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"windowBed.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"windowBed.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3194']
+topics: ['EDAM_topic:0160']
+command: windowBed
+env: {}

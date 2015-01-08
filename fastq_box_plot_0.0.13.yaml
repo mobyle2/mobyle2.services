@@ -1,0 +1,81 @@
+!mobyle/program
+name: fastq_box_plot
+version: 0.0.13
+title: FASTX Toolkit - FASTX Quality Box Plot
+description: Generates a solexa quality score box-plot graph.
+authors: Assaf Gordon
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter {comment: Input file should be the output
+                of "solexa_quality_statistics" program, prompt: FASTX Quality File
+                (-i), format: '" -i " + str( value )', simple: true, argpos: 2, mandatory: true,
+            name: input_file, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: output_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Generate PostScript (.PS) file - Default is PNG image
+            prompt: Generate PostScript? (-p)
+            format: ''' -p'''
+            argpos: 3
+            name: generate_postscript
+            command: false
+            hidden: true
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            comment: Title (usually the solexa file name) - will be plotted on the
+                graph
+            prompt: Enter title of the box-plot graph (-t)
+            format: ('', ' -t ' + str(value))[value is not None]
+            simple: true
+            argpos: 4
+            name: chart_title
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Output file name - default is STDOUT
+            prompt: Enter output file prefix (-o)
+            format: (" -o " + str(vdef) , " -o " + str(value))[value is not None]
+                + ".ps"
+            simple: true
+            argpos: 7
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: quality_chart}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 6
+        children:
+        - !mobyle/outputprogramparameter {prompt: OutSequence, filenames: '"*.ps"',
+            name: quality_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastq_box_plot.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastq_box_plot.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_topic:3218']
+topics: ['EDAM_topic:3168', 'EDAM_topic:0092']
+command: fastq_quality_boxplot_graph.sh
+env: {}

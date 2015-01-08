@@ -1,0 +1,59 @@
+!mobyle/program
+name: concatfasta
+version: '1.0'
+title: concatfasta
+description: Concatenation of sequences from two fasta files with exactly the same
+    sequence identifiers
+authors: Maufrais Corinne
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Fasta file
+            format: ("", " -f " + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: firstFile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Fasta file
+            format: ("", " -s " + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: scdFile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Sequence(s) file
+            filenames: '"concatfasta.out"'
+            name: outfile
+            output_type: stdout
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"concatfasta.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2121']
+topics: ['EDAM_topic:0220']
+command: concatfasta
+env: {}

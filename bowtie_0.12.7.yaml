@@ -1,0 +1,842 @@
+!mobyle/program
+name: bowtie
+version: 0.12.7
+title: Bowtie
+description: Bowtie is an ultrafast and memory-efficient alignment of short DNA sequences
+    to the reference genome sequence.
+authors: Langmead B. & Trapnell C.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_args
+        children:
+        - !mobyle/inputprogramparameter
+            comment: '-If the query input files are FASTQ (usually having extension
+                .fq or .fastq), this is the default.If the query input files are FASTA
+                files (usually having extension .fa, .mfa, .fna or similar), all quality
+                values are assumed to be 40 on the Phred quality scale.If the query
+                input files are Raw files (one sequence per line, without quality
+                values or names), all quality values are assumed to be 40 on the Phred
+                quality scale.If the query input file is a comma-separated list of
+                files containing a mix of unpaired and paired-end reads in Tab-delimited
+                format, quality values can be expressed using any of the scales supported
+                in FASTQ files. Tab-delimited format is a 1-read-per-line format where
+                unpaired reads consist of a read name, sequence and quality string
+                each separated by tabs. A paired-end read consists of a read name,
+                sequence of the #1 mate, quality values of the #1 mate, sequence of
+                the #2 mate, and quality values of the #2 mate separated by tabs.
+                Q Reads may be a mix of different lengths and paired-end and unpaired
+                reads may be intermingled in the same file. If - is specified, bowtie
+                will read the Tab-delimited reads from the "standard in" filehandle.'
+            prompt: 'Data format (-f or -q or -C or -r or --12) :'
+            format: ("", " " + str(value))[value != vdef]
+            simple: true
+            mandatory: true
+            name: input_data_format
+            command: false
+            type: !mobyle/stringtype
+                default: -q
+                options:
+                - {label: FASTQ (-q), value: -q}
+                - {label: FASTA (-f), value: -f}
+                - {label: CSFASTA (-C), value: -C}
+                - {label: raw (-r), value: -r}
+                - {label: tab-delimited (--12), value: --12}
+        - !mobyle/inputprogramparameter
+            prompt: Select a reference genome
+            format: (""," " + str( value ))[value != vdef and value != "upload"]
+            simple: true
+            argpos: 100
+            mandatory: true
+            name: opt_selrefgen
+            precond:
+                input_data_format: {'#ne': -C}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+        - !mobyle/inputprogramparameter
+            prompt: Upload a custom reference genome
+            format: (""," " + str( value ))[value is not None]
+            simple: true
+            argpos: 100
+            name: custom_ref_genome
+            precond:
+                '#and':
+                - {opt_selrefgen: upload}
+                -   input_data_format: {'#ne': -C}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: If uploading a custom genome, please load a single zip file containing
+                the index and the FASTA file.
+            prompt: 'Select a reference genome:'
+            format: (""," " + str( value ))[value != vdef and value != "upload"]
+            simple: true
+            argpos: 50
+            mandatory: true
+            name: color_ref_genome
+            precond: {input_data_format: -C}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+        - !mobyle/inputprogramparameter
+            prompt: Upload a custom colorspace reference genome
+            format: (""," " + str( value ))[value is not None]
+            simple: true
+            argpos: 50
+            name: custom_color_genome
+            precond:
+                '#and':
+                - {color_ref_genome: upload}
+                - {input_data_format: -C}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: The flag is required on the command line when running colorspace.
+            prompt: required flag
+            format: ('', ' -f')[color_ref_genome is not None]
+            name: colorspace_flag
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Data type
+            simple: true
+            mandatory: true
+            name: input_data_type
+            command: false
+            type: !mobyle/stringtype
+                default: single_end
+                options:
+                - {label: Single-end, value: single_end}
+                - {label: Paired-end, value: paired_end}
+                - {label: Mixed, value: mixed}
+        - !mobyle/inputprogramparameter {prompt: The tab-delimited (--12) format is
+                the only format for the Mixed (mix of unpaired and paired-end reads)
+                data format, simple: true, name: help_string, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Quality score type (only valid for FASTQ format):'
+            format: ("", " " + str(value))[value != vdef]
+            name: input_quality_score_type
+            precond: {input_data_format: -q}
+            command: false
+            type: !mobyle/stringtype
+                default: --phred33-quals
+                options:
+                - {label: 'Phred +33 (Sanger, Illumina 1.8+)', value: --phred33-quals}
+                - {label: Phred +64 (Illumina 1.3-1.7) or Solexa (Illumina > 1.3),
+                    value: --phred64-quals}
+                - {label: Solexa (Illumina < 1.3), value: --solexa-quals}
+        - !mobyle/inputprogramparameter
+            comment: Represent quality values in the read input file as space-separated
+                ASCII integers.Default is to represent quality values as ASCII characters.
+            prompt: Specify qualities as space separated integers? (--integer-quals)
+            format: ("", " --integer-quals")[value]
+            name: quality_scores_integer
+            precond: {input_data_format: -q}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Please upload a zip or tar.gz file containing all the input data
+            prompt: Input data
+            format: (" ", " -1 ")[input_data_type == "paired_end"] + str(value)
+            simple: true
+            argpos: 101
+            mandatory: true
+            name: first_files
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Currently multiple files upload is not supported. This will be
+                implemented in future
+            prompt: Second File (for "paired-end" library)
+            format: (" ", " -2 ")[input_data_type == "paired_end"] + str(value)
+            simple: true
+            argpos: 102
+            mandatory: true
+            name: second_files
+            precond: {input_data_type: paired_end}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: List of files containing quality values for corresponding unpaired
+                CSFASTA reads.
+            prompt: QV file
+            format: (" -Q ", " --Q1 ")[input_data_type == "paired_end"] + str(value)
+            simple: true
+            argpos: 110
+            mandatory: true
+            name: first_qual_file
+            precond: {input_data_format: -C}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: 'File containing quality values for corresponding CSFASTA #2
+                mates.'
+            prompt: Second QV file (for "paired-end" library)
+            format: ("", " --Q2 ")[input_data_type == "paired_end"] + str(value)
+            simple: true
+            argpos: 111
+            mandatory: true
+            name: second_qual_file
+            precond:
+                '#and':
+                - {input_data_format: -C}
+                - {input_data_type: paired_end}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Skip the first n reads (-s or --skip)
+            format: ("", " -s " + str(value))[value is not None and value != vdef
+                ]
+            name: skip_first_reads
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: -1 for off
+            prompt: Only align the first n reads (-u or --qupto)
+            format: ("", " -u " + str(value))[value is not None and value != vdef
+                ]
+            name: align_only_first_reads
+            command: false
+            type: !mobyle/integertype {default: -1}
+        - !mobyle/inputprogramparameter
+            prompt: Trim n bases from high-quality (left) end of each read before
+                alignment (-5 or trim5)
+            format: ("", " -5 " + str(value))[value is not None and value != vdef
+                ]
+            name: trim5
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: Trim n bases from low-quality (right) end of each read before
+                alignment (-3 or --trim3)
+            format: ("", " -3 " + str(value))[value is not None and value != vdef
+                ]
+            name: trim3
+            command: false
+            type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparagraph
+        prompt: Alignment Options
+        name: alignment_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use seed options?
+            name: use_seed_opts
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Seed Options:'
+            name: seed_opts_text
+            precond: {use_seed_opts: '1'}
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of mismatches permitted in the "seed", i.e. the
+                first L base pairs of the read (where L is set with -l/--seedlen).
+                This may be 0, 1, 2 or 3 and the default is 2. This option is mutually
+                exclusive with the -v option.
+            prompt: 'Maximum number of mismatches permitted in the seed: (-n or --seedmms)'
+            format: ("", " -n " + str(value))[value is not None and value != vdef
+                ]
+            name: seed_opts_max_mismatches
+            precond: {use_seed_opts: '1'}
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: Maximum permitted total of quality values at all mismatched read
+                positions throughout the entire alignment, not just in the "seed".
+                The default is 70. Like Maq, bowtie rounds quality values to the nearest
+                10 and saturates at 30; rounding can be disabled with --nomaqround.
+            prompt: 'Maximum permitted total of quality values: (-e)'
+            format: ("", " -e " + str(value))[value is not None and value != vdef
+                ]
+            name: max_quality_across_align
+            precond: {use_seed_opts: '1'}
+            command: false
+            type: !mobyle/integertype {default: 70}
+        - !mobyle/inputprogramparameter
+            prompt: 'Seed length: (-l or --seedlen)'
+            format: ("", " -l " + str(value))[value is not None and value != vdef
+                ]
+            name: seed_opts_length
+            precond: {use_seed_opts: '1'}
+            command: false
+            type: !mobyle/integertype {default: 28}
+        - !mobyle/inputprogramparameter
+            comment: Maq accepts quality values in the Phred quality scale, but internally
+                rounds values to the nearest 10, with a maximum of 30. By default,
+                bowtie also rounds this way. --nomaqround prevents this rounding in
+                bowtie.
+            prompt: Prevent rounding? (-nomaqround)
+            format: ("", " --nomaqround" )[value]
+            name: prevent_quality_score_rounding
+            precond: {use_seed_opts: '1'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'If not using seed options, specify v:'
+            name: v_option_text
+            precond: {use_seed_opts: '0'}
+            command: false
+        - !mobyle/inputprogramparameter
+            prompt: 'Number of mismatches allowed: (-v)'
+            format: ("", " -v " + str(value))[value is not None]
+            name: mismatches
+            precond: {use_seed_opts: '0'}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: If --nofw is specified, bowtie will not attempt to align against
+                the forward reference strand. If --norc is specified, bowtie will
+                not attempt to align against the reverse-complement reference strand.
+                For paired-end reads using --fr or --rf modes, --nofw and --norc apply
+                to the forward and reverse-complement pair orientations. I.e. specifying
+                --nofw and --fr will only find reads in the R/F orientation where
+                mate 2 occurs upstream of mate 1 with respect to the forward reference
+                strand.
+            prompt: 'Reference strand alignment options: (-nofw, -norc)'
+            format: ("", " " + str(value))[value is not None and value != vdef ]
+            name: reference_strand_options
+            command: false
+            type: !mobyle/stringtype
+                default: both
+                options:
+                - {label: Both forward and reverse strand, value: both}
+                - {label: Not forward strand, value: --nofw}
+                - {label: Not reverse strand, value: --norc}
+        - !mobyle/inputprogramparameter
+            comment: 'The maximum number of backtracks permitted when aligning a read
+                in -n 2 or -n 3 mode (default: 125 without --best, 800 with --best).
+                A "backtrack" is the introduction of a speculative substitution into
+                the alignment. Without this limit, the default parameters will sometimes
+                require that bowtie try 100s or 1,000s of backtracks to align a read,
+                especially if the read has many low-quality bases and/or has no valid
+                alignments, slowing bowtie down significantly. However, this limit
+                may cause some valid alignments to be missed. Higher limits yield
+                greater sensitivity at the expensive of longer running times.'
+            prompt: 'Maximum number of backtracks: (--maxbts)'
+            format: ("", " --maxbts " + str(value))[value is not None and value !=
+                vdef ]
+            name: max_backtracks
+            precond:
+                '#and':
+                - {use_seed_opts: '1'}
+                -   seed_opts_max_mismatches: {'#gte': '2'}
+                - {best_opts: '1'}
+            command: false
+            type: !mobyle/integertype {default: 125}
+        - !mobyle/inputprogramparameter
+            comment: Try as hard as possible to find valid alignments when they exist,
+                including paired-end alignments. This is equivalent to specifying
+                very high values for the --maxbts and --pairtries options. This mode
+                is generally much slower than the default settings, but can be useful
+                for certain problems. This mode is slower when (a) the reference is
+                very repetitive, (b) the reads are low quality, or (c) not many reads
+                have valid alignments.
+            prompt: Try as hard as possible to find valid alignments? (-y or --tryhard)
+            format: (""," -y ")[value]
+            name: try_hard
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'The number of megabytes of memory a given thread is given to
+                store path descriptors in --best mode. Best-first search must keep
+                track of many paths at once to ensure it is always extending the path
+                with the lowest cumulative cost. Bowtie tries to minimize the memory
+                impact of the descriptors, but they can still grow very large in some
+                cases. If you receive an error message saying that chunk memory has
+                been exhausted in --best mode, try adjusting this parameter up to
+                dedicate more memory to the descriptors. Default: 64.'
+            prompt: 'Number of megabytes of memory a given thread is given to store
+                path descriptors: (--chunkmbs)'
+            format: ("", " --chunkmbs " + str(value))[value is not None and value
+                != vdef ]
+            name: chunk_megabytes
+            command: false
+            type: !mobyle/integertype {default: 64}
+    - !mobyle/inputprogramparagraph
+        prompt: Paired-end Options
+        name: paired_end_para
+        precond: {input_data_type: paired_end}
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'The upstream/downstream mate orientations for a valid paired-end
+                alignment against the forward reference strand. E.g., if --fr is specified
+                and there is a candidate paired-end alignment where mate1 appears
+                upstream of the reverse complement of mate2 and the insert length
+                constraints are met, that alignment is valid. Also, if mate2 appears
+                upstream of the reverse complement of mate1 and all other constraints
+                are met, that too is valid. --rf likewise requires that an upstream
+                mate1 be reverse-complemented and a downstream mate2 be forward-oriented.
+                --ff requires both an upstream mate1 and a downstream mate2 to be
+                forward-oriented. Default: --fr when -C (colorspace alignment) is
+                not specified, --ff when -C is specified.'
+            prompt: 'Paired-end alignment options: (-fr, -rf, -ff, -nofr)'
+            format: ("", " " + str(value))[value is not None and value != vdef ]
+            name: paired_end_align_options
+            command: false
+            type: !mobyle/stringtype
+                default: --fr
+                options:
+                - {label: 'Illumina paired-end : forward/reverse strands alignment(--fr)',
+                    value: --fr}
+                - {label: 'Illumina mate-pair : reverse/forward strands alignment(--rf)',
+                    value: --rf}
+                - {label: 'Same strand : forward/forward strands alignment(--ff)',
+                    value: --ff}
+        - !mobyle/inputprogramparameter
+            comment: 'The minimum insert size for valid paired-end alignments. E.g.
+                if -I 60 is specified and a paired-end alignment consists of two 20-bp
+                alignments in the appropriate orientation with a 20-bp gap between
+                them, that alignment is considered valid (as long as -X is also satisfied).
+                A 19-bp gap would not be valid in that case. If trimming options -3
+                or -5 are also used, the -I constraint is applied with respect to
+                the untrimmed mates. Default: 0.'
+            prompt: 'Minimum insert size for valid paired-end alignments: (-I or --minins)'
+            format: ("", " --minins " + str(value))[value is not None and value !=
+                vdef ]
+            name: paired_end_min_insert_size
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: 'The maximum insert size for valid paired-end alignments. E.g.
+                if -X 100 is specified and a paired-end alignment consists of two
+                20-bp alignments in the proper orientation with a 60-bp gap between
+                them, that alignment is considered valid (as long as -I is also satisfied).
+                A 61-bp gap would not be valid in that case. If trimming options -3
+                or -5 are also used, the -X constraint is applied with respect to
+                the untrimmed mates, not the trimmed mates. Default: 250.'
+            prompt: 'Maximum insert size for valid paired-end alignments: (-X or --maxins)'
+            format: ("", " --maxins " + str(value))[value is not None and value !=
+                vdef ]
+            name: paired_end_max_insert_size
+            command: false
+            type: !mobyle/integertype {default: 250}
+        - !mobyle/inputprogramparameter
+            comment: For paired-end alignment, this is the maximum number of attempts
+                bowtie will make to match an alignment for one mate up with an alignment
+                for the opposite mate. Most paired-end alignments require only a few
+                such attempts, but pairs where both mates occur in highly repetitive
+                regions of the reference can require significantly more. Setting this
+                to a higher number allows bowtie to find more paired- end alignments
+                for repetitive pairs at the expense of speed. The default is 100.
+            prompt: 'Maximum number of alignment matching attempts: (--pairtries)'
+            format: ("", " --pairtries " + str(value))[value is not None and value
+                != vdef ]
+            name: pair_tries
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparagraph
+        prompt: Reporting Options
+        name: reporting_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Report up to <int> valid alignments per read or pair. If no value
+                is specified then all the alignments will be reported.Validity of
+                alignments is determined by the alignment policy (combined effects
+                of -n, -v, -l, and -e). If more than one valid alignment exists and
+                the --best and --strata options are specified, then only those alignments
+                belonging to the best alignment "stratum" will be reported. Bowtie
+                is designed to be very fast for small -k but bowtie can become significantly
+                slower as -k increases.
+            prompt: 'Report up to k valid alignments per read or pair: (-k)'
+            format: ("", " -k " + str(value))[value is not None and value != vdef
+                ]
+            name: report_upto
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: 'Suppress all alignments for a particular read or pair if more
+                than <int> reportable alignments exist for it. Reportable alignments
+                are those that would be reported given the -n, -v, -l, -e, -k, -a,
+                --best, and --strata options. Default: no limit. Bowtie is designed
+                to be very fast for small -m but bowtie can become significantly slower
+                for larger values of -m.'
+            prompt: 'Suppress all alignments for a particular read or pair if more
+                than m reportable alignments exist for it: (-m)'
+            format: ("", " -m " + str(value))[value is not None and value != vdef
+                ]
+            name: suppress_align_if_contains
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Behaves like -m except that if a read has more than <int> reportable
+                alignments, one is reported at random. In default output mode, the
+                selected alignment's 7th column is set to <int>+1 to indicate the
+                read has at least <int>+1 valid alignments. In -S/--sam mode, the
+                selected alignment is given a MAPQ (mapping quality) of 0 and the
+                XM:I field is set to <int>+1. This option requires --best; if specified
+                without --best, --best is enabled automatically.
+            prompt: If a read has more than M reportable alignments, report one at
+                random. (-M). By default the "--best" option is used
+            format: ("", " -M " + str(value))[value is not None and value != vdef
+                ]
+            name: report_random_align_if_contains
+            precond: {best_opts: '1'}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Guaranteed best stratum; ties broken by quality.
+            prompt: Report hits guaranteed best stratum (--best)
+            format: ("", " --best")[value]
+            name: best_opts
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Hits in sub-optimal strata aren't reported (requires --best).
+                If many valid alignments exist and are reportable (e.g. are not disallowed
+                via the -k option) and they fall into more than one alignment "stratum",
+                report only those alignments that fall into the best stratum. By default,
+                Bowtie reports all reportable alignments regardless of whether they
+                fall into multiple strata. When --strata is specified, --best must
+                also be specified.
+            prompt: Do not report hits in sub-optimal strata(--strata)
+            format: ("", " --strata")[value]
+            name: strate_opts
+            precond: {best_opts: '1'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Colorspace Options
+        name: color_space_para
+        precond: {input_data_format: -c}
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: SNP options
+            name: colorspace_snps
+            command: false
+            type: !mobyle/stringtype
+                default: penalty
+                options:
+                - {label: SNP Penalty, value: penalty}
+                - {label: SNP Fraction, value: fraction}
+        - !mobyle/inputprogramparameter
+            comment: When decoding colorspace alignments, use <int> as the SNP penalty.
+                This should be set to the user's best guess of the true ratio of SNPs
+                per base in the subject genome, converted to the Phred quality scale.
+                E.g., if the user expects about 1 SNP every 1,000 positions, --snpphred
+                should be set to 30 (which is also the default). To specify the directly,
+                use --snpfrac.
+            prompt: 'SNP penalty: (-snpphred)'
+            format: ("", " --snpphred " + str(value))[ value is not None and value
+                != vdef]
+            name: cs_snps_penalty
+            precond: {colorspace_snps: penalty}
+            command: false
+            type: !mobyle/integertype {default: 30}
+        - !mobyle/inputprogramparameter
+            comment: 'When decoding colorspace alignments, use <dec> as the estimated
+                ratio of SNPs per base. For best decoding results, this should be
+                set to the user''s best guess of the true ratio. bowtie internally
+                converts the ratio to a Phred quality, and behaves as if that quality
+                had been set via the --snpphred option. Default: 0.001.'
+            prompt: 'Estimated fractions of SNP''s per base: (-snpfrac)'
+            format: ("", " --snpfrac " + str(value))[ value is not None and value
+                != vdef]
+            name: cs_snps_fraction
+            precond: {colorspace_snps: fraction}
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            comment: If reads are in colorspace and the default output mode is active,
+                --col-cseq causes the reads' color sequence to appear in the read-sequence
+                column (column 5) instead of the decoded nucleotide sequence. See
+                the Decoding colorspace alignments section for details about decoding.
+                This option is ignored in -S/--sam mode.
+            prompt: Do you want the color sequence to appear in the read-sequence
+                column? (-col-cseq)
+            format: ("", " --col-cseq")[value]
+            name: print_color_seq
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If reads are in colorspace and the default output mode is active,
+                --col-cqual causes the reads' original (color) quality sequence to
+                appear in the quality column (column 6) instead of the decoded qualities.
+                See the Colorspace alignment section for details about decoding. This
+                option is ignored in -S/--sam mode.
+            prompt: Do you want the reads to appear in the quality column instead
+                of the decoded qualitites? (-col-cqual)
+            format: ("", " --col-cqual")[value]
+            name: print_color_quals
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: When decoding colorpsace alignments, bowtie trims off a nucleotide
+                and quality from the left and right edges of the alignment. This is
+                because those nucleotides are supported by only one color, in contrast
+                to the middle nucleotides which are supported by two. Specify --col-keepends
+                to keep the extreme-end nucleotides and qualities.
+            prompt: Do you want to keep extreme-end nucleotides and qualities? (-col-keepends)
+            format: ("", " --col-keepends")[value]
+            name: cs_keep_extreme_end_nucl
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_param
+        children:
+        - !mobyle/inputprogramparameter
+            comment: When outputting alignments, number the first base of a reference
+                sequence as 'int'.
+            prompt: 'Number the first base of a reference sequence as: (-B or --offbase)'
+            format: ("", " --offbase " + str(value))[value is not None and value !=
+                vdef]
+            name: ref_offset_value
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: Write alignments to a set of files named refXXXXX.map, where
+                XXXXX is the 0-padded index of the reference sequence aligned to.
+                This can be a useful way to break up work for downstream analyses
+                when dealing with, for example, large numbers of reads aligned to
+                the assembled human genome. If <hits> is also specified, it will be
+                ignored.
+            prompt: Write alignments to a set of files named refXXXXX.map? (--refout)
+            format: ("", " --refout")[value]
+            name: write_alignments
+            precond: {out_format: txt}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: When a reference sequence is referred to in a reported alignment,
+                refer to it by 0-based index (its offset into the list of references
+                that were indexed) rather than by name.
+            prompt: Refer reference sequence to a 0-based index if it is referred
+                to in a reported alignment? (-refidx)
+            format: ("", " --refidx")[value]
+            name: zero_based_idx
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Write all reads for which at least one alignment was reported
+                to a file with name <filename>. Written reads will appear as they
+                did in the input, without any of the trimming or translation of quality
+                values that may have taken place within bowtie. Paired-end reads will
+                be written to two parallel files with _1 and _2 inserted in the filename,
+                e.g., if <filename> is aligned.fq, the #1 and #2 mates that fail to
+                align will be written to aligned_1.fq and aligned_2.fq respectively.'
+            prompt: Prefix of the file name to write all reads for which at least
+                one alignment(--al)
+            format: ("", " --al " + str(value) + "_aligned_reads.fq")[value is not
+                None]
+            name: write_aligned
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Write all reads that could not be aligned to a file with name
+                <filename>. Written reads will appear as they did in the input, without
+                any of the trimming or translation of quality values that may have
+                taken place within Bowtie. Paired-end reads will be written to two
+                parallel files with _1 and _2 inserted in the filename, e.g., if <filename>
+                is unaligned.fq, the #1 and #2 mates that fail to align will be written
+                to unaligned_1.fq and unaligned_2.fq respectively. Unless --max is
+                also specified, reads with a number of valid alignments exceeding
+                the limit set with the -m option are also written to <filename>.'
+            prompt: Write all reads that could not be aligned to a file (--un)?
+            format: ("", " --un " + str(value) + "_unaligned_reads.fq")[value is not
+                None]
+            name: write_unaligned
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Write all reads with a number of valid alignments exceeding
+                the limit set with the -m option to a file with name <filename>. Written
+                reads will appear as they did in the input, without any of the trimming
+                or translation of quality values that may have taken place within
+                bowtie. Paired-end reads will be written to two parallel files with
+                _1 and _2 inserted in the filename, e.g., if <filename> is max.fq,
+                the #1 and #2 mates that exceed the -m limit will be written to max_1.fq
+                and max_2.fq respectively. These reads are not written to the file
+                specified with --un.'
+            prompt: Write all reads with a number of valid alignments exceeding the
+                limit set with the -m option to a file (--max)
+            format: ("", " --max " + str(value) + "_aligned_reads.fq" )[value is not
+                None]
+            name: write_align_with_n
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Suppress columns of output in the default output mode. E.g. if
+                --suppress 1,5,6 is specified, the read name, read sequence, and read
+                quality fields will be omitted. See Default Bowtie output for field
+                descriptions. This option is ignored if the output mode is -S/--sam.
+            prompt: Suppress columns of output in the default output mode? (--suppress)
+            format: ("", " --suppress " + str(value) )[value is not None]
+            name: columns_to_suppress
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Print the full reference sequence name, including whitespace,
+                in alignment output. By default bowtie prints everything up to but
+                not including the first whitespace.
+            prompt: Print full reference sequence name? (--fullref)
+            format: ("", " --fullref")[value]
+            name: write_full_alignment
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Job description:'
+            simple: true
+            mandatory: true
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: bowtie_alignment}
+        - !mobyle/inputprogramparameter
+            comment: 'Default output: One alignment per line. Each line is a collection
+                of 8 fields separated by tabs - refer Bowtie manual for detailsSAM
+                format : Print alignments in SAM format. See the SAM output section
+                of the manual for details. To suppress all SAM headers, use --sam-nohead
+                in addition to -S/--sam. To suppress just the @SQ headers (e.g. if
+                the alignment is against a very large number of reference sequences),
+                use --sam-nosq in addition to -S/--sam. bowtie does not write BAM
+                files directly, but SAM output can be converted to BAM on the fly
+                by piping bowtie''s output to samtools view. -S/--sam is not compatible
+                with --refout.BAM format: The bowtie SAM file is converted to sorted
+                BAM file using SAMTools package.'
+            prompt: Output formats
+            format: (" " , ( " -S | samtools view -bS - | samtools sort - ", " -S
+                " )[value == "sam"] )[value != "txt"] + str(output_file)
+            simple: true
+            argpos: 104
+            name: out_format
+            command: false
+            type: !mobyle/stringtype
+                default: sam
+                options:
+                - {label: Default hit file, value: txt}
+                - {label: SAM, value: sam}
+                - {label: BAM, value: bam}
+    - !mobyle/inputprogramparagraph
+        prompt: SAM Options
+        name: sam_options_para
+        precond: {out_format: sam}
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: 'If an alignment is non-repetitive, set the MAPQ field to this
+                value: (-mapq)'
+            format: ("", " --mapq " + str(value))[value is not None and value !=vdef]
+            name: mapq_quality
+            precond: {out_format: sam}
+            command: false
+            type: !mobyle/integertype {default: 255}
+        - !mobyle/inputprogramparameter
+            comment: Suppress header lines (starting with @) when output is -S/--sam.
+                This must be specified in addition to -S/--sam. --sam-nohead is ignored
+                unless -S/--sam is also specified.
+            prompt: Suppress @ header lines when output is SAM? (-sam-nohead)
+            format: ("", " --sam-nohead ")[value]
+            name: suppress_header
+            precond: {out_format: sam}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Suppress @SQ header lines when output is -S/--sam. This must
+                be specified in addition to -S/--sam. --sam-nosq is ignored unless
+                -S/--sam is also specified.
+            prompt: Supress @SQ header lines when output is SAM? (sam-nosq)
+            format: ("", " --sam-nosq ")[value]
+            name: suppress_sq
+            precond: {out_format: sam}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Add text (usually of the form TAG:VAL, e.g. ID:IL7LANE2) as a
+                field on the @RG header line. Specify --sam-RG multiple times to set
+                multiple fields. See the SAM Spec for details about what fields are
+                legal. Note that, if any @RG fields are set using this option, the
+                ID and SM fields must both be among them to make the @RG line legal
+                according to the SAM Spec. --sam-RG is ignored unless -S/--sam is
+                also specified.
+            prompt: 'Add ''text'' as a field on the @RG header line: (-sam-RG)'
+            format: ("", " --sam-RG " + str(value) )[value is not None]
+            name: add_rg
+            precond: {out_format: sam}
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output_param
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Bowtie Alignments
+            filenames: '"*.bam"'
+            name: bamout
+            precond: {out_format: bam}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Bowtie Alignments - SAM
+            filenames: '"*.sam"'
+            name: samout
+            precond: {out_format: sam}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Bowtie Alignments - Text output
+            filenames: '"*.txt"'
+            name: text_out
+            precond: {out_format: txt}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Multiple files - Text output
+            filenames: '"*.map"'
+            name: mapfiles
+            precond: {write_alignments: '1'}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Aligned reads
+            filenames: write_aligned + "_aligned_reads*.fq"
+            name: aligned_reads
+            precond:
+                write_aligned: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Unaligned reads
+            filenames: write_unaligned + "_unaligned_reads*.fq"
+            name: unaligned_reads
+            precond:
+                write_unaligned: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Aligned reads
+            filenames: write_align_with_n + "_aligned_reads*.fq"
+            name: reads
+            precond:
+                write_align_with_n: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"bowtie.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"bowtie.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0523', 'EDAM_operation:2520']
+topics: ['EDAM_topic:0102', 'EDAM_topic:0196']
+command: bowtie
+env: {}

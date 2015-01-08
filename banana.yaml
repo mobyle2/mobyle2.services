@@ -1,0 +1,134 @@
+!mobyle/program
+name: banana
+title: banana
+description: Plot bending and curvature data for B-DNA
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter {prompt: Dna base trimer roll angles data
+                file, format: '("", " -anglesfile=" + str(value))[value is not None
+                ]', argpos: 2, name: anglesfile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 3
+            name: graph
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 4
+            name: goutfile
+            command: false
+            type: !mobyle/stringtype {default: banana_graph}
+        - !mobyle/inputprogramparameter
+            prompt: Number of residues to be displayed on each line
+            format: ("", " -residuesperline=" + str(value))[value is not None and
+                value!=vdef]
+            argpos: 5
+            name: residuesperline
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 6
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: banana.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 7
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: outgraph_png
+            precond: {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: outgraph_gif
+            precond: {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: outgraph_ps
+            precond:
+                '#or':
+                - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: outgraph_meta
+            precond: {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: outgraph_data
+            precond: {graph: data}
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"banana.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"banana.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0461']
+topics: ['EDAM_topic:0097']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/banana.html', 'http://emboss.sourceforge.net/docs/themes']
+command: banana
+env: {}

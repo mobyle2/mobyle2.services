@@ -1,0 +1,125 @@
+!mobyle/program
+name: InterProScan
+version: '4.7'
+title: InterProScan (4.7)
+description: InterProScan - Signature Recognition Search Against the Integrated Resource
+    of Protein Domains and Functional Sites
+authors: <html:span xmlns:html="http://www.w3.org/1999/xhtml">Zdobnov E.M. and Apweiler
+    R.</html:span>
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input data
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: iprscan initiation
+            format: '"iprscan_launcher.sh"'
+            argpos: -2
+            name: iprscan_init
+            command: true
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Sequence where to look for some known motifs.
+            prompt: Query (-i)
+            format: '" -i "+ str(query_seq)'
+            simple: true
+            mandatory: true
+            name: query_seq
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Select the type of sequence corresponding to the one entered
+                above.
+            prompt: Sequence type
+            format: '" -seqtype "+ str(value)'
+            simple: true
+            mandatory: true
+            name: seqtype
+            command: false
+            type: !mobyle/stringtype
+                default: p
+                options:
+                - {label: Nucleic, value: n}
+                - {label: Proteic, value: p}
+    - !mobyle/inputprogramparagraph
+        prompt: InterProScan options
+        name: options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Switch on the InterPro lookup for results.
+            format: ("" , " -iprlookup")[bool(value)]
+            name: iprlookup
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show GO terms if iprlookup option is also given.
+            format: ("" , " -goterms")[bool(value)]
+            name: goterms
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {comment: Select the applications that will
+                perform the search in InterPro member databases., prompt: Applications
+                to launch, format: '" -appl "+ str(value)', simple: true, mandatory: true,
+            name: applications, command: false}
+        - !mobyle/inputprogramparameter
+            comment: Select the type of sequence corresponding to the one entered
+                above.
+            prompt: Output format
+            format: '" -format "+ str(value)'
+            simple: true
+            mandatory: true
+            name: output_format
+            command: false
+            type: !mobyle/stringtype
+                default: txt
+                options:
+                - {label: Raw, value: raw}
+                - {label: Txt, value: txt}
+                - {label: Html, value: html}
+                - {label: Xml, value: xml}
+                - {label: EBI header on top of xml, value: ebixml}
+                - {label: GFF, value: gff}
+    - !mobyle/inputprogramparameter
+        prompt: InterProScan results
+        format: '" -o "+value'
+        argpos: 0
+        name: outputFile
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {default: interpro_results}
+    - !mobyle/inputprogramparameter
+        prompt: Some constant options
+        format: '" -cli"'
+        argpos: -1
+        name: configStuff
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: The output file where to write results,
+        filenames: outputFile, name: outputFilePath}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"InterProScan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"InterProScan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: '<html:span xmlns:html="http://www.w3.org/1999/xhtml">Zdobnov
+        E.M. and Apweiler R. "InterProScan - an integration platform for the signature-recognition
+        methods in InterPro" Bioinformatics, 2001, 17(9): p. 847-8.</html:span>',
+    url: null}
+documentation_links: ['http://www.ebi.ac.uk/Tools/InterProScan/help.html']
+env: {}

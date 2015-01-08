@@ -1,0 +1,154 @@
+!mobyle/program
+name: distmat
+title: distmat
+description: Create a distance matrix from a multiple sequence alignment
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            comment: File containing a sequence alignment.
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200', 'EDAM_format:1993', 'EDAM_format:1996',
+                    'EDAM_format:1985', 'EDAM_format:1986', 'EDAM_format:1988', 'EDAM_format:1989',
+                    'EDAM_format:1987', 'EDAM_format:2002', 'EDAM_format:2003', 'EDAM_format:1999',
+                    'EDAM_format:2001', 'EDAM_format:2001', 'EDAM_format:2001', 'EDAM_format:1990']
+                data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Multiple substitution correction methods for nucleotides.
+            prompt: Multiple substitution correction methods for nucleotides
+            format: ("", " -nucmethod=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: nucmethod
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Uncorrected, value: '0'}
+                - {label: Jukes-cantor, value: '1'}
+                - {label: Kimura, value: '2'}
+                - {label: Tamura, value: '3'}
+                - {label: Tajima-nei, value: '4'}
+                - {label: Jin-nei gamma, value: '5'}
+        - !mobyle/inputprogramparameter
+            comment: Multiple substitution correction methods for proteins.
+            prompt: Multiple substitution correction methods for proteins
+            format: ("", " -protmethod=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: protmethod
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Uncorrected, value: '0'}
+                - {label: Jukes-cantor, value: '1'}
+                - {label: Kimura protein, value: '2'}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Option to use the ambiguous codes in the calculation of the Jukes-Cantor
+                method or if the sequences are proteins.
+            prompt: Use the ambiguous codes in the calculation.
+            format: ("", " -ambiguous")[ bool(value) ]
+            argpos: 4
+            name: ambiguous
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Option to weight gaps in the uncorrected (nucleotide) and Jukes-Cantor
+                distance methods.
+            prompt: Weight given to gaps
+            format: ("", " -gapweight=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: gapweight
+            command: false
+            type: !mobyle/floattype {default: 0.0}
+        - !mobyle/inputprogramparameter
+            comment: Choose base positions to analyse in each codon i.e. 123 (all
+                bases), 12 (the first two bases), 1, 2, or 3 individual  bases.
+            prompt: Base position to analyse
+            format: ("", " -position=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: position
+            command: false
+            type: !mobyle/integertype {default: 123}
+        - !mobyle/inputprogramparameter
+            comment: This will force the calculation of parameter 'a' in the Jin-Nei
+                Gamma distance calculation, otherwise the default is 1.0  (see -parametera
+                option).
+            prompt: Calculate the nucleotide jin-nei parameter 'a'
+            format: ("", " -calculatea")[ bool(value) ]
+            argpos: 7
+            name: calculatea
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: User defined parameter 'a' to be use in the Jin-Nei Gamma distance
+                calculation. The suggested value to be used is 1.0 (Jin  et al.) and
+                this is the default.
+            prompt: Nucleotide jin-nei parameter 'a'
+            format: ("", " -parametera=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: parametera
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 9
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: distmat.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter {prompt: Outfile_out option, filenames: outfile,
+            name: outfile_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"distmat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"distmat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0289']
+topics: ['EDAM_topic:0159', 'EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/distmat.html', 'http://emboss.sourceforge.net/docs/themes']
+command: distmat
+env: {}

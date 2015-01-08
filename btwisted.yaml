@@ -1,0 +1,78 @@
+!mobyle/program
+name: btwisted
+title: btwisted
+description: Calculate the twisting in a B-DNA sequence
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter {prompt: Dna base pair twist angle data file,
+            format: '("", " -angledata=" + str(value))[value is not None ]', argpos: 2,
+            name: angledata, command: false}
+        - !mobyle/inputprogramparameter {prompt: Dna base pair stacking energies data
+                file, format: '("", " -energydata=" + str(value))[value is not None
+                ]', argpos: 3, name: energydata, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 4
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: btwisted.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 5
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"btwisted.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"btwisted.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0262']
+topics: ['EDAM_topic:0097']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/btwisted.html', 'http://emboss.sourceforge.net/docs/themes']
+command: btwisted
+env: {}

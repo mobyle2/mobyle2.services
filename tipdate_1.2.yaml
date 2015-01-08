@@ -1,0 +1,341 @@
+!mobyle/program
+name: tipdate
+version: '1.2'
+title: TipDate
+description: Analysis of trees with dated tips
+authors: Andrew Rambaut
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {comment: TipDate  requires a  sequence alignment
+            together with a description of the quartets and dates to be used. The
+            idea is that the user may supply an alignment of a large number of species
+            and then define multiple quartets to be constructed from them.Note that
+            the sequences names have a date at the end (in this case in years). TipDate
+            looks for any number at the end of the names and assumes these are dates.
+            They can be decimal (i.e. 98.2) is 98 and 1/5 (if you want months specify
+            the whole date in months). The units are arbitrary because the rates and
+            dates estimated by the program will be specified in the same units the
+            program doesn't need to know what they are., prompt: Alignment file, format: '"
+            <" + str(value)', simple: true, argpos: 10, mandatory: true, name: alignment,
+        command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Model This option sets the model of nucleotide substitution with
+                a choice of either F84, HKY (also known as HKY85) or REV (markov general
+                reversable model). The first two models are quite similar but not
+                identical.  They both require a transition transversion ratio and
+                relative base frequencies as parameters.  Other models such as K2P,
+                F81 and JC69 are special cases of HKY and can be obtained by setting
+                the nucleotide frequencies equal (for K2P) or the transition transversion
+                ratio to 1.0 (for F81) or both (for JC69).
+            prompt: MODEL (-m)
+            format: ( "" , " -m" + str(value))[ value is not None and value != vdef]
+            name: model
+            command: false
+            type: !mobyle/stringtype
+                default: F84
+                options:
+                - {label: F84, value: F84}
+                - {label: HKY, value: HKY}
+                - {label: REV (markov general reversable model), value: REV}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies the Molecular Clock model (Single Rate,
+                SR model). This model is the equivalent of the DNAMLK program in PHYLIP
+                or specifying the molecular clock option in PAUP*. The default (i.e.,
+                not specifying k) gives the Non-Clock model (Different Rate, DR model).
+            prompt: Molecular clock model (-k)
+            format: ( "" , " -k" )[ value ]
+            name: constant_rate
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'This option specifies the Variable Rate Dated Tip
+
+                (VRDT) model. This model assumes that the rate of substitution changes
+                linearly
+
+                as we go back through time. The rate of change of rate is given as
+                a proportion
+
+                of the rate of substitution at the present. This rate can be positive
+                or negative but not all data sets will have the power to estimate
+                this parameter.Using this option will estimate the rate of evolution
+                as a maximum likelihood parameter. You can also constrain the estimation
+                of this parameter to be only positive or only negative'
+            prompt: Variable Rate Tip Date Model (+w)
+            format: ( "" , " " + str(value) )[ value !=vdef and value != "-w"]
+            name: change_rate_estim
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: 'off', value: 'null'}
+                - {label: Maximum likelihood parameter (+w), value: +w}
+                - {label: 'Maximum likelihood parameter: only positive (+w+)', value: +w+}
+                - {label: 'Maximum likelihood parameter: only negative (+w-)', value: +w-}
+                - {label: User value for variable Rate (-w), value: -w}
+        - !mobyle/inputprogramparameter
+            comment: Where value is an real number that gives the rate of change of
+                rate as proportion of rate at present per unit time.
+            prompt: Variable Rate Tip Date Model with user value (-w)
+            format: '" -w " + str(value)'
+            mandatory: true
+            name: user_rate_value
+            precond: {change_rate_estim: -w}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Estimate confidence intervals for the rate of change of rate
+                parameter in the Variable Rate Dated Tip model (requires +w option).
+            prompt: Estimate confidence intervals ( require +w option) (-iw)
+            format: ( "" , " -iw" )[ value ]
+            name: change_confidence
+            precond: change_confidence
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies the Single Rate Date Tips (SRDT) model.
+                The default value is the Non-Clock model. The input tree and sequences
+                must have names that end with dates. Using this option will estimate
+                the rate of evolution as a maximum likelihood parameter.
+            prompt: Tip Date Model with estimation of the rate of evolution (+s)
+            format: ( "" , " +s" )[ value  ]
+            name: tip_date
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies which parameters should have confidence
+                intervals estimated. The default is not to estimate confidence intervals.
+                These options can be used in combination.
+            prompt: Estimate confidence intervals for the absolute rate of substitution
+                (-is)
+            format: ( "" , " -is" )[ value ]
+            name: substitution_confidence
+            precond: tip_date
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Estimate confidence intervals for date of root of tree (-id)
+            format: ( "" , " -id" )[ value ]
+            name: date_confidence
+            precond: tip_date
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies the value to use to obtain the confidence
+                intervals around the estimate of rate of molecular evolution (and
+                corresponding date of root of the tree).Where value is a real number
+                >= 0 that specifies the log likelihood ratio that gives the confidence
+                interval. The default is 1.92 which corresponds to half c2 with 1
+                degree of freedom. A value of 0 will disable the calculation of confidence
+                intervals.
+            prompt: Limit to use estimating confidence intervals (-l)
+            format: ( "" , " -l " + str(value) )[ value is not None and value != vdef]
+            name: limit
+            command: false
+            type: !mobyle/floattype {default: 1.92}
+        - !mobyle/inputprogramparameter
+            comment: Where the value is an real number that gives the rate of molecular
+                evolution in substitutions per site per unit time (whatever the units
+                of time that are represented by the input tip dates).Variable Rate
+                Tip Date Model This option specifies the Variable Rate Dated Tip (VRDT)
+                model. This model assumes that the rate of substitution changes linearly
+                as we go back through time. The rate of change of rate is given as
+                a proportion of the rate of substitution at the present. This rate
+                can be positive or negative but not all data sets will have the power
+                to estimate this parameter. This model must be used in conjunction
+                with the +s or -s options, above.
+            prompt: 'Tip date Model without estimation of the rate of evolution: user
+                value (-s)'
+            format: ( "" , " -s " + str(value) )[ value is not None]
+            name: tip_date_specified
+            precond: {'#not': tip_date}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Alternatively TipDate can find the maximum likelihood position
+                of the root. This tries all possible positions (2n-3) so increases
+                the duration of analysis.
+            prompt: Estimate root tree (+r)
+            format: ( "" , " +r" )[ value  ]
+            name: root_value_estimate
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'The input tree must be rooted. This option is used to specify
+                an outgroup sequence to root the tree with (sorry this is not very
+                sophisticated: if you need to use more than one outgroup, root the
+                tree before hand).Where value is an integer number which refers to
+                the sequence that will be used to root the tree (starting at 1).'
+            prompt: Specify rooting of tree To perform the molecular clock and tip
+                date models (-r)
+            format: ( "" , " -r " + str(value) )[ value is not None and value !=vdef]
+            name: root_value
+            precond: {'#not': root_value_estimate}
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: 'CODON CATEGORIES = 112, 123, 120, etc. [default: homogeneity]
+                (-p)'
+            format: ( "" , " -p " + str(value) )[ value is not None ]
+            name: codon_categories
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Using this option the user may specify the relative rates for
+                each codon position. This allows codon-specific rate heterogeneity
+                to be modelled. The default is no site-specific rate heterogeneity.
+            prompt: 'CODON-specific Rate Heterogeneity: #1 #2 #3 separated by commas
+                (-c)'
+            format: ( "" , " -c" + str(value) )[ value is not None ]
+            name: codon_rate
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Estimate seperate models for each site category (-e)
+            format: ( "" , " -e" )[ value ]
+            name: seperate
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Using this option the user may specify the\n\t      number of\
+                \ categories for the discrete gamma rate heterogeneity model. Enter\
+                \ an integer between 2 and 32 that specifies the number of categories\
+                \ to use with the discrete gamma rate heterogeneity model."
+            prompt: Discrete Gamma Rate Heterogeneity (2 to 32) (-g)
+            format: ( "" , " -g " + str(value) )[ value is not None ]
+            name: gamma
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: 'Using this option the user may specify a shape for the gamma
+                rate heterogeneity called alpha. The default is no site-specific rate
+
+                heterogeneity. Where value is a real number >0 that specifies the
+                shape of the gamma distribution to use with gamma rate heterogeneity.'
+            prompt: Gamma Rate Heterogeneity (-a)
+            format: ( "" , " -a " + str(value) )[value is not None]
+            name: alpha
+            precond:
+                gamma: {'#ne': None}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of Datasets (-n)
+            format: ( "" , " -n " + str(value) )[ value is not None and value != vdef]
+            name: datasets
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: User branch-lengths [default = estimate] (-ul)
+            format: ("", " -ul" ) [value]
+            name: user_branch
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Equal frequencies of nucleotide (-f=)
+            format: ( "" , " -f=" )[ value ]
+            name: equal_freq
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This option is used to specify the relative\n\t      frequencies\
+                \ of the four nucleotides. By default, TipDate will estimate them\
+                \ empirically from the data.  If the given values don't sum to 1.0\
+                \ then they will be scaled so that they do.Value is four decimal numbers\
+                \ for the frequencies of A, C, G and T respectively, separated by\
+                \ commas."
+            prompt: 'Relative nucleotide frequencies: #A #C #G #T separated by commas
+                (-f)'
+            format: ( "" , " -f" + str(value) )[ value is not None]
+            name: freq_bases
+            precond: {'#not': equal_freq}
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to set a value for the transition
+                transversion ratio (TS/TV). This is only valid when either the HKY
+                or F84 model has been selected. Value is a decimal number greater
+                than zero.
+            prompt: Transition/transversion ratio for F84/HKY model (-t)
+            format: ( "" , " -t" + str(value) )[ value is not None and value != vdef]
+            name: transition_transversion
+            precond:
+                '#or':
+                - {model: F84}
+                - {model: HKY}
+            command: false
+            type: !mobyle/floattype {default: 2.0}
+        - !mobyle/inputprogramparameter
+            comment: Where value are size decimal numbers for the instantaneous rates
+                of change from A to C, A to G, A to T, C to G, C to T and G to T respectively,
+                separated by commas. The matrix is symmetrical so the reverse changes
+                occur at the same instantaneous rate as forward changes (e.g. C to
+                A equals A to C) and therefore only six values need be set. These
+                values will be scaled such that the last value (G to T) is 1.0 and
+                the others are set relative to this.
+            prompt: 'Rate matrix values for REV model: 6 values separated by commas
+                (-t)'
+            format: ( "" , " -t" + str(value) )[ value is not None]
+            name: rate_matrix
+            precond: {model: REV}
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Print final branch lengths (-vb)
+            format: ( "" , " -vb" )[ value ]
+            name: branch
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Write likelihoods for each Site (-vs)
+            format: ( "" , " -vs" )[ value ]
+            name: likelihoods
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Don't Write trees (-vw)
+            format: ( "" , " -vw" )[ value ]
+            name: notrees
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show indication of progress (-vp)
+            format: ( "" , " -vp" )[ value ]
+            name: progress
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree file
+        filenames: '"tipdate.out"'
+        name: outtree
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"tipdate.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0557']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'Andrew Rambaut, 2000. Estimating the rate of molecular evolution:
+        Incorporating non-contemporaneous sequences into maximum likelihood phylogenies.
+        Bioinformatics.', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/tipdate/TipDate.v1.2.Manual.pdf']
+command: tipdate
+env: {}

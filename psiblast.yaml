@@ -1,0 +1,431 @@
+!mobyle/program
+name: psiblast
+title: PSI-Blast
+description: Position Specific Iterative Blast
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: 'The blastpgp program can do an iterative search in which sequences
+            found in one round of searching are used to build a score model for the
+            next round of searching. In this usage, the program is called Position-Specific
+            Iterated BLAST, or PSI-BLAST. As explained in the accompanying paper,
+            the BLAST algorithm is not tied to a specific score matrix. Traditionally,
+            it has been implemented using an AxA substitution matrix where A is the
+            alphabet size. PSI-BLAST instead uses a QxA matrix, where Q is the length
+            of the query sequence; at each position the cost of a letter depends on
+            the position w.r.t. the query and the letter in the subject sequence.The
+            position-specific matrix for round i+1 is built from a constrained multiple
+            alignment among the query and the sequences found with sufficiently low
+            e-value in round i. The top part of the output for each round distinguishes
+            the sequences into: sequences found previously and used in the score model,
+            and sequences not used in the score model. The output currently includes
+            lots of diagnostics requested by users at NCBI. To skip quickly from the
+            output of one round to the next, search for the string ''producing'',
+            which is part of the header for each round and likely does not appear
+            elsewhere in the output. PSI-BLAST ''converges'' and stops if all sequences
+            found at round i+1 below the e-value threshold were already in the model
+            at the beginning of the round.'
+        format: '"blastpgp"'
+        argpos: 0
+        name: psiblast
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Sequence File (-i)
+        format: '" -i " + str(value)'
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: query
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Start of required region in query (-S)
+        format: ( "" , " -S " + str(value) )[ value is not None and value != vdef]
+        name: start_region
+        command: false
+        type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparameter
+        comment: Location on query sequence. -1 indicates end of query
+        prompt: End of required region in query (-H)
+        format: ( "" , " -H " + str(value) )[ value is not None and value != vdef]
+        name: end_region
+        command: false
+        type: !mobyle/integertype {default: -1}
+    - !mobyle/inputprogramparameter
+        comment: Choose a protein db for blastp or blastx.
+        prompt: Protein database (-d )
+        format: '" -d " + str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: protein_db
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a database, value: 'null'}
+            - {label: 'uniprot: Universal Protein Resource', value: uniprot}
+            - {label: 'uniprot_sprot: Universal Protein Resource (SwissProt part)',
+                value: uniprot_sprot}
+            - {label: 'uniprot_trembl: Universal Protein Resource (TrEmbl part)',
+                value: uniprot_trembl}
+            - {label: 'nrprot: NCBI non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                value: nrprot}
+            - {label: 'nrprot_month: NCBI month non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                value: nrprot_month}
+            - {label: 'genpept: Genbank translations (last rel. + upd.)', value: genpept}
+            - {label: 'genpept_new: genpept updates', value: genpept_new}
+            - {label: 'gpbct: genpept bacteries', value: gpbct}
+            - {label: 'gppri: primates', value: gppri}
+            - {label: 'gpmam: other mammals', value: gpmam}
+            - {label: 'gprod: rodents', value: gprod}
+            - {label: 'gpvrt: other vertebrates', value: gpvrt}
+            - {label: 'gpinv: invertebrates', value: gpinv}
+            - {label: 'gppln: plants (including yeast)', value: gppln}
+            - {label: 'gpvrl: virus', value: gpvrl}
+            - {label: 'gpphg: phages', value: gpphg}
+            - {label: 'gpsts: STS', value: gpsts}
+            - {label: 'gpsyn: synthetic', value: gpsyn}
+            - {label: 'gppat: patented', value: gppat}
+            - {label: 'gpuna: unatotated', value: gpuna}
+            - {label: 'gphtg: GS (high throughput Genomic Sequencing)', value: gphtg}
+            - {label: 'sbase: annotated domains sequences', value: sbase}
+    - !mobyle/inputprogramparagraph
+        prompt: Scoring option
+        name: scoring
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Cost to open a gap (-G)
+            format: ( "" , " -G " + str(value) )[ value is not None and value != vdef]
+            name: open_a_gap
+            command: false
+            type: !mobyle/integertype {default: 11}
+        - !mobyle/inputprogramparameter
+            comment: 'Limited values for gap existence and extension are supported
+                for these three programs. Some supported and suggested values are:Existence
+                Extension10 -- 110 -- 211 -- 18 -- 29 -- 2(source: NCBI Blast page)'
+            prompt: Cost to extend a gap (-E)
+            format: ( "" , " -E " + str(value) )[ value is not None and value != vdef]
+            name: extend_a_gap
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Similarity matrix (-M)
+            format: ( "" , " -M " + str(value) )[ value is not None and value != vdef]
+            name: matrix
+            command: false
+            type: !mobyle/stringtype
+                default: BLOSUM62
+                options:
+                - {label: BLOSUM45, value: BLOSUM45}
+                - {label: BLOSUM80, value: BLOSUM80}
+                - {label: BLOSUM62, value: BLOSUM62}
+                - {label: PAM30, value: PAM30}
+                - {label: PAM70, value: PAM70}
+    - !mobyle/inputprogramparagraph
+        comment: This options also takes a string as an argument.  One may use such
+            a string to change the specific parameters of seg or invoke other filters.
+            Please see the 'Filtering Strings' section (below) for details.
+        prompt: Filtering and masking options
+        name: filter_opt
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Filter query sequence with SEG (-F)
+            format: ( "" , " -F T" )[ value ]
+            name: filter
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option specifies that any lower-case letters in the input
+                FASTA file should be masked.
+            prompt: Use lower case filtering (-U)
+            format: ("", " -U T")[value]
+            name: lower_case
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Selectivity options
+        name: selectivity_opt
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The statistical significance threshold for reporting matches
+                against database sequences; the default value is 10, such that 10
+                matches are expected to be found merely by chance, according to the
+                stochastic model of Karlin and Altschul (1990). If the statistical
+                significance ascribed to a match is greater than the EXPECT threshold,
+                the match will not be reported. Lower EXPECT thresholds are more stringent,
+                leading to fewer chance matches being reported. Fractional values
+                are acceptable.
+            prompt: Expected value (-e)
+            format: ("" , " -e " + str(value))[ value is not None and value != vdef]
+            simple: true
+            name: Expect
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: 'Use words of size N.Zero invokes default behaviorDefault value:
+                3'
+            prompt: Word Size (-W)
+            format: ("" , " -W "+str(value))[value is not None]
+            name: word_size
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: When  multiple   hits  method  is  used,  this parameter defines
+                the distance from last hit on the same diagonal to the new one.Zero
+                means single hit algorithm.
+            prompt: Multiple hits window size (-A)
+            format: ( "" , " -A " + str(value) )[ value is not None and value != vdef]
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 40}
+        - !mobyle/inputprogramparameter
+            comment: Blast seeks first short word pairs whose aligned score reaches
+                at least this value
+            prompt: Threshold for extending hits (-f)
+            format: ( "" , " -f " + str(value) )[ value is not None and value !=vdef]
+            name: extend_hit
+            command: false
+            type: !mobyle/integertype {default: 11}
+        - !mobyle/inputprogramparameter
+            comment: This is the value that control the path graph region explored
+                by Blast during a gapped extension (Xg in the NAR paper).
+            prompt: X dropoff value for gapped alignment (-X)
+            format: ("" , " -X " + str(value))[ value is not None ]
+            name: dropoff
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: This parameter controls the dropoff for the final reported alignment.
+                See also the -X parameter.
+            prompt: X dropoff value for final gapped alignment (-Z)
+            format: ( "" , " -Z " + str(value) )[ value is not None and value != vdef]
+            name: dropoff_z
+            command: false
+            type: !mobyle/integertype {default: 25}
+        - !mobyle/inputprogramparameter
+            comment: This parameter controls the dropoff at ungapped extension stage.
+                See also the -X parameter.
+            prompt: Dropoff for blast ungapped extensions in bits (-y)
+            format: ( "" , " -y " + str(value) )[ value is not None and value != vdef]
+            name: dropoff_y
+            command: false
+            type: !mobyle/floattype {default: 7.0}
+        - !mobyle/inputprogramparameter
+            comment: Use zero for the real size
+            prompt: Effective length of the search space (-Y)
+            format: ("" , " -Y "+str(value))[value is not None and value !=vdef]
+            name: eff_len
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: If this option is used, a value of 100 is recommended.
+            prompt: Number of best hits from a region to keep (-K)
+            format: ("" , " -K "+str(value))[value is not None]
+            name: keep_hits
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Single-hit or multiple-hit mode (-P)
+            format: ("" , " -P "+str(value))[value != "0"]
+            name: mode
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Multiple-hit (0), value: '0'}
+                - {label: Single-hit (1), value: '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Number of bits to trigger gapping (-N)
+            format: ("" , " -N "+str(value))[value is not None and value !=vdef]
+            name: nb_bits
+            command: false
+            type: !mobyle/integertype {default: 22}
+    - !mobyle/inputprogramparagraph
+        prompt: PSI-Blast specific selectivity options
+        name: psi_spec_opt
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Maximum number of passes to use in  multipass version (-j)
+            format: ( "" , " -j " + str(value) )[ value is not None and value != vdef]
+            name: max_passes
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: e-value threshold for inclusion in multipass model (-h)
+            format: ( "" , " -h " + str(value) )[ value is not None and value != vdef]
+            name: expect_in_multipass
+            command: false
+            type: !mobyle/floattype {default: 0.002}
+        - !mobyle/inputprogramparameter
+            comment: This constant is the weight given to a pre-calculated residue
+                target frequency (versus the observed one) in a column of the position
+                specific matrix. The larger its value, the greater the emphasis given
+                to prior knowledge of residue relationships vis a vis observed residue
+                frequencies (beta constant in NAR paper).
+            prompt: Constant in pseudocounts for multipass version (-c)
+            format: ( "" , " -c " + str(value) )[ value is not None and value != vdef]
+            name: pseudocounts
+            command: false
+            type: !mobyle/integertype {default: 9}
+    - !mobyle/inputprogramparagraph
+        prompt: Report options
+        name: affichage
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which one-line descriptions
+                will be reported.
+            prompt: Number of one-line descriptions to show? (-v)
+            format: ( "" , " -v " + str(value) )[ value is not None and value != vdef]
+            name: Descriptions
+            command: false
+            type: !mobyle/integertype {default: 500}
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of database sequences for which high-scoring segment
+                pairs will be reported (-b).
+            prompt: Number of database sequences to show alignments? (-b)
+            format: ( "" , " -b " + str(value) )[ value is not None and value != vdef]
+            name: Alignments
+            command: false
+            type: !mobyle/integertype {default: 250}
+        - !mobyle/inputprogramparameter
+            prompt: Alignment view options (-m)
+            format: ( ""  , " -m " + str(value) )[ value is not None and value !=
+                vdef]
+            name: view_alignments
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Pairwise (0), value: '0'}
+                - {label: Query-anchored showing identities (1), value: '1'}
+                - {label: Query-anchored no identities (2), value: '2'}
+                - {label: 'Flat query-anchored, show identities (3)', value: '3'}
+                - {label: 'Flat query-anchored, no identities (4)', value: '4'}
+                - {label: Query-anchored no identities and blunt ends (5), value: '5'}
+                - {label: 'Flat query-anchored, no identities and blunt ends (6)',
+                    value: '6'}
+                - {label: XML Blast output (7), value: '7'}
+                - {label: Tabular output (8), value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Text output file
+            format: '" -o psiblast.txt"'
+            argpos: 10
+            name: txtoutput
+            precond:
+                view_alignments: {'#ne': '7'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: XML output file
+            format: '" -o psiblast.xml"'
+            argpos: 10
+            name: xmloutput
+            precond: {view_alignments: '7'}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Html output
+            format: ("" , " && html4blast -g -o psiblast.html psiblast.txt")[value]
+            argpos: 11
+            name: htmloutput
+            precond:
+                view_alignments:
+                    '#nin': ['7', '8']
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Believe the query defline (-J)
+            format: ("" , " -J")[ value ]
+            name: believe
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: SeqAlign is in ASN.1 format, so that it can be read with NCBI
+                tools (such as sequin). This allows one to view the results in different
+                formats.
+            prompt: SeqAlign file (-J option must be true) (-O)
+            format: ( "" , " -O " + str(value) )[ value is not None ]
+            name: seqalign_file
+            precond: believe
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Save PSI-Blast Matrix to file (-C)
+        format: ( "" , " -C "+ str(value) )[ value is not None ]
+        name: save_matrix
+        precond:
+            max_passes: {'#gt': '1'}
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Save PSI-BLAST Matrix as text to file (-Q)
+        format: ( "" , " -Q " + str(value) )[ value is not None ]
+        name: save_txt_matrix
+        precond:
+            max_passes: {'#gt': '1'}
+        command: false
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Blast text report
+        filenames: '"psiblast.txt"'
+        name: txtfile
+        precond:
+            view_alignments: {'#ne': '7'}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/outputprogramparameter
+        prompt: Blast xml report
+        filenames: '"psiblast.xml"'
+        name: xmlfile
+        precond: {view_alignments: '7'}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Blast html report
+        filenames: '"psiblast.html"'
+        name: htmlfile
+        precond:
+            view_alignments:
+                '#nin': ['7', '8']
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        filenames: '"*.gif"'
+        name: imgfile
+        precond:
+            view_alignments:
+                '#nin': ['7', '8']
+        hidden: true
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"psiblast.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"psiblast.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaeffer,Jinghui
+        Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), Gapped BLAST
+        and PSI-BLAST: a new generation of protein database search programs, Nucleic
+        Acids Res. 25:3389-3402.', url: null}
+env: {}

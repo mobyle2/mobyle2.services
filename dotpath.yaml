@@ -1,0 +1,158 @@
+!mobyle/program
+name: dotpath
+title: dotpath
+description: Draw a non-overlapping wordmatch dotplot of two sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Asequence option
+            format: ("", " -asequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: asequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Bsequence option
+            format: ("", " -bsequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: bsequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Word size (value greater than or equal to 2)
+            format: ("", " -wordsize=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: wordsize
+            command: false
+            type: !mobyle/integertype {default: 4}
+            ctrls:
+            -   message: Value greater than or equal to 2 is required
+                test:
+                    value: {'#gte': '2'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Displays the overlapping matches (in red) as well as the minimal
+                set of non-overlapping matches
+            prompt: Display the overlapping matches
+            format: ("", " -overlaps")[ bool(value) ]
+            argpos: 4
+            name: overlaps
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Draw a box around dotplot
+            format: (" -noboxit", "")[ bool(value) ]
+            argpos: 5
+            name: boxit
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            simple: true
+            argpos: 6
+            mandatory: true
+            name: graph
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 7
+            name: goutfile
+            command: false
+            type: !mobyle/stringtype {default: dotpath_graph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 8
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: outgraph_png
+            precond: {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: outgraph_gif
+            precond: {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: outgraph_ps
+            precond:
+                '#or':
+                - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: outgraph_meta
+            precond: {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: outgraph_data
+            precond: {graph: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dotpath.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dotpath.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0288', 'EDAM_operation:0490']
+topics: ['EDAM_topic:0159']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/dotpath.html', 'http://emboss.sourceforge.net/docs/themes']
+command: dotpath
+env: {}

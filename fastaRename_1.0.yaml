@@ -1,0 +1,56 @@
+!mobyle/program
+name: fastaRename
+version: '1.0'
+title: fasta header shortener
+description: helps out with the 10-character limit of the PHYLIP-PHYML formats
+authors: "Bertrand N\xE9ron"
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Input sequence file
+        format: '" " + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: input
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: type any kind of text
+        prompt: Output file with renamed headers
+        filenames: '"*.rename.fasta"'
+        name: output_fasta
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter {prompt: Output file header map, filenames: '"*.map"',
+        name: output_map}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastaRename.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastaRename.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\">Due to an incompatibility\
+    \ between the PHYLIP format and phyml and morePhyml named rules, \n          \
+    \  the using of long identifier in phyml or morePhyml failed. We proposed the\
+    \ following workaround:<html:ol><html:li>use fastaRename to generate an alignment\
+    \ with short ID and a file of ID mapping</html:li><html:li>perform your analysis\
+    \ with the alignment with short id</html:li><html:li>replace the short IDs in\
+    \ your tree (in NEWICK format) with nw_rename and the file of IDs mapping generated\
+    \ at the step 1.</html:li></html:ol></html:div>"
+operations: ['EDAM_operation:2121']
+topics: ['EDAM_topic:0220']
+command: fastaRename
+env: {}

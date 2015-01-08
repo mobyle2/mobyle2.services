@@ -1,0 +1,54 @@
+!mobyle/program
+name: blast2seqid
+version: '1.0'
+title: blast2seqid
+description: Extract sequence Ids from blast hits (in USA format)
+authors: "Bertrand N\xE9ron"
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: A blast output in pairwise format ( option -m 0 default ).
+        prompt: BLAST text report
+        format: '" "+str(value)'
+        simple: true
+        argpos: 40
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: ignore the hits until the hit n (integer)
+            format: ( "" , " --from " + str(value) )[value is not None]
+            argpos: 10
+            name: From
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: ignore the hits after the hit n (integer)
+            format: ( "" , " --to " + str(value) )[value is not None]
+            argpos: 20
+            name: To
+            command: false
+            type: !mobyle/integertype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: hits identifier, filenames: '"blast2seqid.out"',
+        name: id_list, output_type: stdout}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"blast2seqid.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "Extract the Identifier and Data Bank of the hits\n                    from\
+    \ the summary of a blast report ( in text format -m 0-6 ) \n                 \
+    \   The result is in USA list format."
+homepage_links: ['https://projets.pasteur.fr/projects/show/blast2usa']
+command: blast2usa
+env: {}
+source_links: ['https://projets.pasteur.fr/projects/list_files/blast2usa']

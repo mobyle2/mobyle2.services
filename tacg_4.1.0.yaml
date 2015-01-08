@@ -1,0 +1,490 @@
+!mobyle/program
+name: tacg
+version: 4.1.0
+title: TACG
+description: Restriction Enzyme analysis
+authors: Mangalam
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: DNA Sequence
+        format: '" < " + str( value ) + " "'
+        simple: true
+        argpos: 100
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Input options
+        name: input_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Select  the beginning  of a subsequence  from a larger sequence
+                file. The smallest sequence that tacg can handle is 4 bases, 10 for
+                the ladders map (-l). This allows analysis of primers and linkers.
+            prompt: Beginning of a subsequence in your sequence (-b)
+            format: ( "" , " -b " + str( value ) )[ value is not None ]
+            simple: true
+            name: beginning
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: End of a subsequence in your sequence (-e)
+            format: ( "" , " -e " + str(value) )[ value is not None ]
+            simple: true
+            name: end
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Form (or topology) of DNA (-f)
+            format: ( "" , " -f " + str(value) )[ value is not None and value != vdef]
+            simple: true
+            name: topology
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Circular, value: '0'}
+                - {label: Linear, value: '1'}
+        - !mobyle/inputprogramparameter
+            comment: The  pattern  matching  is adaptive; given a small window of
+                nondegenerate sequence, the algorithm will match very fast; if degenerate  sequence  is  detected,  it  will
+                switch  to a slower, iterative approach.  This results in speed that
+                is proportional to degeneracy for most cases.
+            prompt: Degeneracy flag - controls input and analysis of degenerate sequence
+                input (-D)
+            format: ( "" , " -D " + str(value) )[ value is not None and value != vdef]
+            name: degeneracy
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: FORCES exclusion of degens in sequence; only 'acgtu' accepted
+                        (0), value: '0'}
+                - {label: Cut as NONdegen unless degen's found; then cut as '-D3'
+                        (1), value: '1'}
+                - {label: 'Degen''s OK; ignore in KEY, but match outside of KEY (2)',
+                    value: '2'}
+                - {label: 'Degen''s OK; expand in KEY, find only EXACT matches (3)',
+                    value: '3'}
+                - {label: 'Degen''s OK; expand in KEY, find ALL POSSIBLE matches (4)',
+                    value: '4'}
+        - !mobyle/inputprogramparameter
+            prompt: Codon Usage table to use for translation (-C)
+            format: ( "" , " -C " + str(value) )[ value is not None and value != vdef]
+            name: codon
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Vertebrate Mitochondrial (1), value: '1'}
+                - {label: Yeast Mitochondrial (2), value: '2'}
+                - {label: 'Mold, Protozoan, and Coelenterate Mitochondrial and the
+                        Mycoplasma/Spiroplasma (3)', value: '3'}
+                - {label: Invertebrate Mitochondrial (4), value: '4'}
+                - {label: 'Ciliate, Dasycladacean and Hexamita Nuclear (5)', value: '5'}
+                - {label: Echinoderm Mitochondrial Code (6), value: '6'}
+                - {label: Euplotid Nuclear (7), value: '7'}
+                - {label: Bacterial (8), value: '8'}
+                - {label: Alternative Yeast Nuclear (9), value: '9'}
+                - {label: Ascidian Mitochondrial (10), value: '10'}
+                - {label: Flatworm Mitochondrial (11), value: '11'}
+                - {label: Blepharisma (12), value: '12'}
+                - {label: Chloro Mitochondrial (13), value: '13'}
+                - {label: Trematode Mitochondrial (14), value: '14'}
+                - {label: Scenedes Mitochondrial (15), value: '15'}
+                - {label: Thrausto Mitochondrial (16), value: '16'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Order the output by number of cuts/fragments (-c)
+            format: ( "" , " -c" )[ value ]
+            name: order_by_cut
+            precond:
+                '#or':
+                -   print_fragments: {'#ne': '0'}
+                - sites
+                - ladder_map
+                - gel_map
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'The number  is truncated to a # exactly divisible by 15 (-w
+                100  will  be interpreted as -w 90) and actual printed output will
+                be about 20 characters wider. Also applies to output of the ladder
+                and gel maps, so if you are trying to  get  more accuracy  and  your  output
+                device can display small fonts, you may want to use this flag to widen
+                the output.'
+            prompt: Output width (-w)
+            format: ( "" , " -w " + str(value) )[ value is not None and value != vdef]
+            name: width
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            prompt: Histogram output (-G)
+            format: ( "" , " -G" + str(binsize) +"," + str(value) )[ value is not
+                None ]
+            name: graphic
+            precond:
+                binsize: {'#ne': None}
+            command: false
+            type: !mobyle/stringtype
+                default: X
+                options:
+                - {label: Horizontal X axis (X), value: X}
+                - {label: Vertical Y axis (Y), value: Y}
+                - {label: Long output (L), value: L}
+        - !mobyle/inputprogramparameter
+            comment: N bases for which hits should be pooled (integer)
+            prompt: Step size in histogram
+            format: '""'
+            name: binsize
+            precond: graphic
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Controls the output for sequences (in a  collection)  that  have  no  hits  for  the
+                options  selected.
+            prompt: Controls the output for sequences (-i)
+            format: ( "" , " -i " + str(value) )[ value is not None and value != vdef]
+            name: idonly
+            command: false
+            type: !mobyle/stringtype
+                default: '-1'
+                options:
+                - {label: No control, value: '-1'}
+                - {label: ID line and normal output regardless of hits (0), value: '0'}
+                - {label: BOTH ID line and normal output are printed ONLY IF there
+                        are hits (1), value: '1'}
+                - {label: ONLY ID line is  printed  if there are hits (2), value: '2'}
+        - !mobyle/inputprogramparameter
+            prompt: Generates  HTML  tags (-H)
+            format: ( "" , " -H")[value]
+            name: html
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Generates  a  postscript plasmid map (--ps)
+            format: ( "" , " --ps")[value]
+            name: ps
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Enzymes Selection options
+        name: selection_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Maximum number of cuts allowed in sequence (-M)
+            format: ( "" , " -M " + str(value) )[ value is not None ]
+            name: max_cut
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum number of cuts in sequence for the enzyme to be selected
+                (-m)
+            format: ( "" , " -m " + str(value) )[ value is not None ]
+            name: min_cut
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: The 'magnitude' of the recognition sequence depends on the number
+                of defined bases that make up the site. Degenerate bases can also
+                contribute:acgt each count '1' magnitude pointyrwsmk each count '1/2'
+                magnitude pointbdhu each count '1/4' magnitude pointn doesn't count
+                at allThose enzymes sequences' patterns that 'sum' to the equivalent
+                of at least the given magnitude pass the testThe values are upwardly
+                inclusive (5=5,6,7,8 6=6,7,8 ...)
+            prompt: Select enzymes by magnitude of recognition site (-n)
+            format: ( "" , " -n " + str(value) )[ value is not None and value != vdef]
+            argpos: 2
+            name: magnitude
+            command: false
+            type: !mobyle/stringtype
+                default: '3'
+                options:
+                - {label: '3', value: '3'}
+                - {label: '4', value: '4'}
+                - {label: '5', value: '5'}
+                - {label: '6', value: '6'}
+                - {label: '7', value: '7'}
+                - {label: '8', value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Select enzymes by overhang generated (-o)
+            format: ( "" , " -o " + str(value) )[ value is not None and value != vdef]
+            name: overhang
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: 5' overhang (5), value: '5'}
+                - {label: 3' overhang (3), value: '3'}
+                - {label: Blunt (no overhang) (0), value: '0'}
+                - {label: All (1), value: '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Analyses
+        name: analyses
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Prints  the  summary  of site information, describing how many  times   each
+                pattern matches the sequence.  Those that match zero times are shown
+                first.  In Ver >2, only those that match at least once are shown in
+                the second part (the 0 matchers are  not reiterated)
+            prompt: Summary of site information (-s)
+            format: ( "" , " -s" )[ value ]
+            name: summary
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print/sort table of fragments (-F)
+            format: ( "" , " -F " + str(value) )[ value is not None and value != vdef]
+            name: print_fragments
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Don't print fragments (0), value: '0'}
+                - {label: Fragments printed in order of generation (unsorted) (1),
+                    value: '1'}
+                - {label: 'Fragments sorted by size, smallest to largest (2)', value: '2'}
+                - {label: Both (3), value: '3'}
+        - !mobyle/inputprogramparameter
+            prompt: Table of actual cut sites (-S)
+            format: ( "" , " -S 1" )[ value ]
+            name: sites
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Specify if you want a ladder map of selected enzymes, much like
+                the GCG MAPPLOT output.  Also appends a summary of those enzymes that
+                match a few times.  The number of matches that is included in the  summary  is  length-sensitive  in  the  distributed
+                source  code.
+            prompt: Ladder map of selected enzymes (-l)
+            format: ( "" , " -l" )[ value ]
+            name: ladder_map
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print a pseudo-graphic gel map (-g)
+            format: ( "" , " -g " + str(cutoff) )[ value ]
+            name: gel_map
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: You can cut off any size in 10^n increments (as you might want
+                to cut off very large fragments if you were doing chromosomal digests).
+            prompt: Low-end cutoff in number of bases for gel map (>= 10)
+            format: '""'
+            mandatory: true
+            name: cutoff
+            precond: gel_map
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Linear map
+            name: linear_map_options
+            argpos: 2
+            children:
+            - !mobyle/inputprogramparameter
+                comment: 'This spews the most output (about 10x  the  #  of input  characters)
+                    and depending on what other options are specified, can be of moderate
+                    to very  little use. If you want the co-translation, you''ll have
+                    to specify it via the -T flag below.  The Linear map also no longer
+                    shows ALL the  patterns  that match from the pattern file.  It
+                    now obeys the same filtering rules that the Sites, Fragments,
+                    Ladder Map and other analyses do.'
+                prompt: Specify if you want linear map (-L)
+                format: ( "" , " -L" )[ value ]
+                name: linear_map
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: Requests frames 1, 1-3, or 1-6 to be cotranslated with the
+                    Linear Map using 1  or  3 letter codes.
+                prompt: Linear co-translation (-T)
+                format: ( "" , " -T " + str(translation_frames) + "," + str(three_letter)
+                    )[ value ]
+                name: translation
+                precond:
+                    '#and':
+                    - linear_map
+                    -   three_letter: {'#ne': None}
+                    -   translation_frames: {'#ne': None}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Translation in how many frames
+                mandatory: true
+                name: translation_frames
+                precond: translation
+                command: false
+                type: !mobyle/stringtype
+                    default: '1'
+                    options:
+                    - {label: 1 frame, value: '1'}
+                    - {label: 3 frames, value: '3'}
+                    - {label: 6 frames, value: '6'}
+            - !mobyle/inputprogramparameter
+                prompt: Translation code ( 1 or 3-letter)
+                name: three_letter
+                precond: translation
+                command: false
+                type: !mobyle/stringtype
+                    default: '1'
+                    options:
+                    - {label: 1-letter, value: '1'}
+                    - {label: 3-letter, value: '3'}
+        - !mobyle/inputprogramparagraph
+            prompt: Open Reading Frames
+            name: orf_options
+            argpos: 2
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Do an ORF analysis (-O)
+                format: ( "" , " -O " + str(frame)+","+ str(min_size) )[ value ]
+                name: orf
+                precond:
+                    '#and':
+                    -   frame: {'#ne': None}
+                    -   min_size: {'#ne': None}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter {prompt: Frames to search, format: '""',
+                mandatory: true, name: frame, precond: orf, command: false}
+            - !mobyle/inputprogramparameter
+                prompt: Min ORF size
+                format: '""'
+                mandatory: true
+                name: min_size
+                precond: orf
+                command: false
+                type: !mobyle/integertype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Pattern Search
+            name: pattern_search_options
+            argpos: 2
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Do a pattern search (-p)
+                format: ( "" , " -p " + str(Name)+","+ str(pattern) +"," + str(errors)
+                    )[ value ]
+                name: pattern_search
+                precond:
+                    '#and':
+                    -   Name: {'#ne': None}
+                    -   pattern: {'#ne': None}
+                    -   errors: {'#ne': None}
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Pattern (<30 IUPAC character)
+                format: '""'
+                name: pattern
+                precond: pattern_search
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                prompt: Max number of errors that are tolerated (<6) (-p)
+                format: '""'
+                name: errors
+                precond: pattern_search
+                command: false
+                type: !mobyle/integertype {default: 0}
+            - !mobyle/inputprogramparameter
+                prompt: Label of pattern
+                format: '""'
+                name: Name
+                precond: pattern_search
+                command: false
+                type: !mobyle/stringtype {default: pattern1}
+            - !mobyle/inputprogramparagraph
+                prompt: Search for spatial relationships between factors (-P)
+                name: proximity_options
+                argpos: 2
+                children:
+                - !mobyle/inputprogramparameter
+                    comment: Use  this  option to search for spacial relationships
+                        between factors, 2 at a time (up to a total of 10).
+                    prompt: Do a proximity search
+                    format: ( "" , " -P " + str(nameA)+"," + str(distance)+ "," +
+                        str(nameB) )[ value ]
+                    name: proximity
+                    precond:
+                        '#and':
+                        -   nameA: {'#ne': None}
+                        -   distance: {'#ne': None}
+                        -   nameB: {'#ne': None}
+                    command: false
+                    type: !mobyle/booleantype {default: false}
+                - !mobyle/inputprogramparameter
+                    comment: 'Distance specification: [+-][lg]Dist_Lo[-Dist_Hi+ NameA
+                        is DOWNSTREAM of NameB (default is either)- NameA is UPSTREAM
+                        of NameB (ditto)l NameA is LESS THAN Dist_Lo from NameB (default)g
+                        NameA is GREATER THAN Dist_Lo from NameB'
+                    prompt: Distance between factors
+                    format: '""'
+                    mandatory: true
+                    name: distance
+                    precond: proximity
+                    command: false
+                    type: !mobyle/stringtype {}
+                - !mobyle/inputprogramparameter
+                    comment: NameA must be enzymes names (Rebase db)
+                    prompt: Name of first factor (nameA)
+                    format: '""'
+                    mandatory: true
+                    name: nameA
+                    precond: proximity
+                    command: false
+                    type: !mobyle/stringtype {}
+                - !mobyle/inputprogramparameter
+                    comment: NameB must be enzymes names (Rebase db)
+                    prompt: Name of second factor (nameB)
+                    format: '""'
+                    mandatory: true
+                    name: nameB
+                    precond: proximity
+                    command: false
+                    type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tacg output file
+        filenames: '"tacg.out"'
+        name: outfile
+        precond: {'#not': html}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfile, precond: ps}
+    - !mobyle/outputprogramparameter
+        prompt: Html file
+        filenames: '"*.html"'
+        argpos: 1000
+        name: htmlfile
+        precond: html
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"tacg.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2478']
+topics: ['EDAM_topic:0640']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/tacg/tacg4.0.main.html']
+homepage_links: ['http://tacg.sourceforge.net/']
+command: tacg
+env: {}
+source_links: ['http://sourceforge.net/projects/tacg/files/']

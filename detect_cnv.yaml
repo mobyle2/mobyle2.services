@@ -1,0 +1,723 @@
+!mobyle/program
+name: detect_cnv
+title: detect_cnv
+description: Copy Number Variation (CNV) detection from signal intensity data (Illumina
+    file)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Preprocessing of Illumina intensity file for Copy Number Variation
+            (CNV) detection
+        name: preprocess
+        children:
+        - !mobyle/inputprogramparameter {comment: "The input signal intensity file\
+                \ is a text file that contains information for one marker per\n  \
+                \                       line, and all fields in each line are tab-delimitedThe\
+                \ first line of the file specifies the meaning for each tab-delimited\
+                \ column. \n        For example, there are six fields in each line\
+                \ in the file, corresponding to SNP name, chromosome, \n        position,\
+                \ genotype, Log R Ratio (LRR) and B Allele Frequency (BAF), respectively.The\
+                \ CNV calling only requires the SNP Name, LRR and BAF values. Note\
+                \ that the relative position\n        of LRR and BAF is different\
+                \ from the previous file; again the header line tells the program\
+                \ that the \n        second column represents BAF values, yet the\
+                \ third column is LRR values.", prompt: Input  signal intensity file,
+            format: '" " + str(value)', simple: true, argpos: 1, mandatory: true,
+            name: infile, command: false}
+        - !mobyle/inputprogramparameter
+            prompt: Number of tab-delimited column (field) per individual genotyping
+                in intensity file
+            format: '" split " + str(value) + " -heading 3 --name_by_header -tab --out
+                "+ str(infile)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: split
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Penncnv analyses
+        name: analyse
+        argpos: 10
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "--test: test a signal intensity file to generate CNV calls.--joint:\
+                \ New in July 2008: generate CNV calls for a father-mother-off-\n\
+                \               spring trio via a one-step procedure. It is considerably\
+                \ slower\n               than the --trio argument, but generates more\
+                \ accurate CNV calls\n               with reduced false negative rates\
+                \ in simulation studies.--summary:   generate summary statistics on\
+                \ signal quality for each input\n               file. Usually the\
+                \ summary is provided when calling CNVs and can\n               be\
+                \ written to a log file via the --log argument; however, some-\n \
+                \              times users forget to use --log, such that the signal\
+                \ quality\n               information is lost. The --summary argument\
+                \ can calculate the\n               signal quality again quickly without\
+                \ calling CNVs."
+            prompt: Analyse type without cnv calls file
+            format: ( "" , " && detect_cnv.pl " + str(value) )[ value is not None
+                and value !=vdef]
+            simple: true
+            name: type
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choice, value: 'null'}
+                - {label: Individual-based CNV calling (test), value: --test}
+                - {label: Joint CNV calls for trio (joint), value: --joint}
+                - {label: Validate copy number at a pre-specified region (validate),
+                    value: --validate}
+                - {label: Summary statistics on signal quality (summary), value: --summary}
+        - !mobyle/inputprogramparameter
+            comment: "--trio:  generate CNV calls for a father-mother-offspring trio,\
+                \ given a\n               CNV file containing calls generated on each\
+                \ individual separately, a HMM model file, a PFB file, and the three\
+                \ signal\n               intensity files.--quartet:    jointly generate\
+                \ CNV calls for a father-mother-offspring1-offp-\n               spring2\
+                \ quartet, given a CNV file containing calls generated on\n      \
+                \         each individual separately, a HMM model file, a PFB file,\
+                \ and\n               the four signal intensity files.--cctest: perform\
+                \ a case-control test on the frequency of having CNVs for\n      \
+                \         each marker within CNVs. A separate phenotype file must\
+                \ be\n               specified via the --phenofile argument for this\
+                \ to work. The\n               actual test is a two-sided Fisher exact\
+                \ test. The --onesided\n               argument can be specified for\
+                \ performing one-sided test, and\n               the --type_filter\
+                \ argument can be specified so that only \"dup\"\n               or\
+                \ \"del\" is compared between cases and controls.--exclude_heterosomic:\
+                \ exclude CNV calls from chromosomes showing evidence of heterosomic\
+                \ abberations from a given file containing CNV calls. An\n       \
+                \        purely empirical method is applied in this procedure, although\n\
+                \               I recommended always manually examine the patterns\
+                \ of BAF to\n               determine whether heterosomic abberation\
+                \ is present in a particular sample, if the sample size is relatively\
+                \ small (<100)."
+            prompt: Analyse type with cnv calls file
+            format: ( "" , " && detect_cnv.pl " + str(value) )[ value is not None
+                and value !=vdef]
+            simple: true
+            argpos: 10
+            name: rawcnv
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choice, value: 'null'}
+                - {label: Trio-based CNV calling (trio), value: --trio}
+                - {label: Posterior CNV calls for quartet (quartet), value: --quartet}
+                - {label: Case-control comparison of per-marker CNV frequency (cctest),
+                    value: --cctest}
+                - {label: Empirically exclude CNVs in heterosomic chromosomes (exclude_heterosomic),
+                    value: --exclude_heterosomic}
+        - !mobyle/inputprogramparameter
+            comment: Specify an output file prefix.
+            prompt: Input file name
+            format: '" " + infile + ".*"'
+            argpos: 18
+            name: infile_name
+            precond:
+                '#or':
+                - {type: --test}
+                - {type: --joint}
+                - {type: --validate}
+                - {type: --summary}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {rawcnv: --cctest}
+                - {rawcnv: --exclude_heterosomic}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "A file containing CNV calls, that could be generated by the\n\
+                \               -test operation of this program: trio, quartet, exclude_heterosomic,\
+                \ cctest"
+            prompt: CNV calls file (cnv)
+            format: ( "" , " --cnv " + str(value) )[ value is not None]
+            simple: true
+            argpos: 12
+            name: cnvfile
+            precond:
+                rawcnv: {'#ne': None}
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: "Specify an output file prefix. By default the output filename\n\
+                \               starts with \"gengen\"."
+            prompt: Output CNV file name
+            format: '" --out " + infile + "_rawcnv "'
+            argpos: 12
+            name: out_cnv_filename
+            precond:
+                '#and':
+                - {type: --test}
+                - infile
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Specify a HMM model file containing elements necessary for\n\
+                \               specifying the hidden Markov model for CNV calling:\
+                \ test, validate, joint, trio, quartet"
+            prompt: HMM model (hmm)
+            format: ( "" , " --hmm /path/to/penncnv/executables/dir/" + str(value)
+                )[ value is not None]
+            simple: true
+            argpos: 11
+            mandatory: true
+            name: hmmmodel
+            precond:
+                '#and':
+                -   '#or':
+                    -   type: {'#ne': None}
+                    -   rawcnv: {'#ne': None}
+                -   '#and':
+                    -   type: {'#ne': --summary}
+                    -   '#and':
+                        -   rawcnv: {'#ne': --cctest}
+                        -   rawcnv: {'#ne': --exclude_heterosomic}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose an HMM model, value: 'null'}
+                - {label: hhall.hmm, value: hhall.hmm}
+                - {label: hh550.hmm, value: hh550.hmm}
+        - !mobyle/inputprogramparameter
+            comment: "A population frequency of B allele file containing chromosome\n\
+                \               coordinates of each SNP, as well as the frequency\
+                \ of B allele\n               in a large reference population for\
+                \ this SNP: test, validate, joint, summary, trio, quartet, cctest"
+            prompt: Population frequency for B allelel file (pfb)
+            format: ( "" , " --pfb /path/to/penncnv/shared/data/dir/" + str(value)
+                )[ value is not None]
+            simple: true
+            argpos: 11
+            mandatory: true
+            name: pfb
+            precond:
+                '#and':
+                -   '#or':
+                    -   type: {'#ne': None}
+                    -   rawcnv: {'#ne': None}
+                -   rawcnv: {'#ne': --exclude_heterosomic}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose an population frequency, value: 'null'}
+                - {label: hhall.hg18.pfb, value: hhall.hg18.pfb}
+                - {label: hh550.hg18.pfb, value: hh550.hg18.pfb}
+                - {label: hc12v1.hg18.pfb, value: hc12v1.hg18.pfb}
+                - {label: ho1v1.hg18.pfb, value: ho1v1.hg18.pfb}
+        - !mobyle/inputprogramparameter
+            comment: "A file that contains the GC percentage in the 1Mb region around\n\
+                \               each marker for the GC-model based signal adjustment:\
+                \ test, joint, validate, trio, quartet"
+            prompt: A file containing GC model for wave adjustment (gcmodel)
+            format: ( "" , " --gcmodel /path/to/penncnv/shared/data/dir/" + str(value)
+                )[ value is not None]
+            simple: true
+            argpos: 12
+            name: gcmodel
+            precond:
+                '#or':
+                -   '#or':
+                    - {type: --test}
+                    - {type: --joint}
+                    - {type: --validate}
+                -   '#or':
+                    - {rawcnv: --trio}
+                    - {rawcnv: --quartet}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose an GC model, value: 'null'}
+                - {label: hhall.hg18.gcmodel, value: hhall.hg18.gcmodel}
+                - {label: hh550.hg18.gcmodel, value: hh550.hg18.gcmodel}
+                - {label: hc12v1.hg18.gcmodel, value: hc12v1.hg18.gcmodel}
+                - {label: ho1v1.hg18.gcmodel, value: ho1v1.hg18.gcmodel}
+    - !mobyle/inputprogramparagraph
+        prompt: CNV output format
+        name: cnvoutput
+        argpos: 20
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Output format
+            format: ( "" , " && visualize_cnv.pl --format %s " % str(value) )[ value
+                is not None and value !=vdef]
+            name: outputformat
+            precond:
+                '#or':
+                -   type: {'#ne': None}
+                -   rawcnv: {'#ne': None}
+            command: false
+            type: !mobyle/stringtype
+                default: output
+                options:
+                - {label: Program output format, value: output}
+                - {label: BED format, value: bed}
+                - {label: TAB format, value: tab}
+        - !mobyle/inputprogramparameter
+            prompt: Output file name for visualize_cnv (.rawcnv)
+            format: '" --out " + infile + "_" + outputformat + "cnv " + infile + "_rawcnv
+                "'
+            argpos: 21
+            name: bed_cnv_infile
+            precond:
+                '#and':
+                - {type: --test}
+                - infile
+                -   outputformat: {'#ne': output}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Output file name for visualize_cnv (.out)
+            format: '" --out " +  infile + "_" + outputformat + " detect_cnv.out "'
+            argpos: 21
+            name: bed_infile
+            precond:
+                '#and':
+                -   '#or':
+                    -   type: {'#ne': None}
+                    -   rawcnv: {'#ne': None}
+                -   type: {'#ne': --test}
+                -   outputformat: {'#ne': output}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: CNV output control
+        name: cnvcontrol
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The minimum number of SNPs that a CNV call must contain to be\n\
+                \               in output: test, joint, validate, trio, quartet"
+            prompt: Minimum number of SNPs within CNV (minsnp)
+            format: ( "" , " --minsnp " + str(value) )[ value is not None and value
+                != vdef]
+            name: minsnp
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/integertype {default: 3}
+        - !mobyle/inputprogramparameter
+            comment: "The minimum length of base pairs that a CNV call must contain\n\
+                \               to be in output: test, joint, validate, trio, quartet"
+            prompt: Minimum length of bp within CNV (minlength)
+            format: ( "" , " --minlength " + str(value) )[ value is not None ]
+            name: minlength
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Minimum confidence score for a CNV call to\n               be\
+                \ in output. This is an experimental feature, and the\n          \
+                \     actual definition of \"confidence score\" may change in\n  \
+                \             the future: test, validate"
+            prompt: Minimum confidence score of CNV (minconf)
+            format: ( "" , " --minconf " + str(value) )[ value is not None ]
+            name: minconf
+            precond:
+                '#or':
+                - {type: --test}
+                - {type: --validate}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Calculate a confidence score for each CNV call. This is an\n\
+                \               experimental feature, and the actual definition of\
+                \ \"confidence\n               score\" may change in the future: test,\
+                \ validate"
+            prompt: Calculate confidence for each CNV (confidence)
+            format: ( "" , " --confidence " )[ value ]
+            name: confidence
+            precond:
+                '#or':
+                - {type: --test}
+                - {type: --validate}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Process chromosome X specifically. By default only autosomes\n\
+                \               will be processed by this program: test, joint, validate,\
+                \ trio, quartet."
+            prompt: Use chromosomeX-specific treatment (chrx)
+            format: ( "" , " --chrx " )[ value ]
+            name: chrx
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "A 2-column file containing filename and sex (male/female) for\n\
+                \               sex chromosome calling with chromosomeX-specific (chrx)\
+                \ argument. The first tab-\n               delimited column should\
+                \ be the input signal file name, while\n               the second\
+                \ tab-delimited column should be male or female.\n               Alternatively,\
+                \ abbreviations including m (male), f (female), 1\n              \
+                \ (male) or 2 (female) are also fine."
+            prompt: Filename and sex (male/female) for chromosomeX (sex)
+            format: ( "" , " --sex " + str(value) )[ value is not None]
+            argpos: 12
+            name: sexfile
+            precond:
+                '#and':
+                - chrx
+                - {'#not': bafxhet}
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: "This argument specifies the BAF heterozygosity rate in chrX\
+                \ to\n               predict the sex for a sample. Note that this\
+                \ rate is based on\n               BAF values so it is not genotype\
+                \ heterozygosity rate and indeed\n               quite different/smaller\
+                \ than that genotype heterozygosity rate.\n               By default\
+                \ if >10% chrX markers have BAF values around 0.5, the\n         \
+                \      sample is predicted as female. This threshold however does\
+                \ not\n               work for Affymetrix genome-wide arrays (instead\
+                \ a 5% threshold\n               is better used). For chrX CNV calling,\
+                \ rather than relying on\n               PennCNV prediction of gender,\
+                \ it is always best to explicitely\n               specify the sample\
+                \ sex using the -sexfile argument."
+            prompt: Minimum BAF heterozygosity rate to predict female gender when
+                file is not supplied (bafxhet)
+            format: ( "" , " --bafxhet " + str(value) )[ value is not None and value
+                != vdef]
+            name: bafxhet
+            precond:
+                '#and':
+                - chrx
+                - {'#not': sexfile}
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+    - !mobyle/inputprogramparagraph
+        prompt: Specific Validation-calling arguments (validate)
+        name: validateCalling
+        precond: {type: --validate}
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Specify the start SNP of a pre-specified region used in --validate
+                operation
+            prompt: Start SNP of a pre-specified region (startsnp)
+            format: ( "" , " --startsnp " + str(value) )[ value is not None ]
+            simple: true
+            mandatory: true
+            name: startsnp
+            precond: {'#not': candlist}
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Specify the end SNP of a pre-specified region used in --validate
+                operation
+            prompt: End SNP of a pre-specified region (endsnp)
+            format: ( "" , " --endsnp " + str(value) )[ value is not None ]
+            simple: true
+            mandatory: true
+            name: endsnp
+            precond: {'#not': candlist}
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Specify the prior deletion allele frequency of a pre-specified\n\
+                \               region used in --validate operation (this frequency\
+                \ can be\n               estimated from CNV calls by --test operation)"
+            prompt: Prior deletion frequency of a pre-specified region (delfreq)
+            format: ( "" , " --delfreq " + str(value) )[ value is not None ]
+            simple: true
+            mandatory: true
+            name: delfreq
+            precond: {'#not': candlist}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Specify the prior duplication allele frequency of a pre-specified\
+                \ region used \n            in --validate operation (this frequency\
+                \ can be estimated from CNV calls by --test operation)"
+            prompt: Prior duplication frequency of a pre-specified region (dupfreq)
+            format: ( "" , " --dupfreq " + str(value) )[ value is not None ]
+            simple: true
+            mandatory: true
+            name: dupfreq
+            precond: {'#not': candlist}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: "Background CNV probability for any loci, with default value\
+                \ as\n               0.0001. This argument is useful in validation\
+                \ calling. When\n               -delfreq/-dupfreq is not specified,\
+                \ the background frequency is\n               used to calculate the\
+                \ prior probability of different copy number states."
+            prompt: Background CNV probability for any loci (backfreq)
+            format: ( "" , " --backfreq " + str(value) )[ value is not None ]
+            name: backfreq
+            precond:
+                '#and':
+                - {'#not': delfreq}
+                - {'#not': dupfreq}
+            command: false
+            type: !mobyle/floattype {default: 0.0001}
+        - !mobyle/inputprogramparameter
+            prompt: A file containing all candidate CNV regions to be validated (candlist)
+            format: ( "" , " --candlist " + str(value) )[ value is not None]
+            name: candlist
+            precond:
+                '#and':
+                - {'#not': startsnp}
+                - {'#not': endsnp}
+                - {'#not': delfreq}
+                - {'#not': dupfreq}
+            command: false
+    - !mobyle/inputprogramparagraph
+        prompt: Specific Case-control comparison arguments (cctest)
+        name: cctestCalling
+        precond: {rawcnv: --cctest}
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "A file containing phenotype informatoin for each individual,\
+                \ so\n               that --cctest can be used to compare the frequency\
+                \ between\n               cases and controls. Each line has two tab-delimited\
+                \ fields:\n               file name and the phenotype. By default,\
+                \ \"control\" means\n               control subjects, and other words\
+                \ means cases; however, the\n               user can use --control_label\
+                \ argument to change the phenotype\n               label for controls."
+            prompt: A file containing phenotype information for each input file (phenofile)
+            format: ( "" , " --phenofile " + str(value) )[ value is not None]
+            simple: true
+            argpos: 12
+            mandatory: true
+            name: phenofile
+            precond: {rawcnv: --cctest}
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: "Specify the text label for control subjects in the phenotype\n\
+                \               file specified by the --phenofile argument. Normally\
+                \ the \"control\" is used to specify \n               controls, and\
+                \ all other individuals\n               are treated as cases. However,\
+                \ some times users may use 1 to\n               denote controls and\
+                \ 2 to denote cases; in such situations the\n               \"--control_label\
+                \ 1\" should be used for the --cctest operation."
+            prompt: The phenotype label for control subjects in the phenotype file
+                (control_label)
+            format: ( "" , " --control_label " + str(value) )[ value is not None ]
+            name: control_label
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Performed one-sided test (onesided)
+            format: ( "" , " --onesided " )[ value ]
+            name: onesided
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Specify the particular types of CNVs to be used in the --cctest\n\
+                \               operation. By default both duplications and deletions\
+                \ are\n               treated as a single group of CNVs and be used\
+                \ to compare cases\n               and controls."
+            prompt: Used together to specify types of CNVs to be tested (type_filter)
+            format: ( "" , " --type_filter " + str(value) )[ value is not None and
+                value !=vdef ]
+            name: type_filter
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Both duplications and deletions, value: 'null'}
+                - {label: Duplications, value: dup}
+                - {label: Deletions, value: del}
+    - !mobyle/inputprogramparagraph
+        prompt: Misc options
+        name: miscOpt
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The prior probability of 6 hidden states a given CNV call in\n\
+                \               father or mother.  This is used for joint calling\
+                \ of trios or\n               quartets. It is specified as six numbers\
+                \ separated by a comma that sum up to 1.\n               The empirically\
+                \ derived default values actually work well: trio, quartet."
+            prompt: Prior belief on CN state for regions with CNV calls. Six numbers
+                separated by a comma (fmprior)
+            format: ( "" , " --fmprior " + str(value) )[ value is not None ]
+            name: fmprior
+            precond:
+                '#or':
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Specify the probability that a given CNV is a de novo event\
+                \ for\n               family-based CNV calling. The default is 0.0001.\
+                \ trio, quartet"
+            prompt: Prior belief on genome-wide de novo event rate (denovo_rate)
+            format: ( "" , " --denovo_rate " + str(value) )[ value is not None and
+                value != vdef]
+            name: denovo_rate
+            precond:
+                '#or':
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+            command: false
+            type: !mobyle/floattype {default: 0.0001}
+        - !mobyle/inputprogramparameter
+            comment: "This option is turned on by default. It adjust the log R Ratio\n\
+                \               values of the entire genome by a constant so that\
+                \ the median is\n               zero: test, trio, quartet, joint,\
+                \ validate."
+            prompt: Adjust genome-wide LRR such that median equal 0 (nomedianadjust)
+            format: ( "" , " --nomedianadjust " )[ not value ]
+            name: medianadjust
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This option is turned ON by default (new July 2008): it adjust\n\
+                \               the BAF values genome-wide such that the median value\
+                \ is 0.5."
+            prompt: Adjust genome-wide BAF such that median equal 0.5 (nobafadjust)
+            format: ( "" , " --nobafadjust " )[ not value ]
+            name: bafadjust
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This option is turned ON by default: it adjust the SD values\
+                \ in\n               HMM model such that the model fits the signal\
+                \ quality of the\n               testing sample to reduce false positive\
+                \ calls"
+            prompt: Adjust SD of hidden Markov model based on input signal (nosdadjust)
+            format: ( "" , " --nosdadjust " )[ not value ]
+            name: sdadjust
+            precond:
+                '#or':
+                - {type: --test}
+                - {rawcnv: --trio}
+                - {rawcnv: --quartet}
+                - {type: --joint}
+                - {type: --validate}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "This argument is turned ON by default. It requires the\n   \
+                \            input/output buffer to flush immediately (that is, no\n\
+                \               input/output is buffered). When PennCNV is running\
+                \ remotely\n               (for example, through a SSH connection)\
+                \ or when the output is\n               redirected, this argument\
+                \ cause the program to report progress\n               in real-time.\
+                \  When running PennCNV in parallel with many processes \n       \
+                \        accessing disks simultaneously, this option should be\n \
+                \              turned off to decrease system overhead."
+            prompt: Flush input/output buffer (noflush)
+            format: ( "" , " --noflush " )[ not value ]
+            name: flush
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Outfile for detect_cnv and Input file for visualize_cnv
+        format: '" --out detect_cnv.out "'
+        argpos: 17
+        name: outfile_name
+        precond:
+            '#and':
+            -   '#or':
+                -   type: {'#ne': None}
+                -   rawcnv: {'#ne': None}
+            -   type: {'#ne': --test}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Split files
+        filenames: infile + ".*"
+        name: output_split_file
+        precond:
+            infile: {'#ne': None}
+        hidden: true
+    - !mobyle/outputprogramparagraph
+        prompt: Penncnv analyses
+        name: analyse
+        argpos: 10
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: CNV file
+            filenames: infile + "_rawcnv"
+            name: output_cnv_file
+            precond:
+                '#and':
+                - {type: --test}
+                - infile
+    - !mobyle/outputprogramparagraph
+        prompt: CNV output format
+        name: cnvoutput
+        argpos: 20
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: CNV calls file
+            filenames: infile + "_" + outputformat + "cnv"
+            name: bed_cnv_file
+            precond:
+                '#and':
+                - {type: --test}
+                - infile
+                -   outputformat: {'#ne': output}
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: infile + "_" + outputformat
+            name: bed_file
+            precond:
+                '#and':
+                -   '#or':
+                    -   type: {'#ne': None}
+                    -   rawcnv: {'#ne': None}
+                -   type: {'#ne': --test}
+                -   outputformat: {'#ne': output}
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: '"detect_cnv.out"'
+        name: output_file
+        precond:
+            type: {'#ne': --test}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"detect_cnv.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: kcolumn.pl
+env: {}

@@ -1,0 +1,107 @@
+!mobyle/program
+name: golden
+version: '1.0'
+title: GOLDEN
+description: Fetch a database entry
+authors: N. Joly
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Database
+        format: '" " + db + ":"'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: db
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a db, value: 'null'}
+            - {label: EMBL Nucleotide Sequence Database, value: embl}
+            - {label: Enzyme nomenclature database, value: enzyme}
+            - {label: Genbank NIH DNA sequence database, value: genbank}
+            - {label: Genbank Translated Protein-coding Sequences, value: genpept}
+            - {label: IMGT - ImMunoGeneTics sequence database, value: imgt}
+            - {label: PROSITE - Dictionary of Protein Sites and Patterns, value: prosite}
+            - {label: RDPII - Ribosomal Database Project II database, value: rdpii}
+            - {label: NCBI Reference Sequence (RefSeq) Database, value: refseq}
+            - {label: UniprotKB - Universal Protein Knowlege Base, value: uniprot}
+            - {label: Genbank - Whole Genome Shotgun, value: wgs}
+    - !mobyle/inputprogramparameter
+        prompt: Query (Entry name or Accession number)
+        format: str(value)
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: query
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Search with Accession number only (-a)
+        format: ( "" , " -a" )[ value ]
+        argpos: 1
+        name: ac
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Search with entry name only (-i)
+        format: ( "" , " -i" )[ value ]
+        argpos: 1
+        name: Id
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Sequence
+        filenames: '"golden.out"'
+        name: nucleic_sequence_out
+        precond:
+            db:
+                '#in': [embl, genbank, imgt, rdpii]
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/outputprogramparameter
+        prompt: Sequence
+        filenames: '"golden.out"'
+        name: protein_sequence_out
+        precond:
+            db:
+                '#in': [genpept, uniprot]
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2976']
+    - !mobyle/outputprogramparameter
+        prompt: Sequence
+        filenames: '"golden.out"'
+        name: refseq_out
+        precond: {db: refseq}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1936']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Motif
+        filenames: '"golden.out"'
+        name: motif_out
+        precond: {db: prosite}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Enzyme
+        filenames: '"golden.out"'
+        name: enzyme_out
+        precond: {db: enzyme}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"golden.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0344']
+topics: ['EDAM_topic:3071']
+command: golden
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/gensoft/projects/golden/']

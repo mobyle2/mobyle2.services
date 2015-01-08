@@ -1,0 +1,168 @@
+!mobyle/program
+name: combine
+version: ??
+title: Combine
+description: Combine multiple sequence alignments
+authors: ??
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: initiation
+        format: '" -n 1 -W 12 -o std.out -e std.err -N __bsubArgsEnd__ java -jar /home/mobyle/www/mobyleDev/bin/Combine.jar
+            "'
+        argpos: 0
+        name: bsubinit
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Enter name of combined sequence file (union of all files)
+            format: ( "" , str( value))[ value is not None ]
+            argpos: 1
+            name: union
+            command: false
+            type: !mobyle/stringtype {default: combine_union.phy}
+        - !mobyle/inputprogramparameter
+            prompt: Enter name of combined sequence file (intersection of all files)
+            format: ( "" , " -i " + str( value))[ value is not None ]
+            argpos: 2
+            name: intersect
+            command: false
+            type: !mobyle/stringtype {default: combine_intersect.phy}
+        - !mobyle/inputprogramparameter
+            prompt: Remove taxa(rows) from alignment?
+            format: ( "" , " -rr " )[ value ]
+            argpos: 3
+            name: row
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Range of rows to remove (use commas with no spaces for multiple
+                entries)
+            format: ( "" , str( value) + " ")[ row ]
+            argpos: 4
+            name: rrange
+            command: false
+            type: !mobyle/stringtype {default: x-y}
+        - !mobyle/inputprogramparameter
+            prompt: Exclude sites(columns) in alignment?
+            format: ( "" , " -rc " )[ value ]
+            argpos: 5
+            name: column
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Range of columns to remove (use commas with no spaces for multiple
+                entries)
+            format: ( "" , str( value) + " ")[ column ]
+            argpos: 6
+            name: crange
+            command: false
+            type: !mobyle/stringtype {default: x-y}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 11, name: infile1, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 12, name: infile2, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 13, name: infile3, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 14, name: infile4, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 15, name: infile5, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 16, name: infile6, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 17, name: infile7, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 18, name: infile8, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 19, name: infile9, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 20, name: infile10, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 21, name: infile11, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 22, name: infile12, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 23, name: infile13, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 24, name: infile14, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 25, name: infile15, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 26, name: infile16, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 27, name: infile17, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 28, name: infile18, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 29, name: infile19, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 30, name: infile20, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 31, name: infile21, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 32, name: infile22, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 33, name: infile23, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 34, name: infile24, command: false}
+        - !mobyle/inputprogramparameter {prompt: files to be combined CLUSTAL (.aln)
+                NEXUS (.nxs) or PHYLIP (.phy), format: '( "" , " " + str( value ))[
+                value is not None ]', argpos: 35, name: infile25, command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {filenames: '"std.out"', name: stdoutfile}
+    - !mobyle/outputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(union),
+            name: unionout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(intersect),
+            name: intersectout}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"combine.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"combine.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: '??', url: null}
+command: runbsub
+env: {}

@@ -1,0 +1,114 @@
+!mobyle/program
+name: fastq_to_fasta
+version: 0.0.13
+title: FASTX Toolkit - FASTQ to FASTA
+description: This tool converts FASTQ sequencing reads to FASTA sequences.
+authors: Assaf Gordon, Cold Spring Harbor Laboratory
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: fastqtofasta
+        format: '"fastq_to_fasta"'
+        argpos: 0
+        name: fastxtoolkit_cmd
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file format.
+            format: (" " + str(value),"")[value == "fasta" or value =="fastq64"]
+            simple: true
+            mandatory: true
+            name: fasta_or_fastq
+            command: false
+            type: !mobyle/stringtype
+                default: -Q 33
+                options:
+                - {label: FASTQ (33), value: -Q 33}
+                - {label: FASTQ (64), value: fastq64}
+                - {label: FASTA, value: fasta}
+        - !mobyle/inputprogramparameter
+            prompt: 'FASTQ input file (-i):'
+            format: '" -i " + str( value )'
+            simple: true
+            argpos: 9
+            mandatory: true
+            name: input_data
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Rename sequence identifiers to numbers?  (-n)
+            format: ('',' -n ')[value]
+            argpos: 5
+            name: seq_identifies_to_numbers
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Keep sequences with unknown (N) nucleotides? (-r)
+            format: ("", " -r ")[value]
+            argpos: 4
+            name: keep_unknown_nucleotides
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Compress output with GZIP? (-z)
+            format: ('',' -z ')[value]
+            simple: true
+            argpos: 6
+            name: compress_with_gzip
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Enter experiment name (-o):'
+            format: (" -o " + str(vdef) , " -o " + str(value))[value is not None]
+            simple: true
+            argpos: 10
+            mandatory: true
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: output_data.fa}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 6
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Sequence
+            filenames: str(output_file)
+            name: final_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastq_to_fasta.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastq_to_fasta.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0561']
+topics: ['EDAM_topic:0220']
+env: {}

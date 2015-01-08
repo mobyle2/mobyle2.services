@@ -1,0 +1,102 @@
+!mobyle/program
+name: sites
+title: SITES
+description: SITES is a computer program for the analysis of comparative DNA sequence
+    data
+authors: Jody Hey
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: initiation
+        format: '" -n 1 -W 12:00 -o std.out -e std.err -N __bsubArgsEnd__ sites "'
+        argpos: 0
+        name: bsubinit
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {prompt: Input data file, format: '" -I" + str(
+            value )', simple: true, argpos: 2, mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The name of the output file should not have an extension. The
+                characters '.SIT' will be  added to the output file name that is given.
+            prompt: Output file name
+            format: ( "" , " -R" + str( value))[ value is not None ]
+            argpos: 4
+            name: out
+            command: false
+            type: !mobyle/stringtype {default: sites_output}
+        - !mobyle/inputprogramparameter
+            prompt: Message in output (up to 78 characters, no blanks, optional)
+            format: ( "" , " -M" + str( value))[ value is not None ]
+            argpos: 6
+            name: mes
+            command: false
+            type: !mobyle/stringtype {default: sites_data}
+        - !mobyle/inputprogramparameter {comment: Hold ctrl and click to select multiple
+                options., prompt: Kinds of polymorphic sites to analyze, format: '(
+                '''' , '' -S'' + str(value) )[ value and value != vdef ]', argpos: 8,
+            name: kindssites, command: false}
+        - !mobyle/inputprogramparameter {comment: Hold ctrl and click to select multiple
+                options., prompt: Analysis type, format: '( '''' , '' -A'' + str(value)
+                )[ value and value != vdef ]', argpos: 10, name: kindanalysis, command: false}
+        - !mobyle/inputprogramparameter {comment: Hold ctrl and click to select multiple
+                options., prompt: Data and output options, format: '( '''' , '' -O''
+                + str(value) )[ value and value != vdef ]', argpos: 12, name: dataout,
+            command: false}
+        - !mobyle/inputprogramparameter {comment: Only use if "linkage disequilibrium
+                analyses" is selected above.  Hold ctrl and click to select multiple
+                options., prompt: Linkage disequilibrium options, format: '( ''''
+                , '' -L'' + str(value) )[ value and value != vdef ]', argpos: 14,
+            name: ld, command: false}
+        - !mobyle/inputprogramparameter
+            comment: Only use if "non-canonical genetic code" is selected above.
+            prompt: Alternative genetic code
+            format: ( '' , str(value) )[ value and value != vdef ]
+            argpos: 16
+            name: agc
+            command: false
+            type: !mobyle/stringtype
+                options:
+                - {label: Default, value: null}
+                - {label: Vertebrate Mitochondrial Code, value: -Cv}
+                - {label: Yeast Mitochondrial Code, value: -Cy}
+                - {label: 'Mold, Protozoan, and Coelenterate Mitochondrial Code',
+                    value: -Cm}
+                - {label: The Invertebrate Mitochondrial Code, value: -Ci}
+                - {label: 'The Ciliate, Dasycladacean and Hexamita Nuclear Code',
+                    value: -Cc}
+                - {label: The Echinoderm Mitochondrial Code, value: -Ce}
+                - {label: The Euplotid Nuclear Code, value: -Cp}
+                - {label: The Alternative Yeast Nuclear Code, value: -Ca}
+                - {label: Ascidian Mitochondrial Code, value: -Cd}
+                - {label: Flatworm Mitochondrial Code, value: -Cf}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {filenames: '"std.out"', name: stdoutfile}
+    - !mobyle/outputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/outputprogramparameter {filenames: str(out)+".sit", name: output}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"sites.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"sites.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'http://lifesci.rutgers.edu/~heylab/ProgramsandData/Programs/SITES/SITES_Documentation.htm',
+    url: null}
+command: runbsub
+env: {}

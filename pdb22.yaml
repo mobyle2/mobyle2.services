@@ -1,0 +1,48 @@
+!mobyle/program
+name: pdb22
+title: pdb22
+description: Calculate distance to sheet axis.
+authors: Caudron B., Jestin J-L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: PDB File, format: '( "" , " -f " + str(value)
+            )[ value is not None ]', simple: true, name: pdb_file, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: or you can instead enter a PDB id (4 characters).
+        format: ( "" , " -n " + str(value) )[ value is not None ]
+        simple: true
+        name: pdb_id
+        command: false
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {prompt: 'or you list can enter a list of PDB
+            ids (4 characters), one per line.', format: '( "" , " -l " + str(value)
+            )[ value is not None ]', simple: true, name: pdb_ids, command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Distance to sheet axis
+            filenames: '''*.xls'''
+            name: folding
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pdb22.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pdb22.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0243']
+topics: ['EDAM_topic:2814']
+command: pdb22
+env: {}

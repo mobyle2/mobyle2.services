@@ -1,0 +1,440 @@
+!mobyle/program
+name: twofeat
+title: twofeat
+description: Finds neighbouring pairs of features in sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparagraph
+            prompt: First feature options
+            name: afeaturesection
+            children:
+            - !mobyle/inputprogramparameter
+                comment: "By default any feature source in the feature table is allowed.\
+                    \ You can set this to match any feature source you wish  to allow.\
+                    \ \n  The source name is usually either the name of the program\
+                    \ that  detected the feature or it is the feature table (eg: EMBL)\
+                    \ that  the feature came from. \n  The source may be wildcarded\
+                    \ by using '*'. \n  If you wish to allow more than one source,\
+                    \ separate their names  with the character '|', eg: \n  gene*\
+                    \ | embl"
+                prompt: Source of first feature
+                format: ("", " -asource=" + str(value))[value is not None]
+                argpos: 2
+                name: asource
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: "By default every feature in the feature table is allowed.\
+                    \ You can set this to be any feature type you wish to allow. \n\
+                    \  See http://www.ebi.ac.uk/embl/WebFeat/ for a list of the  EMBL\
+                    \ feature types and see Appendix A of the Swissprot user  manual\
+                    \ in http://www.expasy.org/sprot/userman.html  for a list of the\
+                    \ Swissprot feature types. \n  The type may be wildcarded by using\
+                    \ '*'. \n  If you wish to allow more than one type, separate their\
+                    \ names  with the character '|', eg: \n  *UTR | intron"
+                prompt: Type of first feature
+                format: ("", " -atype=" + str(value))[value is not None]
+                simple: true
+                argpos: 3
+                mandatory: true
+                name: atype
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: By default any feature sense is allowed. You can set this
+                    to match the required sense.
+                prompt: Sense of first feature
+                format: ("", " -asense=" + str(value))[value is not None and value!=vdef]
+                argpos: 4
+                name: asense
+                command: false
+                type: !mobyle/stringtype
+                    default: '0'
+                    options:
+                    - {label: Any sense, value: '0'}
+                    - {label: Forward sense, value: +}
+                    - {label: Reverse sense, value: '-'}
+            - !mobyle/inputprogramparameter
+                comment: If this is greater than or equal to the maximum score, then
+                    any score is allowed.
+                prompt: Minimum score of first feature
+                format: ("", " -aminscore=" + str(value))[value is not None and value!=vdef]
+                argpos: 5
+                name: aminscore
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+            - !mobyle/inputprogramparameter
+                comment: If this is less than or equal to the maximum score, then
+                    any score is permitted.
+                prompt: Maximum score of first feature
+                format: ("", " -amaxscore=" + str(value))[value is not None and value!=vdef]
+                argpos: 6
+                name: amaxscore
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+            - !mobyle/inputprogramparameter
+                comment: "Tags are the types of extra values that a feature may have.\
+                    \ For example in the EMBL feature table, a 'CDS' type of  feature\
+                    \ may have the tags '/codon', '/codon_start', '/db_xref',  '/EC_number',\
+                    \ '/evidence', '/exception', '/function', '/gene',  '/label',\
+                    \ '/map', '/note', '/number', '/partial', '/product',  '/protein_id',\
+                    \ '/pseudo', '/standard_name', '/translation',  '/transl_except',\
+                    \ '/transl_table', or '/usedin'. Some of these  tags also have\
+                    \ values, for example '/gene' can have the value of  the gene\
+                    \ name. \n  By default any feature tag in the feature table is\
+                    \ allowed. You  can set this to match any feature tag you wish\
+                    \ to allow. \n  The tag may be wildcarded by using '*'. \n  If\
+                    \ you wish to allow more than one tag, separate their names  with\
+                    \ the character '|', eg: \n  gene | label"
+                prompt: Tag of first feature
+                format: ("", " -atag=" + str(value))[value is not None]
+                argpos: 7
+                name: atag
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: "Tag values are the values associated with a feature tag.\
+                    \ Tags are the types of extra values that a feature may have.\
+                    \ For  example in the EMBL feature table, a 'CDS' type of feature\
+                    \ may  have the tags '/codon', '/codon_start', '/db_xref',  '/EC_number',\
+                    \ '/evidence', '/exception', '/function', '/gene',  '/label',\
+                    \ '/map', '/note', '/number', '/partial', '/product',  '/protein_id',\
+                    \ '/pseudo', '/standard_name', '/translation',  '/transl_except',\
+                    \ '/transl_table', or '/usedin'. Only some of  these tags can\
+                    \ have values, for example '/gene' can have the  value of the\
+                    \ gene name. By default any feature tag value in the  feature\
+                    \ table is allowed. You can set this to match any feature  tag\
+                    \ value you wish to allow. \n  The tag value may be wildcarded\
+                    \ by using '*'. \n  If you wish to allow more than one tag value,\
+                    \ separate their  names with the character '|', eg: \n  pax* |\
+                    \ 10"
+                prompt: Value of first feature's tags
+                format: ("", " -avalue=" + str(value))[value is not None]
+                argpos: 8
+                name: avalue
+                command: false
+                type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Second feature options
+            name: bfeaturesection
+            children:
+            - !mobyle/inputprogramparameter
+                comment: "By default any feature source in the feature table is allowed.\
+                    \ You can set this to match any feature source you wish  to allow.\
+                    \ \n  The source name is usually either the name of the program\
+                    \ that  detected the feature or it is the feature table (eg: EMBL)\
+                    \ that  the feature came from. \n  The source may be wildcarded\
+                    \ by using '*'. \n  If you wish to allow more than one source,\
+                    \ separate their names  with the character '|', eg: \n  gene*\
+                    \ | embl"
+                prompt: Source of second feature
+                format: ("", " -bsource=" + str(value))[value is not None]
+                argpos: 9
+                name: bsource
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: "By default every feature in the feature table is allowed.\
+                    \ You can set this to be any feature type you wish to allow. \n\
+                    \  See http://www.ebi.ac.uk/embl/WebFeat/ for a list of the  EMBL\
+                    \ feature types and see Appendix A of the Swissprot user  manual\
+                    \ in http://www.expasy.org/sprot/userman.html  for a list of the\
+                    \ Swissprot feature types. \n  The type may be wildcarded by using\
+                    \ '*'. \n  If you wish to allow more than one type, separate their\
+                    \ names  with the character '|', eg: \n  *UTR | intron"
+                prompt: Type of second feature
+                format: ("", " -btype=" + str(value))[value is not None]
+                simple: true
+                argpos: 10
+                mandatory: true
+                name: btype
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: By default any feature sense is allowed. You can set this
+                    to match the required sense.
+                prompt: Sense of second feature
+                format: ("", " -bsense=" + str(value))[value is not None and value!=vdef]
+                argpos: 11
+                name: bsense
+                command: false
+                type: !mobyle/stringtype
+                    default: '0'
+                    options:
+                    - {label: Any sense, value: '0'}
+                    - {label: Forward sense, value: +}
+                    - {label: Reverse sense, value: '-'}
+            - !mobyle/inputprogramparameter
+                comment: If this is greater than or equal to the maximum score, then
+                    any score is allowed.
+                prompt: Minimum score of second feature
+                format: ("", " -bminscore=" + str(value))[value is not None and value!=vdef]
+                argpos: 12
+                name: bminscore
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+            - !mobyle/inputprogramparameter
+                comment: If this is less than or equal to the maximum score, then
+                    any score is permitted.
+                prompt: Maximum score of second feature
+                format: ("", " -bmaxscore=" + str(value))[value is not None and value!=vdef]
+                argpos: 13
+                name: bmaxscore
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+            - !mobyle/inputprogramparameter
+                comment: "Tags are the types of extra values that a feature may have.\
+                    \ For example in the EMBL feature table, a 'CDS' type of  feature\
+                    \ may have the tags '/codon', '/codon_start', '/db_xref',  '/EC_number',\
+                    \ '/evidence', '/exception', '/function', '/gene',  '/label',\
+                    \ '/map', '/note', '/number', '/partial', '/product',  '/protein_id',\
+                    \ '/pseudo', '/standard_name', '/translation',  '/transl_except',\
+                    \ '/transl_table', or '/usedin'. Some of these  tags also have\
+                    \ values, for example '/gene' can have the value of  the gene\
+                    \ name. \n  By default any feature tag in the feature table is\
+                    \ allowed. You  can set this to match any feature tag you wish\
+                    \ to allow. \n  The tag may be wildcarded by using '*'. \n  If\
+                    \ you wish to allow more than one tag, separate their names  with\
+                    \ the character '|', eg: \n  gene | label"
+                prompt: Tag of second feature
+                format: ("", " -btag=" + str(value))[value is not None]
+                argpos: 14
+                name: btag
+                command: false
+                type: !mobyle/stringtype {}
+            - !mobyle/inputprogramparameter
+                comment: "Tag values are the values associated with a feature tag.\
+                    \ Tags are the types of extra values that a feature may have.\
+                    \ For  example in the EMBL feature table, a 'CDS' type of feature\
+                    \ may  have the tags '/codon', '/codon_start', '/db_xref',  '/EC_number',\
+                    \ '/evidence', '/exception', '/function', '/gene',  '/label',\
+                    \ '/map', '/note', '/number', '/partial', '/product',  '/protein_id',\
+                    \ '/pseudo', '/standard_name', '/translation',  '/transl_except',\
+                    \ '/transl_table', or '/usedin'. Only some of  these tags can\
+                    \ have values, for example '/gene' can have the  value of the\
+                    \ gene name. By default any feature tag value in the  feature\
+                    \ table is allowed. You can set this to match any feature  tag\
+                    \ value you wish to allow. \n  The tag value may be wildcarded\
+                    \ by using '*'. \n  If you wish to allow more than one tag value,\
+                    \ separate their  names with the character '|', eg: \n  pax* |\
+                    \ 10"
+                prompt: Value of second feature's tags
+                format: ("", " -bvalue=" + str(value))[value is not None]
+                argpos: 15
+                name: bvalue
+                command: false
+                type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Feature relation options
+            name: featurerelationsection
+            children:
+            - !mobyle/inputprogramparameter
+                comment: "This allows you to specify the allowed overlaps of the features\
+                    \ A and B. \n  You can allow any or no overlaps, specify that\
+                    \ they must or must  not overlap, that one must or must not be\
+                    \ wholly enclosed  within another feature."
+                prompt: Type of overlap required
+                format: ("", " -overlap=" + str(value))[value is not None and value!=vdef]
+                argpos: 16
+                name: overlap
+                command: false
+                type: !mobyle/stringtype
+                    default: A
+                    options:
+                    - {label: Any, value: A}
+                    - {label: Overlap required, value: O}
+                    - {label: No overlaps are allowed, value: 'NO'}
+                    - {label: Overlap required but not within, value: NW}
+                    - {label: A must be all  within b, value: AW}
+                    - {label: B must be all within a, value: BW}
+            - !mobyle/inputprogramparameter
+                comment: If this is greater or equal to 'maxrange', then no min or
+                    max range is specified
+                prompt: The minimum distance between the features
+                format: ("", " -minrange=" + str(value))[value is not None and value!=vdef]
+                simple: true
+                argpos: 17
+                mandatory: true
+                name: minrange
+                command: false
+                type: !mobyle/integertype {default: 0}
+            - !mobyle/inputprogramparameter
+                comment: If this is less than or equal to 'minrange', then no min
+                    or max range is specified
+                prompt: The maximum distance between the features
+                format: ("", " -maxrange=" + str(value))[value is not None and value!=vdef]
+                simple: true
+                argpos: 18
+                mandatory: true
+                name: maxrange
+                command: false
+                type: !mobyle/integertype {default: 0}
+            - !mobyle/inputprogramparameter
+                comment: This allows you to specify the positions from which the allowed
+                    minimum or maximum distance between the features is  measured
+                prompt: Positions from which to measure the distance
+                format: ("", " -rangetype=" + str(value))[value is not None and value!=vdef]
+                argpos: 19
+                name: rangetype
+                command: false
+                type: !mobyle/stringtype
+                    default: N
+                    options:
+                    - {label: From nearest ends, value: N}
+                    - {label: From left ends, value: L}
+                    - {label: From right ends, value: R}
+                    - {label: From furthest ends, value: F}
+            - !mobyle/inputprogramparameter
+                comment: This allows you to specify the required sense that the two
+                    features must be on. This is ignored (always 'Any') when  looking
+                    at protein sequence features.
+                prompt: Sense of the features
+                format: ("", " -sense=" + str(value))[value is not None and value!=vdef]
+                argpos: 20
+                name: sense
+                command: false
+                type: !mobyle/stringtype
+                    default: A
+                    options:
+                    - {label: Any sense, value: A}
+                    - {label: Same sense, value: S}
+                    - {label: Opposite sense, value: O}
+            - !mobyle/inputprogramparameter
+                comment: This allows you to specify the required order of the two
+                    features. The order is measured from the start positions of the  features.
+                    This criterion is always applied despite the specified  overlap
+                    type required.
+                prompt: Order of the features
+                format: ("", " -order=" + str(value))[value is not None and value!=vdef]
+                argpos: 21
+                name: order
+                command: false
+                type: !mobyle/stringtype
+                    default: A
+                    options:
+                    - {label: Any, value: A}
+                    - {label: Feature a then feature b, value: AB}
+                    - {label: Feature b then feature a, value: BA}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: If you set this to be true, then the two features themselves
+                will be written out. If it is left as false, then a  single feature
+                will be written out covering the two features you  found.
+            prompt: Do you want the two features written out individually
+            format: ("", " -twoout")[ bool(value) ]
+            argpos: 22
+            name: twoout
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If you have specified that the pairs of features that are found
+                should be reported as one feature in the ouput, then you can  specify
+                the 'type' name of the new feature here. By default every  feature
+                in the feature table is allowed. See  http://www.ebi.ac.uk/embl/WebFeat/
+                for a list of the EMBL  feature types and see Appendix A of the Swissprot
+                user manual in  http://www.expasy.org/sprot/userman.html for a list
+                of the Swissprot  feature types. If you specify an invalid feature
+                type name, then  the default name 'misc_feature' is used.
+            prompt: Name of the output new feature
+            format: ("", " -typeout=" + str(value))[value is not None and value!=vdef]
+            argpos: 23
+            name: typeout
+            precond: {'#not': twoout}
+            command: false
+            type: !mobyle/stringtype {default: misc_feature}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 24
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: twofeat.report}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the report output format
+            format: ("", " -rformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 25
+            name: rformat_outfile
+            command: false
+            type: !mobyle/stringtype
+                default: TABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 26
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"twofeat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"twofeat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0255']
+topics: ['EDAM_topic:0160']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/twofeat.html', 'http://emboss.sourceforge.net/docs/themes']
+command: twofeat
+env: {}

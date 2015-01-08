@@ -1,0 +1,86 @@
+!mobyle/program
+name: fastx_quality_stats
+version: 0.0.13
+title: FASTX Toolkit - FASTX Quality Statistics
+description: Creates quality statistics report for the given FASTQ library. This statistics
+    report can be used as input for Quality Score and Nucleotides Distribution tools.
+authors: Assaf Gordon
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file format.
+            format: (" " + str(value),"")[value == "fasta" or value =="fastq64"]
+            simple: true
+            mandatory: true
+            name: fasta_or_fastq
+            command: false
+            type: !mobyle/stringtype
+                default: -Q 33
+                options:
+                - {label: FASTQ (33), value: -Q 33}
+                - {label: FASTQ (64), value: fastq64}
+                - {label: FASTA, value: fasta}
+        - !mobyle/inputprogramparameter
+            prompt: 'FASTA/Q Input File (-i):'
+            format: '" -i  " + str( value )'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_fastx
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The output TEXT file will have the following fields (one row\
+                \ per column):\n\ncolumn\t= column number (1 to 36 for a 36-cycles\
+                \ read solexa file)\ncount   = number of bases found in this column.\n\
+                min     = Lowest quality score value found in this column.\nmax  \
+                \   = Highest quality score value found in this column.\nsum     =\
+                \ Sum of quality score values for this column.\nmean    = Mean quality\
+                \ score value for this column.\nQ1\t= 1st quartile quality score.\n\
+                med\t= Median quality score.\nQ3\t= 3rd quartile quality score.\n\
+                IQR\t= Inter-Quartile range (Q3-Q1).\nlW\t= 'Left-Whisker' value (for\
+                \ boxplotting).\nrW\t= 'Right-Whisker' value (for boxplotting).\n\
+                A_Count\t= Count of 'A' nucleotides found in this column.\nC_Count\t\
+                = Count of 'C' nucleotides found in this column.\nG_Count\t= Count\
+                \ of 'G' nucleotides found in this column.\nT_Count\t= Count of 'T'\
+                \ nucleotides found in this column.\nN_Count = Count of 'N' nucleotides\
+                \ found in this column.\nmax-count = max. number of bases (in all\
+                \ cycles)"
+            prompt: 'Enter experiment name (-o):'
+            format: (" -o " + str(vdef) , " -o " + str(value))[value is not None]
+            simple: true
+            name: output_stats_file
+            command: false
+            type: !mobyle/stringtype {default: fastq_stats.txt}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Stats, filenames: '( output_stats_file,
+            "fast_stats.txt")[output_stats_file is None]', name: trimmer_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastx_quality_stats.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastx_quality_stats.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3218']
+topics: ['EDAM_topic:3168']
+command: fastx_quality_stats
+env: {}

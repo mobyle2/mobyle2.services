@@ -1,0 +1,349 @@
+!mobyle/program
+name: protdist
+title: protdist
+description: Compute distance matrix from protein sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"protdist <protdist.params"'
+        argpos: 0
+        name: protdist
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: The input file must contained aligned sequences in PHYLIP format
+            obtained by sequence alignment programs.
+        prompt: Alignment File
+        format: '"ln -s " + str( infile ) + " infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:1384']
+    - !mobyle/inputprogramparameter
+        prompt: Distance model (P)
+        argpos: 2
+        paramfile: protdist.params
+        name: Method
+        command: false
+        type: !mobyle/stringtype {default: J}
+    - !mobyle/inputprogramparameter
+        prompt: Gamma distribution of rates among positions (G)
+        argpos: 2
+        paramfile: protdist.params
+        mandatory: true
+        name: gamma_dist
+        precond:
+            Method:
+                '#in': [J, D, C]
+        command: false
+        type: !mobyle/stringtype {default: N}
+    - !mobyle/inputprogramparameter
+        comment: Instead of the more widely-known coefficient alpha, PROTDIST uses
+            the coefficient of variation (ratio of the standard deviation to the mean)
+            of rates among amino acid positions. So if there is 20% variation in rates,
+            the CV is is 0.20. The square of the C.V. is also the reciprocal of the
+            better-known shape parameter, alpha, of the Gamma distribution, so in
+            this case the shape parameter alpha = 1/(0.20*0.20) = 25. If you want
+            to achieve a particular value of alpha, such as 10, you will want to use
+            a CV of 1/sqrt(100) = 1/10 = 0.1.
+        prompt: Coefficient of variation of substitution rate among positions (must
+            be positive)
+        format: str( value )+ "\n"
+        argpos: 1500
+        paramfile: protdist.params
+        mandatory: true
+        name: gamma
+        precond:
+            gamma_dist:
+                '#in': [Y, G]
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparameter
+        prompt: Fraction of invariant positions
+        format: str(value)+"\n"
+        argpos: 1501
+        paramfile: protdist.params
+        mandatory: true
+        name: invariant
+        precond: {gamma_dist: G}
+        command: false
+        type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            comment: By selecting this option, the bootstrap will be performed on
+                your sequence file. So you don't need to perform a separated seqboot
+                before.Don't give an already bootstrapped file to the program, this
+                won't work!
+            prompt: Perform a bootstrap before analysis
+            format: ( "" , "seqboot < seqboot.params && mv outfile seqboot.outfile
+                && rm infile && ln -s seqboot.outfile infile && " )[ value ]
+            simple: true
+            argpos: -5
+            name: seqboot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "1. The bootstrap. Bootstrapping was invented by Bradley Efron\
+                \ in 1979, and its use in phylogeny estimation was introduced by me\
+                \ (Felsenstein, 1985b). It involves creating a new data set by sampling\
+                \ N characters randomly with replacement, so that the resulting data\
+                \ set has the same size as the original, but some characters have\
+                \ been left out and others are duplicated. The random variation of\
+                \ the results from analyzing these bootstrapped data sets can be shown\
+                \ statistically to be\n              typical of the variation that\
+                \ you would get from collecting new data sets. The method assumes\
+                \ that the characters evolve independently, an assumption that may\
+                \ not be realistic for many kinds of data.2. Delete-half-jackknifing.\
+                \ This alternative to the bootstrap involves sampling a random half\
+                \ of the characters, and including them in the data but dropping the\
+                \ others. The resulting data sets are half the size of the original,\
+                \ and no characters are duplicated. The random variation from doing\
+                \ this should be very similar to that obtained from the bootstrap.\
+                \ The method is advocated by Wu (1986).3. Permuting species for each\
+                \ characters. This method of resampling (well, OK, it may not be best\
+                \ to call it resampling) was introduced by Archie (1989) and Faith\
+                \ (1990; see also Faith and Cranston, 1991). It involves permuting\
+                \ the columns of the data matrix separately. This produces data matrices\
+                \ that have the same number and kinds of characters but no taxonomic\
+                \ structure. It is used for different purposes than the bootstrap,\
+                \ as it tests not the variation around an estimated tree but the hypothesis\
+                \ that there is no taxonomic structure in the data: if a statistic\
+                \ such as number of steps is significantly smaller in the actual data\
+                \ than it is in replicates that are permuted, then we can argue that\
+                \ there is some taxonomic structure in the data (though perhaps it\
+                \ might be just the presence of aa pair of sibling species).4. Permuting\
+                \ characters order. This simply permutes the order of the characters,\
+                \ the same reordering being applied to all species. For many methods\
+                \ of tree inference this will make no difference to the outcome (unless\
+                \ one has rates of evolution correlated among adjacent sites). It\
+                \ is included as a possible step in carrying out a permutation test\
+                \ of homogeneity of characters (such as the Incongruence Length Difference\
+                \ test).5. Permuting characters separately for each species. This\
+                \ is a method introduced by Steel, Lockhart, and Penny (1993) to permute\
+                \ data so as to destroy all phylogenetic structure, while keeping\
+                \ the base composition of each species the same as before. It shuffles\
+                \ the character order separately for each species."
+            prompt: Resampling methods (J)
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            mandatory: true
+            name: resamp_method
+            precond: seqboot
+            command: false
+            type: !mobyle/stringtype {default: bootstrap}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed (must be odd)
+            format: str( value ) + "\n"
+            simple: true
+            argpos: 10000
+            paramfile: seqboot.params
+            mandatory: true
+            name: seqboot_seed
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: How many replicates (R)?
+            format: ( "", "R\n" +str( value )+ "\n" )[ value is not None and value
+                != vdef ]
+            simple: true
+            argpos: 1
+            paramfile: seqboot.params
+            name: replicates
+            precond: seqboot
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparagraph
+        prompt: Weight options
+        name: weight_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Use weights for sites (W)
+            format: ( "" , "W\n" )[ value ]
+            argpos: 1
+            paramfile: protdist.params
+            name: weights
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Weights file
+            format: ( "" , "ln -s " + str( weights_file ) + " weights && " )[ value
+                is not None ]
+            argpos: -1
+            mandatory: true
+            name: weights_file
+            precond: weights
+            command: false
+            ctrls:
+            -   message: the name of this data can't be "infile" or "outfile"
+                test:
+                    value:
+                        '#nin': [infile, outfile]
+    - !mobyle/inputprogramparameter
+        format: '"M\nD\n"+ str( replicates ) + "\n"'
+        argpos: 1
+        paramfile: protdist.params
+        name: multiple_dataset
+        precond:
+            '#and':
+            - seqboot
+            -   replicates: {'#gt': '1'}
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: seqboot.params
+        name: bootconfirm
+        precond: seqboot
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: seqboot.params
+        name: bootterminal_type
+        precond: seqboot
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: protdist.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Categories model options (options available only if Categories model
+            choosed)
+        name: categ_options
+        precond: {Method: C}
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic code (U)
+            format: ( "", "U\n" + str( code ) + "\n" )[ value is not None and value
+                != vdef ]
+            argpos: 3
+            paramfile: protdist.params
+            name: code
+            command: false
+            type: !mobyle/stringtype
+                default: U
+                options:
+                - {label: Universal (U), value: U}
+                - {label: Mitochondrial (M), value: M}
+                - {label: Vertebrate mitochondrial (V), value: V}
+                - {label: Fly mitochondrial (F), value: F}
+                - {label: Yeast mitochondrial (Y), value: Y}
+        - !mobyle/inputprogramparameter
+            comment: 'All have groups: (Glu Gln Asp Asn), (Lys Arg His), (Phe Tyr
+                Trp) plus:George/Hunt/Barker: (Cys), (Met Val Leu Ileu), (Gly Ala
+                Ser Thr Pro)Chemical: (Cys Met), (Val Leu Ileu Gly Ala Ser Thr), (Pro)Hall:
+                (Cys), (Met Val Leu Ileu), (Gly Ala Ser Thr), (Pro)'
+            prompt: Categorization of amino acids (A)
+            format: ( "" , "A\n" +str( categorization ) +"\n" )[ value is not None
+                and value != vdef ]
+            argpos: 10
+            paramfile: protdist.params
+            name: categorization
+            command: false
+            type: !mobyle/stringtype
+                default: G
+                options:
+                - {label: George/Hunt/Barker (G), value: G}
+                - {label: Chemical (C), value: C}
+                - {label: Hall (H), value: H}
+        - !mobyle/inputprogramparameter
+            prompt: Prob change category (1.0=easy) (E)
+            format: ("", "E\n"+ str( value ) +"\n")[ value is not None and value !=
+                vdef ]
+            argpos: 3
+            paramfile: protdist.params
+            name: change_prob
+            command: false
+            type: !mobyle/floattype {default: 0.457}
+        - !mobyle/inputprogramparameter
+            comment: "If the Categories distance is selected another menu option,\
+                \ T,\n             will appear allowing the user to supply the Transition/Transversion\
+                \ ratio that should be assumed at the underlying DNA level.\n    \
+                \         The transition/transversion ratio can be any number from\
+                \ 0.5 upwards."
+            prompt: Transition/transversion ratio (T)
+            format: ("", "T\n"+str(value)+"\n")[value is not None and value != vdef]
+            argpos: 3
+            paramfile: protdist.params
+            name: ratio
+            command: false
+            type: !mobyle/floattype {default: 2.0}
+            ctrls:
+            -   message: The transition/transversion ratio must be any number from
+                    0.5 upwards.
+                test:
+                    value: {'#gte': '0.5'}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: protdist.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: protdist.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Outfile
+        filenames: '"protdist.outfile"'
+        argpos: 40
+        name: outfile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/outputprogramparameter {prompt: seqboot outfile, filenames: '"seqboot.outfile"',
+        argpos: 40, name: seqboot_out, precond: seqboot}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"protdist.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"protdist.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "This program uses protein sequences to compute\n\t  a distance matrix, under\
+    \ four different models of amino acid\n\t  replacement. It can also compute a\
+    \ table of similarity between\n\t  the amino acid sequences.The distance for each\
+    \ pair of species estimates the\n\t  total branch length between the two species,\
+    \ and can be used in the\n\t  distance matrix programs FITCH, KITSCH or NEIGHBOR."
+operations: ['EDAM_operation:0289']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/protdist.html']
+env: {}

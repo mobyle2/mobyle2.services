@@ -1,0 +1,65 @@
+!mobyle/program
+name: bionj
+title: BIONJ
+description: Neighbor Joining algorithm improved for molecular sequences
+authors: O. Gascuel
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: "Enter a matrix in Phylip format.This algorithm is adapted to evolutive\n\
+            \t  distances calculated from molecular data sequences (O. Gascuel,\n\t\
+            \  1997, MBE 14(7), 685-695).If only one data matrix is given, then BIONJ\n\
+            \t    returns one tree. When the input file contains several matrices\n\
+            \t    given one after the other, as obtained when combining PHYLIP's\n\
+            \t    SEQBOOT and DNADIST to perform a bootstrap, BIONJ returns the\n\t\
+            \    same number of trees, written one after the other in the output\n\
+            \t    file; this file may be given to PHYLIP's CONSENSE to obtain the\n\
+            \t    bootstrap tree."
+        prompt: Distances matrix File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/inputprogramparameter
+        prompt: Name of Tree File
+        format: '" " + str(value)'
+        argpos: 2
+        name: treefile_name
+        command: false
+        type: !mobyle/stringtype {default: treefile}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree File
+        filenames: str(treefile_name)
+        name: treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"bionj.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"bionj.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'Gascuel O., 1997, BIONJ: an improved version of the NJ algorithm
+        based on a simple model of sequence data, Molecular Biology and Evolution
+        14(7):685-695', url: null}
+homepage_links: ['http://www.lirmm.fr/~w3ifa/MAAS/BIONJ/']
+command: bionj
+env: {}
+source_links: ['http://www.lirmm.fr/~w3ifa/MAAS/BIONJ/']

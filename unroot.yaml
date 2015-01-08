@@ -1,0 +1,62 @@
+!mobyle/program
+name: unroot
+title: unroot
+description: Unroot a tree
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"retree < retree.params"'
+        argpos: 0
+        name: unroot
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: The program hangs when provided a tree with [...] added to branch
+            lengths.
+        prompt: Tree File
+        format: '"ln -s "+str( treefile ) +" intree && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: treefile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        format: '"0\nY\nW\nU\nQ\n"'
+        argpos: 1000
+        paramfile: retree.params
+        name: commands
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree output file
+        filenames: '"unroot.outtree"'
+        argpos: 40
+        name: outtree
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"unroot.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"unroot.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: Unroot use RETREE a tree editor. It reads in a tree.
+operations: ['EDAM_operation:0326']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/retree.html']
+env: {}

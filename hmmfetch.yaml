@@ -1,0 +1,64 @@
+!mobyle/program
+name: hmmfetch
+title: HMMFETCH
+description: Retrieve an HMM from pfam an HMM database
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {comment: "A file containing a list of one or\
+            \ more keys is read instead. The first white space delimited\n      field\
+            \ on each non-blank non-comment line of the file is used as a key, and\
+            \ any remaining\n      data on the line is ignored; this allows a variety\
+            \ of whitespace delimited datafiles to be used as files.", prompt: Name
+            of the HMM, format: '" "+str(value)', simple: true, argpos: 11, mandatory: true,
+        name: Name, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: HMM database
+        format: '" -f "+str(value)'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: HMMDB
+        command: false
+        type: !mobyle/stringtype
+            default: Pfam-A.hmm
+            options:
+            - {label: Pfam-A, value: Pfam-A.hmm}
+            - {label: Pfam-B, value: Pfam-B.hmm}
+    - !mobyle/inputprogramparameter
+        comment: Save the synthetic sequences to file rather than writing them to
+            stdout.
+        prompt: Name of the HMM output file (-o)
+        format: ( "" , " -o " + str(value) )[ value is not None ]
+        argpos: 1
+        name: outfile_name
+        command: false
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: str(outfile_name)
+        name: output_file_name
+        precond:
+            outfile_name: {'#ne': None}
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: '"hmmfetch.out"'
+        name: output_file
+        precond:
+            outfile_name: {'#eq': None}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmfetch.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: hmmfetch  is  a  small  utility  that  retrieves an HMM called name from
+    a HMMER model database called database.  in a new format, and prints that model
+    to standard output.  For example, hmmfetch Pfam  rrm retrieves  the RRM (RNA recognition
+    motif) model from Pfam.  The retrieved HMM file is written in HMMER 2 ASCII format.
+operations: ['EDAM_operation:2422']
+topics: ['EDAM_topics:0188']
+command: hmmfetch
+env: {}

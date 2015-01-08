@@ -1,0 +1,156 @@
+!mobyle/program
+name: rnaplfold
+title: RNAplfold
+description: Compute average pair probabilities for local base pairs in long sequences
+authors: Stephan H Bernhart, Ivo L Hofacker, Peter F Stadler.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: RNA Sequence File, format: '" < " + str(value)',
+        simple: true, argpos: 1000, mandatory: true, name: seq, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Size of windows for average pair probabilities. (-W)
+            format: ( "" , " -W " + str(value) )[ value is not None and value != vdef]
+            name: winsize
+            command: false
+            type: !mobyle/integertype {default: 70}
+        - !mobyle/inputprogramparameter
+            prompt: Allow only pairs (i,j) with j-i<=span. (-L)
+            format: ( "" , " -L " + str(value) )[ value is not None and value <= winsize
+                ]
+            name: span
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Report only base pairs with an average probability > cutoff. (-c)
+            format: ( "" , " -c " + str(value) )[ value is not None and value != vdef]
+            name: cutoff
+            command: false
+            type: !mobyle/floattype {default: 0.01}
+        - !mobyle/inputprogramparameter
+            prompt: Length to compute the mean probability of unpaired base. (-u)
+            format: ( "" , " -u " + str(value) )[ value is not None]
+            name: width
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temperature Celcius
+                (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/integertype {default: 37}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'How to treat ''dangling end'' energies for bases adjacent to
+                helices in free ends and multiloops: Normally only unpaired bases
+                can participate in at most one dangling end. With -d2 this check is
+                ignored, this is the default for partition function folding (-p).
+                -d ignores dangling ends altogether. Note that by default pf and mfe
+                folding treat dangling ends differently, use -d2 (or -d) in addition
+                to -p to ensure that both algorithms use the same energy model. The
+                -d2 options is available for RNAfold, RNAeval, and RNAinverse only.'
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Energy parameter file (-P),
+            format: '( "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+        - !mobyle/inputprogramparameter
+            comment: "Toggles -u option, output is switched from probabilities\n \
+                \             to their logarithm, which are NOT exactly the mean \
+                \ energies needed to the respective stretch of bases!"
+            prompt: Output is switched from probabilities to their logarithm
+            format: ( "" , " -O " )[ value ]
+            name: logout
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"/path/to/ViennaRNA/readseq/readseq  -f=19 -a "+ str(seq) + " > "+
+            str(seq) +".tmp && (cp "+ str(seq) +" "+ str(seq) +".orig && mv "+ str(seq)
+            +".tmp "+ str(seq) +") ; "'
+        argpos: -10
+        name: readseq
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnaplfold.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnaplfold.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAplfold computes local pair probabilities for base pairs with a maximal
+    span of L. The  probabilities  are  averaged  over  all windows of size L that
+    contain the base pair.Output consists of a dot plot in postscript file, where
+    the averaged pair probabilities can easily be parsed and visually inspected.
+references:
+- {doi: null, label: 'S. H. Bernhart, I.L. Hofacker, and P.F. Stadler (2006) "Local
+        Base Pairing Probabilities in Large RNAs" Bioinformatics 22: 614-615', url: null}
+- {doi: null, label: 'A.F. Bompfunewerer, R. Backofen, S.H. Bernhart, J. Hertel, I.L.
+        Hofacker, P.F. Stadler, S. Will (2007) "Variations on {RNA} Folding and Alignment:
+        Lessons from Benasque" J. Math. Biol.', url: null}
+command: RNAplfold
+env: {}

@@ -1,0 +1,38 @@
+!mobyle/program
+name: squizz_checker
+version: '0.99'
+title: SQUIZZ
+description: Sequence/Alignment format checker
+authors: N. Joly
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: Sequence/Alignment, format: '" "+str(value)',
+        simple: true, argpos: 2, mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparameter
+        comment: Enabled by default
+        prompt: Disable strict format checks (-s)
+        format: ("", " -s")[value is not None and value !=vdef]
+        argpos: 1
+        name: strict
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"squizz_checker.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"squizz_checker.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0336']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/squizz/seqfmt.html', 'http://bioweb2.pasteur.fr/docs/squizz/alifmt.html']
+command: squizz
+env: {}

@@ -1,0 +1,39 @@
+!mobyle/program
+name: imagetest
+title: ImageTest
+description: Test image interface
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Paragraph !
+        name: para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: 'Bidon :'
+            name: bidon
+            command: false
+            type: !mobyle/stringtype {default: '1'}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Paragraph !
+        name: para
+        children:
+        - !mobyle/outputprogramparameter {prompt: 'Image test :', filenames: '"*.jpg"',
+            name: test}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"imagetest.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"imagetest.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+documentation_links: [null]
+command: cp /tmp/test.jpg test.jpg && cp /tmp/test.jpg test2.jpg
+env: {}

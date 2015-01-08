@@ -1,0 +1,108 @@
+!mobyle/program
+name: elp
+version: '0.0'
+title: ELP
+description: Evolutionary Landscape Painter
+authors: Guillaume Cambray
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence
+        format: ("", " " + str(value))[value is not None]
+        simple: true
+        argpos: 99
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparameter
+        prompt: Number of synonymous sequences to generate (1 to 3)
+        format: ( "" , " -n " + str(value) + " ")[value is not None and value != vdef
+            ]
+        name: sequence_number
+        command: false
+        type: !mobyle/integertype {default: 1}
+        ctrls:
+        -   message: minimum is 1, maximum is 3
+            test:
+                '#and':
+                -   sequence_number: {'#gte': '1'}
+                -   sequence_number: {'#lte': '3'}
+    - !mobyle/inputprogramparameter
+        prompt: G+C content of the output sequences
+        format: ( "" , " -g " + str(value) + " ")[value is not None and value != vdef
+            ]
+        name: gc_content
+        command: false
+        type: !mobyle/floattype {default: 50.9}
+        ctrls:
+        -   message: minimum is 0, maximum is 100
+            test:
+                '#and':
+                -   gc_content: {'#gte': '0'}
+                -   gc_content: {'#lte': '100'}
+    - !mobyle/inputprogramparameter
+        comment: A list of codons not to incorporate in the output sequences (typically
+            codons rarely used in the genome).
+        prompt: Forbidden codons (comma-separated list)
+        format: ( "" , " -f " + value + " ")[value is not None and value != vdef ]
+        name: forbidden_codons
+        command: false
+        type: !mobyle/stringtype {default: 'CTG,AGG,ATA,TAG'}
+    - !mobyle/inputprogramparameter
+        comment: <html:div xmlns:html="http://www.w3.org/1999/xhtml">For a description
+            of the CAI, please refer to the<html:a href="http://www.ncbi.nlm.nih.gov/pubmed/3547335"
+            target="_blank">original article</html:a>. This option overrides any specified
+            G+C content value.</html:div>
+        prompt: Force to maximize Codon Adaptation Index of the generated sequence
+            (with respect to E. coli)
+        format: ( "" , " -c" )[ value ]
+        name: force_max_cai
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Report
+        filenames: '"stat.txt"'
+        name: elp_report
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Sequences
+        filenames: '"sequences.fas"'
+        name: sequences
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/outputprogramparameter {prompt: Evolutionary landscape comparison, filenames: '"landscapes.png"',
+        name: graphic_report}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"elp.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"elp.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "<html:div xmlns:html=\"http://www.w3.org/1999/xhtml\"><html:p>This software\
+    \ and its underlying principle are covered by copyright laws and by the international\
+    \ patent application WO/2006/046132.</html:p><html:p>Their use are exclusively\
+    \ authorized for academic purpose.\n\t\t\tAcademic users are kindly requested\
+    \ to cite this source when referring to said software.\n\t\t\tFor any use other\
+    \ than academic, please contact<html:a href=\"mailto:christian.mally@pasteur.fr\"\
+    >Christian Mally</html:a>at the Technology Transfer Service of the Pasteur Institute.</html:p></html:div>"
+references:
+- {doi: null, label: '<html:a xmlns:html="http://www.w3.org/1999/xhtml" href="http://dx.doi.org/10.1371%2Fjournal.pgen.1000256"
+        target="_blank">Cambray G, Mazel D 2008 Synonymous Genes Explore Different
+        Evolutionary Landscapes. PLoS Genetics 4(11): e1000256 doi:10.1371/journal.pgen.1000256</html:a>',
+    url: null}
+command: elp
+env: {}

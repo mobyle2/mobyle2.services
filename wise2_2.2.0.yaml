@@ -1,0 +1,453 @@
+!mobyle/program
+name: wise2
+version: 2.2.0
+title: WISE2
+description: Comparisons of protein/DNA sequences
+authors: E. Birney
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Wise program
+        format: str(value)
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: wise2
+        command: true
+        type: !mobyle/stringtype
+            default: 'Null'
+            options:
+            - {label: Choose a program, value: 'Null'}
+            - {label: Protein to genomic DNA (genewise), value: genewise}
+            - {label: Protein to cDNA (estwise), value: estwise}
+    - !mobyle/inputprogramparagraph
+        prompt: Protein file
+        name: protein_file
+        children:
+        - !mobyle/inputprogramparameter
+            comment: You must  give  a protein  sequence file  in fasta format.
+            prompt: Protein sequence File
+            format: '" " +str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: protein
+            precond:
+                hmmer: {'#eq': None}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter
+            comment: You must give an HMMER file.
+            prompt: or Protein HMM File
+            format: '" " + str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: hmmer
+            precond:
+                protein: {'#eq': None}
+            command: false
+        - !mobyle/inputprogramparameter
+            prompt: HMM command (-hmmer)
+            format: '" -hmmer"'
+            argpos: 4
+            name: hmmer_command
+            precond:
+                hmmer: {'#ne': None}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: DNA sequence File
+        format: '" " + str(value)'
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: dna
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparameter
+        prompt: Silent mode (-silent -quiet)
+        format: '" -silent -quiet"'
+        argpos: 100
+        name: quiet
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: DNA sequence Options
+        name: dna_options
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Start position in dna (-u)
+            format: ( "" , " -u " + str(value) )[ value is not None ]
+            name: dna_start
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: End position in dna (-v)
+            format: ( "" , " -v " + str(value) )[ value is not None ]
+            name: dna_end
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Strand comparison
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: strand
+            command: false
+            type: !mobyle/stringtype
+                default: -tfor
+                options:
+                - {label: Forward (-tfor), value: -tfor}
+                - {label: Reverse (-trev), value: -trev}
+                - {label: Both (-both), value: -both}
+        - !mobyle/inputprogramparameter
+            prompt: Report positions as absolute to truncated/reverse sequence (-tabs)
+            format: ( "" , " -tabs" )[ value ]
+            name: tabs
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Protein comparison Options
+        name: protein_options
+        precond:
+            hmmer: {'#eq': None}
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Start position in protein (-s)
+            format: ( "" , " -s " + str(value) )[ value is not None ]
+            name: protein_start
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: End position in protein (-t)
+            format: ( "" , " -t " + str(value) )[ value is not None ]
+            name: protein_end
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Gap penalty (-g)
+            format: ( "" , " -g " + str(value) )[ value is not None and value != vdef]
+            name: gap
+            command: false
+            type: !mobyle/integertype {default: 12}
+        - !mobyle/inputprogramparameter
+            prompt: Gap extension penalty (-e)
+            format: ( "" , " -e " + str(value) )[ value is not None and value != vdef]
+            name: ext
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            prompt: Comparison matrix (-m)
+            format: ( "" , " -m" + str(value) )[ value is not None and value != vdef]
+            name: matrix
+            command: false
+            type: !mobyle/stringtype
+                default: BLOSUM62.bla
+                options:
+                - {label: BLOSUM30, value: BLOSUM30.bla}
+                - {label: BLOSUM45, value: BLOSUM45.bla}
+                - {label: BLOSUM62, value: BLOSUM62.bla}
+                - {label: BLOSUM80, value: BLOSUM80.bla}
+                - {label: GONNET120, value: gon120.bla}
+                - {label: GONNET160, value: gon160.bla}
+                - {label: GONNET200, value: gon200.bla}
+                - {label: GONNET250, value: gon250.bla}
+                - {label: GONNET350, value: gon350.bla}
+                - {label: Identity, value: idenity.bla}
+    - !mobyle/inputprogramparagraph
+        prompt: Model Options
+        name: gene_model_options
+        argpos: 7
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Type of match (-init)
+            format: ( "" , " -init " + str(value) )[ value is not None and value !=
+                vdef]
+            name: init
+            command: false
+            type: !mobyle/stringtype
+                default: default
+                options:
+                - {label: Default, value: default}
+                - {label: Global, value: global}
+                - {label: Local, value: local}
+                - {label: Wing, value: wing}
+                - {label: Endbias, value: endbias}
+        - !mobyle/inputprogramparameter
+            prompt: Substitution error rate (-subs)
+            format: ( "" , " -subs " + str(value) )[ value is not None and value !=
+                vdef]
+            name: subs
+            command: false
+            type: !mobyle/floattype {default: 1.0e-05}
+        - !mobyle/inputprogramparameter
+            prompt: Insertion/deletion error rate (-indel)
+            format: ( "" , " -indel " + str(value) )[ value is not None and value
+                != vdef]
+            name: indel
+            command: false
+            type: !mobyle/floattype {default: 1.0e-05}
+        - !mobyle/inputprogramparameter
+            prompt: Random Model as synchronous or flat (-null)
+            format: ( "" , " -null " + str(value) )[ value is not None and value !=
+                vdef]
+            name: 'null'
+            command: false
+            type: !mobyle/stringtype
+                default: syn
+                options:
+                - {label: Synchronous, value: syn}
+                - {label: Flat, value: flat}
+        - !mobyle/inputprogramparameter
+            prompt: Probability of matching a NNN codon (-alln)
+            format: ( "" , " -alln " + str(value) )[ value is not None and value !=
+                vdef]
+            name: alln
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparagraph
+            prompt: Genewise special option
+            name: wise2_model_opt
+            precond: {wise2: genewise}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Gene parameter file (-gene)
+                format: ( "" , " -gene " + str(value) )[ value is not None and value
+                    != vdef]
+                name: gene
+                command: false
+                type: !mobyle/stringtype
+                    default: human.gf
+                    options:
+                    - {label: Human, value: human.gf}
+                    - {label: Pb, value: pb.gf}
+                    - {label: Pombe, value: pombe.gf}
+                    - {label: Worm, value: worm.gf}
+            - !mobyle/inputprogramparameter
+                prompt: Using codon bias or not (-cfreq)?
+                format: ( "" , " -cfreq " + str(value) )[ value is not None and value
+                    != vdef]
+                name: cfreq
+                command: false
+                type: !mobyle/stringtype
+                    default: flat
+                    options:
+                    - {label: Model, value: model}
+                    - {label: Flat, value: flat}
+            - !mobyle/inputprogramparameter
+                prompt: Using splice model or GT/AG (-splice)?
+                format: ( "" , " -splice " + str(value) )[ value is not None and value
+                    != vdef]
+                name: splice
+                command: false
+                type: !mobyle/stringtype
+                    default: model
+                    options:
+                    - {label: Model, value: model}
+                    - {label: Flat, value: flat}
+            - !mobyle/inputprogramparameter
+                prompt: Use tied model for introns (-intron)
+                format: ( "" , " -intron " + str(value) )[ value is not None and value
+                    != vdef]
+                name: intron
+                command: false
+                type: !mobyle/stringtype
+                    default: tied
+                    options:
+                    - {label: Model, value: model}
+                    - {label: Tied, value: tied}
+            - !mobyle/inputprogramparameter
+                prompt: Protein insert model (-insert)
+                format: ( "" , " -insert " + str(value) )[ value is not None and value
+                    != vdef]
+                name: insert
+                command: false
+                type: !mobyle/stringtype
+                    default: flat
+                    options:
+                    - {label: Model, value: model}
+                    - {label: Flat, value: flat}
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 9
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Show pretty ascii output (-pretty)
+            format: ( "" , " -pretty" )[ value ]
+            name: pretty
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show parameters (-para)
+            format: ( "" , " -para" )[ value ]
+            name: para
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show summary output (-sum)
+            format: ( "" , " -sum" )[ value ]
+            name: sum
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show protein translation, splicing frameshifts (-pep)
+            format: ( "" , " -pep" )[ value ]
+            name: pep
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show logical AlnBlock alignment (-alb)
+            format: ( "" , " -alb" )[ value ]
+            name: alb
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show raw matrix alignment (-pal)
+            format: ( "" , " -pal" )[ value ]
+            name: pal
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Length of main block in pretty output (-block)
+            format: ( "" , " -block " + str(value) )[ value is not None and value
+                != vdef]
+            name: block
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: Divide string for multiple outputs (-divide)
+            format: ( "" , " -divide " + str(value) )[ value is not None ]
+            name: divide
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Genewise special option
+            name: wise2_out_opt
+            precond: {wise2: genewise}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Mark genes with frameshifts as pseudogenes (-pseudo)
+                format: ( "" , " -pseudo" )[ value ]
+                name: pseudo
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show gene structure (-genes)
+                format: ( "" , " -genes" )[ value ]
+                name: genes
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show gene structure with supporting evidence (-genesf)
+                format: ( "" , " -genesf" )[ value ]
+                name: genesf
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show EMBL feature format with CDS key (-embl)
+                format: ( "" , " -embl" )[ value ]
+                name: embl
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show EMBL feature format with misc_feature key for diana (-diana)
+                format: ( "" , " -diana" )[ value ]
+                name: diana
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show cDNA (-cdna)
+                format: ( "" , " -cdna" )[ value ]
+                name: cdna
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Show protein translation, breaking at frameshifts (-trans)
+                format: ( "" , " -trans" )[ value ]
+                name: trans
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Ace file gene structure (-ace)
+                format: ( "" , " -ace" )[ value ]
+                name: ace
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Gene Feature Format file (-gff)
+                format: ( "" , " -gff" )[ value ]
+                name: gff
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                prompt: Raw gene structure (-gener)
+                format: ( "" , " -gener" )[ value ]
+                name: gener
+                command: false
+                type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: New gene model statistics for genewise
+        name: New_gene_options
+        precond: {wise2: genewise}
+        argpos: 10
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Maximum Bits value for a splice site (-splice_max_collar)
+            format: ( "" , " -splice_max_collar " + str(value) )[ value is not None
+                and value != vdef]
+            name: splice_max_collar
+            command: false
+            type: !mobyle/floattype {default: 5.0}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum Bits value for a splice site (-splice_min_collar)
+            format: ( "" , " -splice_min_collar " + str(value) )[ value is not None
+                and value != vdef]
+            name: splice_min_collar
+            command: false
+            type: !mobyle/floattype {default: -5.0}
+        - !mobyle/inputprogramparameter
+            prompt: Score offset for splice sites (-splice_score_offset)
+            format: ( "" , " -splice_score_offset " + str(value) )[ value is not None
+                and value != vdef]
+            name: splice_score_offset
+            command: false
+            type: !mobyle/floattype {default: 4.5}
+    - !mobyle/inputprogramparagraph
+        prompt: Standard Options
+        name: standard_options
+        argpos: 11
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: No warning messages (-erroroffstd)
+            format: ( "" , " -erroroffstd" )[ value ]
+            name: erroroffstd
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"wise2.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"wise2.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0352']
+topics: ['EDAM_topic:0182']
+homepage_links: ['http://www.ebi.ac.uk/Tools/Wise2/doc_wise2.html']
+env: {}
+source_links: ['ftp://ftp.ebi.ac.uk/pub/software/unix/wise2/']

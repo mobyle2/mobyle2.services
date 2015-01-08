@@ -1,0 +1,125 @@
+!mobyle/program
+name: annotateBed
+version: 2.15.0
+title: 'BEDtools: Annotate BED files'
+description: annotateBed annotates a BED/VCF/GFF file with the coverage and number
+    of overlaps observed from multiple other BED/VCF/GFF files. In this way, it allows
+    one to ask to what degree one feature coincides with multiple other feature types
+    with a single command.
+authors: Quinlan A.R. & Hall I.M.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: BED/VCF/GFF format file that should be used as the basis of comparing
+                the annotation
+            prompt: BED/VCF/GFF data that needs annotation (-i)
+            format: '" -i " + str( value )'
+            simple: true
+            argpos: 50
+            mandatory: true
+            name: input_file
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Data should be BED/VCF/GFF format file. If multiple files are
+                to be compared then upload a zip file or tar.gz file using the upload
+                option.
+            prompt: Data used for comparison
+            format: '" -files " + str( value )'
+            simple: true
+            argpos: 51
+            mandatory: true
+            name: input_other_files
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: List of names (one per file uploaded). These names will be printed
+                as a header line.
+            prompt: List of names that corresponds to the uploaded files (-names)
+            format: ("", " -names " + str(value))[value is not None]
+            name: file_names
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Default option: overlaps are counted without respect to strand.Same\
+                \ strandedness option: only counts overlaps on the _same_ strand.Different\
+                \ strandedness option: only count overlaps \ton the _opposite_ strand."
+            prompt: Strandedness (-s or -S)
+            format: ("", " " + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: force_strand_option
+            command: false
+            type: !mobyle/stringtype
+                default: ignore
+                options:
+                - {label: Ignore strandedness (default), value: ignore}
+                - {label: Same strandedness, value: -s}
+                - {label: Different strandedness, value: -S}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_para
+        argpos: 8
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: 'Enter output file prefix:'
+            format: (" > " + str(vdef) , " > " + str(value))[value is not None] +
+                ".bed"
+            simple: true
+            argpos: 52
+            mandatory: true
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: annotated_data}
+        - !mobyle/inputprogramparameter
+            prompt: Report options (-counts or -both)
+            format: ("" , "  " +  str(value))[value is not None and value != vdef]
+            name: report_options
+            command: false
+            type: !mobyle/stringtype
+                default: frac
+                options:
+                - {label: Only % coverage of the first file with each of the other
+                        files, value: frac}
+                - {label: Only counts of the first file with each of the other files,
+                    value: -counts}
+                - {label: Both counts and % coverage, value: -both}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output_para
+        argpos: 8
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: GenomeAnnotation
+            filenames: ("annotated_data",output_file)[output_file is not None] + ".bed"
+            name: annotateBed_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"annotateBed.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"annotateBed.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3194']
+topics: ['EDAM_topic:0160']
+command: annotateBed
+env: {}

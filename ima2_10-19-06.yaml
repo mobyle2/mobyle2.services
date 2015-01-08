@@ -1,0 +1,169 @@
+!mobyle/program
+name: ima2
+version: 10-19-06
+title: IMA
+description: Multilocus migration estimation
+authors: ??
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: initiation
+        format: '" -n 1 -q dean -W 2000:00 -o std.out -e std.err -N __bsubArgsEnd__
+            IMa2 "'
+        argpos: 0
+        name: bsubinit
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {prompt: Input File, format: '"-i " + str( value
+            )', simple: true, argpos: 1, mandatory: true, name: infile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Parameters
+        name: parameters
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Burn in duration specified in number of steps or time in hours?(only
+                one will be used)
+            name: steps
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: number of steps, value: '0'}
+                - {label: time in hours, value: '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Burn in duration - number of steps
+            format: ( " -b " + str( value ) , "" )[ steps ]
+            argpos: 3
+            name: burninsteps
+            command: false
+            type: !mobyle/integertype {default: 1000}
+        - !mobyle/inputprogramparameter
+            prompt: Burn in duration - time in hours
+            format: ( "" , " -b " + str( value ) )[ steps ]
+            argpos: 3
+            name: burninhours
+            command: false
+            type: !mobyle/floattype {default: 0.001}
+        - !mobyle/inputprogramparameter
+            prompt: 'Run duration  (default: 10000 genealogies sampled per locus -
+                at least 100,000 genealogies for estimating joint posteriors and likelihood-ratio
+                tests)'
+            format: ( "" , " -L " + str( value ) )[value is not None]
+            argpos: 4
+            name: duration
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Number of steps between tree saving (for joint parameter estimates,
+                or tests of nested models, at least 100,000 genealogies are needed)
+            format: ( "" , " -d " + str( value ) )[value is not None]
+            argpos: 5
+            name: d
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Migration prior value (maximum for uniform, mean if exponential
+                distribution is used)
+            format: ( "" , " -m " + str( value ) )[value is not None]
+            argpos: 6
+            name: mig
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Heating model
+            format: (" -hf" + str( value ) )
+            argpos: 7
+            name: heatmodel
+            command: false
+            type: !mobyle/stringtype
+                default: l
+                options:
+                - {label: linear, value: l}
+                - {label: two-step, value: t}
+                - {label: geometric, value: g}
+        - !mobyle/inputprogramparameter
+            prompt: Number of chains, minimum is 2, maximum is 1000 (40 for medium
+                size data set - less than 15 loci and 20 individuals per locus; 150
+                for high heating)
+            format: ( "" , " -hn" + str( value ) )[value is not None]
+            argpos: 8
+            name: chains
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            prompt: First heating parameter (effect depends on heating model )
+            format: ( "" , " -ha" + str( value ) )[value is not None]
+            argpos: 9
+            name: 1heating
+            command: false
+            type: !mobyle/floattype {default: 0.999}
+        - !mobyle/inputprogramparameter
+            prompt: Second heating parameter (effect depends on heating model)
+            format: ( "" , " -hb" + str( value ) )[value is not None]
+            argpos: 10
+            name: 2heating
+            command: false
+            type: !mobyle/floattype {default: 0.3}
+        - !mobyle/inputprogramparameter
+            prompt: Output options
+            format: ( "" , " -p " + str( value ) )[value is not None]
+            argpos: 11
+            name: outop
+            command: false
+            type: !mobyle/integertype {default: 2345678}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum for population size parameters (4Nu)
+            format: ( "" , " -q " + str( value ) )[value is not None]
+            argpos: 12
+            name: scalar
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed
+            format: ( "" , " -s " + str( value ) )[value is not None]
+            argpos: 13
+            name: seed
+            command: false
+            type: !mobyle/integertype {default: 3215}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum time of population splitting
+            format: ( "" , " -t " + str( value ) )[value is not None]
+            argpos: 14
+            name: maxtime
+            command: false
+            type: !mobyle/integertype {default: 3}
+        - !mobyle/inputprogramparameter
+            prompt: Name of output file - no spaces
+            format: ( "" , " -o " + str( value ) )[value is not None]
+            argpos: 2
+            name: outfilename
+            command: false
+            type: !mobyle/stringtype {default: IMa2_out.txt}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {filenames: '"std.out"', name: stdoutfile}
+    - !mobyle/outputprogramparagraph
+        prompt: Parameters
+        name: parameters
+        children:
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(outfilename),
+            name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"ima2.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"ima2.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: '??', url: null}
+documentation_links: ['http://servbio.hpc.ncsu.edu:81/mobyle/helpfiles/Using_IMa2.pdf']
+command: runbsub
+env: {}

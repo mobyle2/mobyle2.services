@@ -1,0 +1,151 @@
+!mobyle/program
+name: xpound
+title: Xpound
+description: Software for exon trapping
+authors: Thomas and Skolnick
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: "Everything after a % on a line in the input\n          file is ignored.\
+            \ Other than comment xpound expects only white\n          space, which\
+            \ is also ignored, or IUPAC characters:A C M G R S V T W Y H K D B Nin\
+            \ upper or lower case. Characters which do\n          not uniquely determine\
+            \ a base, such as N, B, S and so on, are\n          all interpreted as\
+            \ a C.Xpound will not accept the IUPAC character -,\n          all occurences\
+            \ of which should be stripped from the input file\n          beforehand."
+        prompt: DNA sequence File
+        format: '" <"+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1957']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Report options
+        name: report_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Reports regions of bases for which the probability of coding is
+                high (xreport)
+            format: ( "" , " ; xreport <xpound.out " )[ value ]
+            argpos: 20
+            name: report
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Cut off value for report
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            argpos: 21
+            name: cut_off
+            precond: report
+            command: false
+            type: !mobyle/floattype {default: 0.75}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum length value for report
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            argpos: 22
+            name: min_length
+            precond: report
+            command: false
+            type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparagraph
+        prompt: Postscript options
+        name: postscript_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Produces a file of graphs in PostScript format (xpscript)
+            format: ( "" , "; xpscript xpound.out" )[ value ]
+            argpos: 30
+            name: postscript
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Orientation (-l)
+            format: ( "" , " -l " )[ value == "lanscape" ]
+            argpos: 31
+            name: orientation
+            precond: postscript
+            command: false
+            type: !mobyle/stringtype
+                default: portrait
+                options:
+                - {label: Portrait, value: portrait}
+                - {label: Lanscape, value: lanscape}
+        - !mobyle/inputprogramparameter
+            prompt: Rows of plots per page (-r)
+            format: ( "" , " -r " + str(value) )[ value is not None and value != vdef]
+            argpos: 32
+            name: rows
+            precond: postscript
+            command: false
+            type: !mobyle/integertype {default: 5}
+        - !mobyle/inputprogramparameter
+            prompt: Columns of plots per page (-c)
+            format: ( "" , " -c " + str(value) )[ value is not None and value != vdef]
+            argpos: 32
+            name: columns
+            precond: postscript
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Draw a line at this level (-hi)
+            format: ( "" , " -hi " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 33
+            name: high
+            precond: postscript
+            command: false
+            type: !mobyle/floattype {default: 0.75}
+        - !mobyle/inputprogramparameter
+            prompt: Draw a line at this level (-lo)
+            format: ( "" , " -lo " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 34
+            name: low
+            precond: postscript
+            command: false
+            type: !mobyle/floattype {default: 0.5}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file
+        filenames: '"xpound.out"'
+        name: outfile
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparagraph
+        prompt: Report options
+        name: report_options
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Report file
+            filenames: '"xreport.out"'
+            argpos: 25
+            name: report_file
+            precond: report
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparagraph
+        prompt: Postscript options
+        name: postscript_options
+        children:
+        - !mobyle/outputprogramparameter {prompt: PostScript file, filenames: '"xpound.ps"',
+            argpos: 100, name: psfile, precond: postscript}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"xpound.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2454']
+topics: ['EDAM_topic:0114']
+references:
+- {doi: null, label: 'A probabilistic model for detecting coding regions in DNA sequences.
+        Alun Thomas and Mark H Skolnick, IMA Journal of Mathematics Applied in Medicine
+        and Biology, 1994, 11, 149-160.', url: null}
+command: xpound
+env: {}

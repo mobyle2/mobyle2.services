@@ -1,0 +1,172 @@
+!mobyle/program
+name: transeq
+title: transeq
+description: Translate nucleic acid sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Translation frames (value from 1 to 6)
+            format: ("", " -frame=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: frame
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: '1', value: '1'}
+                - {label: '2', value: '2'}
+                - {label: '3', value: '3'}
+                - {label: Forward three frames, value: F}
+                - {label: '-1', value: '-1'}
+                - {label: '-2', value: '-2'}
+                - {label: '-3', value: '-3'}
+                - {label: Reverse three frames, value: R}
+                - {label: All six frames, value: '6'}
+        - !mobyle/inputprogramparameter
+            prompt: Genetic codes
+            format: ("", " -table=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: table
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+        - !mobyle/inputprogramparameter
+            comment: "Regions to translate. \n If this is left blank, then the complete\
+                \ sequence is translated. \n  A set of regions is specified by a set\
+                \ of pairs of positions. \n  The positions are integers. \n  They\
+                \ are separated by any non-digit, non-alpha character. \n  Examples\
+                \ of region specifications are: \n  24-45, 56-78 \n  1:45, 67=99;765..888\
+                \ \n  1,5,8,10,23,45,57,99 \n  Note: you should not try to use this\
+                \ option with any other frame  than the default, -frame=1"
+            prompt: 'Regions to translate (eg: 4-57,78-94)'
+            format: ("", " -regions=" + str(value))[value is not None]
+            argpos: 4
+            name: regions
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: This removes all 'X' and '*' characters from the right end of
+                the translation. The trimming process starts at the end and  continues
+                until the next character is not a 'X' or a '*'
+            prompt: Trim trailing x's and *'s
+            format: ("", " -trim")[ bool(value) ]
+            argpos: 5
+            name: trim
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This changes all STOP codon positions from the '*' character
+                to 'X' (an unknown residue). This is useful because some  programs
+                will not accept protein sequences with '*' characters in  them.
+            prompt: Change all *'s to x's
+            format: ("", " -clean")[ bool(value) ]
+            argpos: 6
+            name: clean
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The default definition of frame '-1' is the reverse-complement
+                of the set of codons used in frame 1. (Frame -2  is the set of codons
+                used by frame 2, similarly frames -3 and 3).  This is a common standard,
+                used by the Staden package and other  programs. If you prefer to define
+                frame '-1' as using the set of  codons starting with the last codon
+                of the sequence, then set this  to be true.
+            prompt: Define frame '-1' as starting in the last codon
+            format: ("", " -alternative")[ bool(value) ]
+            argpos: 7
+            name: alternative
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (outseq), format: '("" , " -outseq=" + str(value))[value is not None]',
+            argpos: 8, name: outseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 9, name: osformat_outseq, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2976']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"transeq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"transeq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0371']
+topics: ['EDAM_topic:0108']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/transeq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: transeq
+env: {}

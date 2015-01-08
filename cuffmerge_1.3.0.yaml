@@ -1,0 +1,133 @@
+!mobyle/program
+name: cuffmerge
+version: 1.3.0
+title: Cuffmerge
+description: Cuffmerge takes two or more Cufflinks GTF files and merges them into
+    a single unified transcript catalog.  Optionally, you can provide the script with
+    a reference GTF, and the script will use it to attach gene names and other metadata
+    to the merged catalog.
+authors: Trapnell C., Williams B.A., Pertea G., Mortazavi A.M., Kwan G., van Baren
+    M.J., Salzberg S.L., Wold B. & Pachter L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Initial command
+        format: '"cuffmerge"'
+        argpos: 1
+        name: cufflinks_cmd
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        children:
+        - !mobyle/inputprogramparameter {comment: 'Provide the GTF files that you
+                want in the text file "manifest", which lists the GTF files that you''d
+                like to merge together into a single GTF file.', prompt: GTF manifest
+                file, format: '" echo -e "+"\\\\n".join(value) + " > manifest.txt
+                && "', simple: true, argpos: 0, mandatory: true, name: assembly_GTF_list,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: Add manifest
+            format: '" manifest.txt"'
+            argpos: 50
+            name: manifest_file
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: An optional "reference" annotation GTF.
+            prompt: Use Reference Annotation(-g/--ref-gtf)
+            format: (""," -g " + str(value))[value is not None and value != "upload"]
+            simple: true
+            name: use_reference_annotation
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a genome annotation, value: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: Genomic DNA sequences for the reference.
+            prompt: Upload reference annotation
+            format: (""," -g " + str(value))[value is not None]
+            simple: true
+            name: annotation_data
+            precond: {use_reference_annotation: upload}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Use sequence data for some optional classification functions
+            prompt: Use Sequence Data
+            format: (""," -s " + str(value))[value is not None and value != "upload"]
+            simple: true
+            name: use_sequence_data
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a genome, value: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: Genomic DNA sequences for the reference. Upload zip file if you
+                are referencing multiple files
+            prompt: Upload reference sequences
+            format: (""," -s " + str(value))[value is not None]
+            simple: true
+            name: sequence_data
+            precond: {use_sequence_data: upload}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: 'Discard isoforms with abundance below this. Range: 0-1.0'
+            prompt: Minimum isoform fraction
+            format: ('', ' --min-isoform-fraction ' + str(value))[value is not None
+                and value != vdef]
+            name: min_frac
+            command: false
+            type: !mobyle/floattype {default: 0.05}
+        - !mobyle/inputprogramparameter
+            comment: Use this many threads to merge assemblies. - the default is 1
+            prompt: Number of threads used during merge assemblies (-p/--num-threads)
+            format: '" -p 5"'
+            name: num_threads
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: 'Sets the Directory where merged assembly will be written  [ default:
+            ./merged_asm  ]'
+        prompt: Enter experiment name (-o)
+        format: '" -o ./"'
+        name: output_dir
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: out GTF
+        filenames: '"merged.gtf"'
+        name: out_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cuffmerge.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cuffmerge.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+env: {}

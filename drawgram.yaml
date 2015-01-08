@@ -1,0 +1,367 @@
+!mobyle/program
+name: drawgram
+title: drawgram
+description: Plots a cladogram- or phenogram-like rooted tree
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"drawgram <drawgram.params"'
+        argpos: 0
+        name: drawgram
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: Tree in Newick format.
+        prompt: Tree File (intree)
+        format: '"ln -s "+ str( treefile ) +" intree && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: treefile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: drawgram.params
+        name: screen_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Drawgram options
+        name: options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Which plotter or printer will the tree be drawn on (P)
+            format: ("" , "P\n" + str(value) +"\n")[ value is not None and value !=
+                vdef ]
+            argpos: 2
+            paramfile: drawgram.params
+            name: plotter
+            command: false
+            type: !mobyle/stringtype
+                default: L
+                options:
+                - {label: Postscript printer file format (L), value: L}
+                - {label: PICT format (M), value: M}
+                - {label: HP Laserjet PCL file format (J), value: J}
+                - {label: MS-Windows Bitmap (W), value: W}
+                - {label: TeKtronix 4010 graphics terminal (K), value: K}
+                - {label: Hewlett-Packard pen plotter (H), value: H}
+                - {label: DEC ReGIS graphics (D), value: D}
+                - {label: Houston Instruments plotter (B), value: B}
+                - {label: Epson MX-80 dot-matrix printer (E), value: E}
+                - {label: Prowriter/Imagewriter dot-matrix printer (C), value: C}
+                - {label: Okidata dot-matrix printer (O), value: O}
+                - {label: Toshiba 24-pin dot-matrix printer (T), value: T}
+                - {label: PCX file format (P), value: P}
+                - {label: X Bitmap format (X), value: X}
+                - {label: FIG 2.0 format (F), value: F}
+                - {label: Idraw drawing program format (A), value: A}
+                - {label: VRML Virtual Reality Markup Language file (Z), value: Z}
+                - {label: POVRAY 3D rendering program file (V), value: V}
+                - {label: Rayshade 3D rendering program file (R), value: R}
+        - !mobyle/inputprogramparagraph
+            prompt: Bitmap options
+            name: xbitmap_options
+            precond:
+                plotter:
+                    '#in': [X, W]
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: X resolution (in pixels)
+                format: str( value ) + "\n"
+                argpos: 3
+                paramfile: drawgram.params
+                mandatory: true
+                name: xres
+                command: false
+                type: !mobyle/integertype {default: 500}
+            - !mobyle/inputprogramparameter
+                prompt: Y resolution (in pixels)
+                format: str( value ) + "\n"
+                argpos: 4
+                paramfile: drawgram.params
+                mandatory: true
+                name: yres
+                command: false
+                type: !mobyle/integertype {default: 500}
+        - !mobyle/inputprogramparagraph
+            prompt: Laserjet options
+            name: laserjet_options
+            precond: {plotter: J}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Laserjet resolution
+                format: str(value) +"\n"
+                argpos: 3
+                paramfile: drawgram.params
+                mandatory: true
+                name: laserjet_resolution
+                command: false
+                type: !mobyle/stringtype
+                    default: '3'
+                    options:
+                    - {label: 75 DPI (1), value: '1'}
+                    - {label: 150 DPI (2), value: '2'}
+                    - {label: 300 DPI (3), value: '3'}
+        - !mobyle/inputprogramparagraph
+            prompt: Paintbrush options
+            name: pcx_options
+            precond: {plotter: P}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Paintbrush PCX resolution
+                format: str(value) + "\n"
+                argpos: 3
+                paramfile: drawgram.params
+                mandatory: true
+                name: pcx_resolution
+                command: false
+                type: !mobyle/stringtype
+                    default: '3'
+                    options:
+                    - {label: EGA 640 X 350 (1), value: '1'}
+                    - {label: VGA 800 X 600 (2), value: '2'}
+                    - {label: VGA 1024 X 768 (3), value: '3'}
+        - !mobyle/inputprogramparagraph
+            prompt: PostScript options
+            name: ps_options
+            precond: {plotter: L}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Font (F)
+                format: ("", "F\n"+str(value)+"\n")[value is not None and value !=
+                    vdef]
+                argpos: 5
+                paramfile: drawgram.params
+                name: font
+                command: false
+                type: !mobyle/stringtype
+                    default: Times-Roman
+                    options:
+                    - {label: Courier, value: Courier}
+                    - {label: Helvetica, value: Helvetica}
+                    - {label: Helvetica-Bold, value: Helvetica-Bold}
+                    - {label: Helvetica-BoldOblique, value: Helvetica-BoldOblique}
+                    - {label: Helvetica-Oblique, value: Helvetica-Oblique}
+                    - {label: Hershey, value: Hershey}
+                    - {label: Times, value: Times}
+                    - {label: Times-Bold, value: Times-Bold}
+                    - {label: Times-BoldItalic, value: Times-BoldItalic}
+                    - {label: Times-Italic, value: Times-Italic}
+                    - {label: Times-Roman, value: Times-Roman}
+        - !mobyle/inputprogramparagraph
+            prompt: POVRAY options
+            name: pov_options
+            precond: {plotter: V}
+            children:
+            - !mobyle/inputprogramparameter
+                format: '"Y\n"'
+                argpos: 2000
+                paramfile: drawgram.params
+                name: pov_validate
+                command: false
+                hidden: true
+                type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparagraph
+            prompt: VRML options
+            name: vrml_options
+            precond: {plotter: Z}
+            children:
+            - !mobyle/inputprogramparameter
+                format: '"Y\n"'
+                argpos: 2000
+                paramfile: drawgram.params
+                name: vrml_validate
+                command: false
+                hidden: true
+                type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Rayshade options
+            name: ray_options
+            precond: {plotter: R}
+            children:
+            - !mobyle/inputprogramparameter
+                format: '"Y\n"'
+                argpos: 2000
+                paramfile: drawgram.params
+                name: ray_validate
+                command: false
+                hidden: true
+                type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            format: '"V\nN\n"'
+            argpos: 1
+            paramfile: drawgram.params
+            name: screen
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Tree grows... (H)
+            format: ( "" , "H\n" )[ value is not None and value != vdef ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: grows
+            command: false
+            type: !mobyle/stringtype
+                default: Horizontally
+                options:
+                - {label: Vertically, value: Vertically}
+                - {label: Horizontally, value: Horizontally}
+        - !mobyle/inputprogramparameter
+            prompt: Tree style (S)
+            argpos: 5
+            paramfile: drawgram.params
+            name: tree_style
+            command: false
+            type: !mobyle/stringtype {default: C}
+        - !mobyle/inputprogramparameter
+            prompt: Use branch lengths (B)
+            format: ("B\n" , "")[ value ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: branch_lengths
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Horizontal margins (M)
+            format: ("" , "M\n" + str( value ) + "\n" + str( vertical_margins ) +
+                "\n")[ value is not None and value != vdef ]
+            argpos: 10
+            paramfile: drawgram.params
+            name: horizontal_margins
+            command: false
+            type: !mobyle/floattype {default: 1.65}
+        - !mobyle/inputprogramparameter
+            prompt: Vertical margins
+            format: '""'
+            argpos: 9
+            paramfile: drawgram.params
+            name: vertical_margins
+            command: false
+            type: !mobyle/floattype {default: 2.16}
+        - !mobyle/inputprogramparameter
+            comment: 'Default value: Automatically rescaled'
+            prompt: Scale of branch length (R)
+            format: ("" , "R\n" +str( value ) +"\n")[ value is not None ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: scale
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Depth/Breadth of tree (D)
+            format: ( "" , "D\n" + str( value ) + "\n" )[ value is not None and value
+                != vdef ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: depth
+            command: false
+            type: !mobyle/floattype {default: 1.0}
+        - !mobyle/inputprogramparameter
+            comment: Enter the stem length as fraction of tree depth (a value between
+                0.0 and 1.0).
+            prompt: Stem-length/tree-depth (T)
+            format: ("" , "T\n" + str( value ) + "\n")[ value is not None and value
+                != vdef ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: stem
+            command: false
+            type: !mobyle/floattype {default: 0.05}
+        - !mobyle/inputprogramparameter
+            comment: Enter character height as fraction of tip spacing.
+            prompt: Character ht / tip space (C)
+            format: ("" , "C\n" + str( value ) +"\n")[ value is not None and value
+                != vdef ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: character_height
+            command: false
+            type: !mobyle/floattype {default: 0.3333}
+        - !mobyle/inputprogramparameter
+            prompt: Ancestral nodes (A)
+            format: ("" , "A\n" + str( value )+ "\n")[ value is not None and value
+                != vdef ]
+            argpos: 5
+            paramfile: drawgram.params
+            name: ancestral
+            command: false
+            type: !mobyle/stringtype
+                default: I
+                options:
+                - {label: Intermediate (I), value: I}
+                - {label: Weighted (W), value: W}
+                - {label: Centered (C), value: C}
+                - {label: Inner (N), value: N}
+                - {label: So tree is V-shaped (V), value: V}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: drawgram.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Graphic tree file
+        filenames: '"plotfile"'
+        name: plotfile
+        precond:
+            plotter:
+                '#nin': [L, M, W, X]
+    - !mobyle/outputprogramparameter
+        prompt: Graphic tree file ( postscript format )
+        filenames: '''plotfile.ps'''
+        argpos: 10
+        name: psfile
+        precond: {plotter: L}
+    - !mobyle/outputprogramparameter
+        prompt: Graphic tree file ( pict format )
+        filenames: '''plotfile.pict'''
+        argpos: 10
+        name: pictfile
+        precond: {plotter: M}
+    - !mobyle/outputprogramparameter
+        prompt: Graphic tree file ( xbm format )
+        filenames: '''plotfile.xbm'''
+        argpos: 10
+        name: xbmfile
+        precond: {plotter: X}
+    - !mobyle/outputprogramparameter
+        prompt: Graphic tree file ( bmp format )
+        filenames: '''plotfile.bmp'''
+        argpos: 10
+        name: bmpfile
+        precond: {plotter: W}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"drawgram.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"drawgram.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "DRAWGRAM  interactively   plots  a  cladogram-  or\n\t  phenogram-like rooted\
+    \  tree diagram, with  many options including\n\t  orientation of tree and branches,\
+    \  style of tree, label sizes and\n\t  angles, tree depth, margin  sizes, stem\
+    \ lengths, and placement of\n\t  nodes in the  tree. Particularly if you can \
+    \ use your computer to\n\t  preview the plot, you can  very effectively adjust\
+    \ the details of\n\t  the plotting to get just the kind of plot you want."
+operations: ['EDAM_operation:0567']
+topics: ['EDAM_topics:0092', 'EDAM_topics:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/drawgram.html']
+env: {}

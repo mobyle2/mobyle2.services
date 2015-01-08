@@ -1,0 +1,154 @@
+!mobyle/program
+name: octanol
+title: octanol
+description: Draw a White-Wimley protein hydropathy plot
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter {prompt: White-wimley data file, format: '("",
+                " -datafile=" + str(value))[value is not None ]', argpos: 2, name: datafile,
+            command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Window size (value from 1 to 200)
+            format: ("", " -width=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: width
+            command: false
+            type: !mobyle/integertype {default: 19}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 200 is required
+                test:
+                    value: {'#lte': '200'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: graph
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 5
+            name: xy_goutfile
+            command: false
+            type: !mobyle/stringtype {default: octanol_xygraph}
+        - !mobyle/inputprogramparameter
+            prompt: Display the octanol plot
+            format: ("", " -plotoctanol")[ bool(value) ]
+            argpos: 6
+            name: plotoctanol
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display the interface plot
+            format: ("", " -plotinterface")[ bool(value) ]
+            argpos: 7
+            name: plotinterface
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display the difference plot
+            format: (" -noplotdifference", "")[ bool(value) ]
+            argpos: 8
+            name: plotdifference
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 9
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond: {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond: {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond: {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond: {graph: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"octanol.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"octanol.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0401']
+topics: ['EDAM_topic:0137']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/octanol.html', 'http://emboss.sourceforge.net/docs/themes']
+command: octanol
+env: {}

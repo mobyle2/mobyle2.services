@@ -1,0 +1,144 @@
+!mobyle/program
+name: pairToPair
+version: 2.15.0
+title: BEDtools:pairToPair
+description: pairToPair compares two BEDPE (Paired-End) files in search of overlaps
+    where each end of a BEDPE feature in A overlaps with the ends of a feature in
+    B. For example, using pairToPair, one could screen for the exact same discordant
+    paired-end alignment in two files. This could suggest (among other things) that
+    the discordant pair suggests the same structural variation in each file/sample.
+authors: Quinlan A.R. & Hall I.M.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_args
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Refer to the BEDTools manual for BEDPE format.
+            prompt: First BED (Paired-End) data (-a)
+            format: '" -a " + str( value )'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_bedpe_fileA
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Second BED (Paired-End) data (-b)
+            format: '" -b " + str( value )'
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: input_bedpe_fileB
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Minimum overlap required as fraction of A (e.g. 0.05). \t\t\
+                Default is 1E-9 (effectively 1bp)."
+            prompt: Minimum overlap required as a fraction of A (-f)
+            format: ("" , " -f "+str(value) )[value is not None and value != vdef]
+            argpos: 6
+            name: minimum_overlap
+            command: false
+            type: !mobyle/stringtype {default: 1E-9}
+        - !mobyle/inputprogramparameter
+            comment: 'Note: Slop is subtracted from start1 and start2 and added to
+                end1 and end2'
+            prompt: The amount of slop (in b.p.). to be added to each footprint (-slop)
+            format: ("" , " -slop "+str(value) )[value is not None and value != vdef]
+            name: slop_value
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: '- If strand is "+", slop is only added to the end coordinates.-
+                If strand is "-", slop is only added to the start coordinates.- By
+                default, slop is added in both directions.'
+            prompt: Add slop based to each BEDPE footprint based on strand (-ss)
+            format: ('',' -ss ')[value == 1]
+            name: strandedness
+            precond:
+                slop_value: {'#ne': None}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: By default, strands are enforced
+            prompt: Ignore strands when searching for overlaps (-is)
+            format: ("", " -is ")[value == 1]
+            argpos: 7
+            name: ignore_strands_in_overlaps
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            comment: By default, same names are allowed.
+            prompt: Require that the hits must have different names (i.e. avoid self-hits)
+                [-rdn]
+            format: ("", " -rdn ")[value == 1]
+            name: different_name
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 8
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Overlap output options (-type)
+            format: (""," -type "+ str(value) )[value is not None and value != vdef
+                ]
+            simple: true
+            argpos: 5
+            name: overlap_option
+            command: false
+            type: !mobyle/stringtype
+                default: both
+                options:
+                - {label: Report overlaps if both ends of A overlap B (default), value: both}
+                - {label: Report overlaps if either ends of A overlap B, value: either}
+                - {label: Report A if neither end of A overlaps B, value: neither}
+                - {label: Report overlaps if one or neither of A's overlap B, value: notboth}
+        - !mobyle/inputprogramparameter
+            prompt: Output file name
+            format: '" > " + ( str(vdef) ,  str(value))[value is not None]'
+            simple: true
+            argpos: 60
+            mandatory: true
+            name: output_file
+            command: false
+            type: !mobyle/stringtype {default: overlap_regions.txt}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 8
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Paired-end overlap file value
+            filenames: ("overlap_regions.txt",output_file)[output_file is not None]
+            name: pe_overlap_file
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pairToPair.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pairToPair.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3194']
+topics: ['EDAM_topic:0160']
+command: pairToPair
+env: {}

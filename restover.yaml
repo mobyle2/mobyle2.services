@@ -1,0 +1,203 @@
+!mobyle/program
+name: restover
+title: restover
+description: Find restriction enzymes producing a specific overhang
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter {prompt: Restriction enzyme data file (optional),
+            format: '("", " -datafile=" + str(value))[value is not None]', argpos: 2,
+            name: datafile, command: false}
+        - !mobyle/inputprogramparameter {prompt: Restriction enzyme methylation data
+                file, format: '("", " -mfile=" + str(value))[value is not None ]',
+            argpos: 3, name: mfile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Overlap sequence
+            format: ("", " -seqcomp=" + str(value))[value is not None]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: seqcomp
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Minimum cuts per re (value from 1 to 1000)
+            format: ("", " -min=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: min
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 1000 is required
+                test:
+                    value: {'#lte': '1000'}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum cuts per re
+            format: ("", " -max=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: max
+            command: false
+            type: !mobyle/integertype {default: 2000000000}
+        - !mobyle/inputprogramparameter
+            prompt: Force single site only cuts
+            format: ("", " -single")[ bool(value) ]
+            argpos: 7
+            name: single
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use 3' overhang e.g. bamhi has ctag as a 5' overhang, and apai
+                has ccgg as 3' overhang.
+            format: ("", " -threeprime")[ bool(value) ]
+            argpos: 8
+            name: threeprime
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Allow blunt end cutters
+            format: (" -noblunt", "")[ bool(value) ]
+            argpos: 9
+            name: blunt
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Allow sticky end cutters
+            format: (" -nosticky", "")[ bool(value) ]
+            argpos: 10
+            name: sticky
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Allow ambiguous matches
+            format: (" -noambiguity", "")[ bool(value) ]
+            argpos: 11
+            name: ambiguity
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Allow circular dna
+            format: ("", " -plasmid")[ bool(value) ]
+            argpos: 12
+            name: plasmid
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If this is set then RE recognition sites will not match methylated
+                bases.
+            prompt: Use methylation data
+            format: ("", " -methylation")[ bool(value) ]
+            argpos: 13
+            name: methylation
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Only enzymes with suppliers
+            format: (" -nocommercial", "")[ bool(value) ]
+            argpos: 14
+            name: commercial
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Create html output
+            format: ("", " -html")[ bool(value) ]
+            argpos: 15
+            name: html
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Limits reports to one isoschizomer
+            format: (" -nolimit", "")[ bool(value) ]
+            argpos: 16
+            name: limit
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Sort output alphabetically
+            format: ("", " -alphabetic")[ bool(value) ]
+            argpos: 17
+            name: alphabetic
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show fragment lengths
+            format: ("", " -fragments")[ bool(value) ]
+            argpos: 18
+            name: fragments
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 19
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: restover.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 20
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"restover.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"restover.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0431']
+topics: ['EDAM_topic:0100']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/restover.html', 'http://emboss.sourceforge.net/docs/themes']
+command: restover
+env: {}

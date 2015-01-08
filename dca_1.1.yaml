@@ -1,0 +1,167 @@
+!mobyle/program
+name: dca
+version: '1.1'
+title: DCA
+description: Divide-and-Conquer Multiple Sequence Alignment
+authors: J. Stoye
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequences File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 100
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Control parameters
+        name: control
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Cost matrix (-c)
+            format: ( ""  , " -c " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 1
+            name: cost
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: 'Default: depends on sequences', value: 'null'}
+                - {label: BLOSUM30, value: blosum30}
+                - {label: BLOSUM45, value: blosum45}
+                - {label: BLOSUM62, value: blosum62}
+                - {label: PAM160, value: pam160}
+                - {label: PAM250, value: pam250}
+                - {label: Unitcost, value: unitcost}
+                - {label: DNA, value: dna}
+                - {label: RNA, value: rna}
+                - {label: DNA/RNA, value: dnarna}
+        - !mobyle/inputprogramparameter
+            comment: 'Default: free shift'
+            prompt: Penalize end gaps as internal gaps (-g)
+            format: ("" , " -g ")[ value ]
+            argpos: 1
+            name: gaps
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'On: FastDCA (use approximate cut positions); Off: slower, more
+                accurate algorithm (search for exact cut positions)'
+            prompt: Use approximate cut positions (-a)
+            format: ("" , " -a")[ value ]
+            argpos: 1
+            name: approximate
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Weight intensity (-b)
+            format: ( ""  , " -b " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 1
+            name: intensity
+            command: false
+            type: !mobyle/floattype {default: 0.0}
+        - !mobyle/inputprogramparameter
+            comment: '5 ... 100 recommended; small: faster algorithm, maybe worse.'
+            prompt: Recursion stop size (-l)
+            format: ( ""  , " -l " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 1
+            name: recursion
+            command: false
+            type: !mobyle/integertype {default: 30}
+        - !mobyle/inputprogramparameter
+            comment: To correct the alignment in the proximity of division sites,
+                the sequences can be re-aligned inside a window of size w >= 0 placed
+                across each slicing site.
+            prompt: Window size (-w)
+            format: ( ""  , " -w " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 1
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 0}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            format: '" -q"'
+            argpos: 1
+            name: quiet
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Output format (-f)
+            format: ( ""  , " -f " + str(value) )[ value is not None and value !=
+                vdef]
+            argpos: 1
+            name: output_format
+            command: false
+            type: !mobyle/stringtype
+                default: '2'
+                options:
+                - {label: aln (1), value: '1'}
+                - {label: fasta (2), value: '2'}
+                - {label: nex (3), value: '3'}
+                - {label: dca (4), value: '4'}
+        - !mobyle/inputprogramparameter
+            prompt: Suppress output about progress of the program (-o)
+            format: '" -o"'
+            argpos: 1
+            name: suppress_output
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Alignment file
+        filenames: '"dca.out"'
+        name: fasta_outfile
+        precond:
+            '#or':
+            - {output_format: '2'}
+            - {output_format: '3'}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: DCA alignment file
+        filenames: '"dca.out"'
+        name: aln_outfile
+        precond:
+            '#or':
+            - {output_format: '1'}
+            - {output_format: '4'}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dca.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: Divide-and-Conquer Multiple Sequence Alignment  (DCA) is a program for producing
+    fast, high quality simultaneous multiple sequence alignments of amino acid, RNA,
+    or DNA sequences. The program is based on the DCA algorithm, a heuristic approach
+    to sum-of-pairs (SP) optimal alignment that has been developed at the FSPM  over
+    the years 1995-97.
+operations: ['EDAM_operation:0492']
+topics: ['EDAM_topic:0182']
+references:
+- {doi: null, label: 'A.W.M. Dress, G. Fullen, S.W. Perrey, A Divide and Conquer Approach
+        to Multiple Alignment, Proceedings of the Third International Conference on
+        Intelligent Systems for Molecular Biology (ISMB 95), AAAI Press, Menlo Park,
+        CA, USA, 107-113, 1995.', url: null}
+- {doi: null, label: 'J. Stoye, Multiple Sequence Alignment with the Divide-and-Conquer
+        Method, Gene 211(2), GC45-GC56, 1998. (Gene-COMBIS)', url: null}
+homepage_links: ['http://bibiserv.techfak.uni-bielefeld.de/dca/']
+command: dca
+env: {}
+source_links: ['http://bibiserv.techfak.uni-bielefeld.de/download/tools/dca.html']

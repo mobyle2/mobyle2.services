@@ -1,0 +1,173 @@
+!mobyle/program
+name: rnainverse
+title: RNAinverse
+description: Find RNA sequences with given secondary structure
+authors: Hofacker
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"RNAinverse"'
+        name: rnainverse
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {default: rnainverse}
+    - !mobyle/inputprogramparameter {comment: Target structures and starting sequences
+            for the search., prompt: Structures File, format: '" < " + str(value)',
+        simple: true, argpos: 1000, mandatory: true, name: seq, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Use  minimum  energy  (-Fm), partition function folding (-Fp)
+                or both (-Fmp). In  partition  function  mode,  the  probability  of  the  target   structure
+                exp(-E(S)/kT)/Q  is  maximized. This probability is written in brackets
+                after the found sequence and Hamming distance. In most cases you'll
+                want to use the -f option in conjunction with -Fp, see below. The
+                default is -Fm.
+            prompt: Folding method (-F)
+            format: ("", " -F" + str(value))[ value is not None]
+            name: folding
+            command: false
+            type: !mobyle/stringtype
+                default: m
+                options:
+                - {label: Minimum energy (m), value: m}
+                - {label: Partition function (p), value: p}
+                - {label: Both (mp), value: mp}
+        - !mobyle/inputprogramparameter
+            comment: In combination with -FpF=-kT*ln(Q)
+            prompt: Stop search when sequence is found with E(s)-F smaller than this
+                value (-f)
+            format: ("", " -f " + str(value))[ value is not None]
+            name: final
+            precond:
+                '#or':
+                - {folding: mp}
+                - {folding: p}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Search repeatedly for the same structure. If repeats is negative
+                search until -repeats  exact  solutions  are  found,  no  output  is
+                done for unsuccessful searches. Be aware, that the program will not
+                terminate if the target  structure can not be found.
+            prompt: Search repeatedly for the same structure (-R)
+            format: ("", " -R " + str(value))[ value is not None]
+            name: repeats
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Find sequences using only bases from this alphabet (-a)
+            format: ("", " -a " + str(value))[ value is not None]
+            name: alphabet
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: others_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temperature Celcius
+                (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/integertype {default: 37}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'How to treat ''dangling end'' energies for bases adjacent to
+                helices in free ends and multiloops: Normally only unpaired bases
+                can participate in at most one dangling end. With -d2 this check is
+                ignored, this is the default for partition function folding (-p).
+                -d ignores dangling ends altogether. Note that by default pf and mfe
+                folding treat dangling ends differently, use -d2 (or -d) in addition
+                to -p to ensure that both algorithms use the same energy model. The
+                -d2 options is available for RNAfold, RNAeval, and RNAinverse only.'
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Parameter file (-P), format: '(
+                "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnainverse.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnainverse.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAinverse searches for sequences  folding  into  a  predefined  structure,  thereby
+    inverting  the folding algorithm. Target structures (in bracket notation) and
+    starting sequences for the search are read alternately from  file.
+operations: ['EDAM_operation:2439']
+topics: ['EDAM_topic:0097']
+references:
+- {doi: null, label: 'I.L. Hofacker, W. Fontana, P.F. Stadler, S. Bonhoeffer, M. Tacker,
+        P. Schuster (1994) Fast Folding and Comparison of RNA Secondary Structures.
+        Monatshefte f. Chemie 125: 167-188', url: null}
+- {doi: null, label: 'A. Walter, D Turner, J Kim, M Lyttle, P Muller, D Mathews, M
+        Zuker Coaxial stacking of helices enhances binding of oligoribonucleotides.
+        PNAS, 91, pp 9218-9222, 1994', url: null}
+- {doi: null, label: 'M. Zuker, P. Stiegler (1981) Optimal computer folding of large
+        RNA sequences using thermodynamic and auxiliary information, Nucl Acid Res
+        9: 133-148', url: null}
+- {doi: null, label: 'J.S. McCaskill (1990) The equilibrium partition function and
+        base pair binding probabilities for RNA secondary structures, Biopolymers
+        29: 11051119 D.H. Turner N. Sugimoto and S.M. Freier (1988) RNA structure
+        prediction, Ann Rev Biophys Biophys Chem 17: 167-192', url: null}
+- {doi: null, label: 'D. Adams (1979) The hitchhiker''s guide to the galaxy, Pan Books,
+        London', url: null}
+env: {}

@@ -1,0 +1,78 @@
+!mobyle/program
+name: cadbiom-api
+title: cadbiom-api
+description: Property checker
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Work in progress
+        name: work_in_progress
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: none
+            simple: true
+            name: warning
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: Model
+        name: input_data
+        children:
+        - !mobyle/inputprogramparameter {comment: 'Type in, paste, download from databases
+                or upload from your computer a model in the CADBIOM format.', prompt: Model
+                input, format: '("", " " + str(value))[value is not None]', simple: true,
+            argpos: 1, mandatory: true, name: input_model_bcx, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Parameters
+        name: input_param
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Type in the property to check
+            prompt: Property
+            format: ("", " "+ str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: property
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Enter the number of steps
+            prompt: Number of steps
+            format: ("", " "+ str(value))[value is not None]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: step_nb
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Type in the invariant condition
+            prompt: Invariant condition
+            format: ("", " "+ str(value))[value is not None]
+            argpos: 4
+            name: inv_cond
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Type in the initial condition
+            prompt: Initial condition
+            format: ("", " "+ str(value))[value is not None]
+            argpos: 5
+            name: init_cond
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Text, filenames: '"*.txt"', name: text_output,
+        output_type: stdout}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cadbiom-api.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2438']
+topics: ['EDAM_topic:0754']
+command: mac.sh
+env: {}

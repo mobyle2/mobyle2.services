@@ -1,0 +1,147 @@
+!mobyle/program
+name: newcpgreport
+title: newcpgreport
+description: Identify CpG islands in nucleotide sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Window size (value greater than or equal to 1)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 100}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Shift increment (value greater than or equal to 1)
+            format: ("", " -shift=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: shift
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum length (value greater than or equal to 1)
+            format: ("", " -minlen=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: minlen
+            command: false
+            type: !mobyle/integertype {default: 200}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum observed/expected (value from 0. to 10.)
+            format: ("", " -minoe=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: minoe
+            command: false
+            type: !mobyle/floattype {default: 0.6}
+            ctrls:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 10. is required
+                test:
+                    value: {'#lte': '10.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum percentage (value from 0. to 100.)
+            format: ("", " -minpc=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 6
+            mandatory: true
+            name: minpc
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+            ctrls:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100. is required
+                test:
+                    value: {'#lte': '100.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 7
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: newcpgreport.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 8
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"newcpgreport.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"newcpgreport.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0430']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/newcpgreport.html', 'http://emboss.sourceforge.net/docs/themes']
+command: newcpgreport
+env: {}

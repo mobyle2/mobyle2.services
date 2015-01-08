@@ -1,0 +1,158 @@
+!mobyle/program
+name: rnaheat
+version: '1.7'
+title: RNAheat
+description: Calculate specific heat of RNAs
+authors: Hofacker, Stadler
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"RNAheat"'
+        name: rnaheat
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: RNA Sequences File
+        format: '" < " + str(value)'
+        simple: true
+        argpos: 1000
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Lowest temperature (-Tmin)
+            format: ( "" , " -Tmin " + str(value) )[ value is not None and value !=
+                vdef]
+            name: temp_min
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: Highest temperature (-Tmax)
+            format: ( "" , " -Tmax " + str(value) )[ value is not None and value !=
+                vdef]
+            name: temp_max
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Calculate partition function every stepsize degrees Celcius (-h)
+            format: ( "" , " -h " + str(value) )[ value is not None and value != vdef]
+            name: stepsize
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: The program fits a parabola to 2*ipoints+1 data points to calculate
+                2nd derivatives. Increasing this parameter produces a smoother curve.
+            prompt: Produces a smoother curve by increasing ipoints (-m)
+            format: ( "" , " -m " + str(value) )[ value is not None and value != vdef]
+            name: ipoints
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'How to treat ''dangling end'' energies for bases adjacent to
+                helices in free ends and multiloops: Normally only unpaired bases
+                can participate in at most one dangling end. With -d2 this check is
+                ignored, this is the default for partition function folding (-p).
+                -d ignores dangling ends altogether. Note that by default pf and mfe
+                folding treat dangling ends differently, use -d2 (or -d) in addition
+                to -p to ensure that both algorithms use the same energy model. The
+                -d2 options is available for RNAfold, RNAeval, and RNAinverse only.'
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Parameter file (-P), format: '(
+                "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+    - !mobyle/inputprogramparameter
+        format: '"/path/to/ViennaRNA/readseq/readseq  -f=19 -a " + str(seq) + " >
+            " + str(seq) + ".tmp && (cp " + str(seq) + " " + str(seq) + ".orig &&
+            mv " + str(seq) + ".tmp " + str(seq) + ") ; "'
+        argpos: -10
+        name: readseq
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnaheat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnaheat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAheat   reads  RNA  sequences   from  stdin  and calculates their  specific
+    heat in  the temperature range t1  to t2, from the partition function by numeric
+    differentiation. The result is written in file as a list of pairs of temperature
+    in C and specific heat in Kcal/(Mol*K).
+references:
+- {doi: null, label: 'I.L. Hofacker, W. Fontana, P.F. Stadler, S. Bonhoeffer, M. Tacker,
+        P. Schuster (1994) Fast Folding and Comparison of RNA Secondary Structures.
+        Monatshefte f. Chemie 125: 167-188', url: null}
+- {doi: null, label: 'J.S. McCaskill (1990) The equilibrium partition function and
+        base pair binding probabilities for RNA secondary structures, Biopolymers
+        29: 11051119 D. Adams (1979) The hitchhiker''s guide to the galaxy, Pan Books,
+        London', url: null}
+env: {}

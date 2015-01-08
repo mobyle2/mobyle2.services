@@ -1,0 +1,148 @@
+!mobyle/program
+name: blast2taxonomy
+version: '2.0'
+title: blast2taxonomy
+description: Blast Taxonomy report
+authors: C. Maufrais
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Blast output file
+        format: '" " + str(value)'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0857']
+    - !mobyle/inputprogramparagraph
+        prompt: Display options
+        name: display
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: All hit are display in tree by default.
+            prompt: Report one branch per organism (-s)
+            format: ("" , " -s") [value]
+            name: single
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Report accession number (-a)
+            format: ("" , " -a") [value]
+            name: acc
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Lowest common ancestor name (-n).
+            format: ("" , " -n " + str(value)) [value is not None]
+            name: node_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Select hit blast with e-value lower than value (-E).
+            format: ("" , " -E " + str(value)) [value and value != vdef]
+            name: filterevalue
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            prompt: Report score and e-value Blast hit (-e).
+            format: ("" , " -e") [value]
+            name: evalue
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Report ratio of Blast hit length per query length (-l).
+            format: ("" , " -l") [value]
+            name: perlen
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Tabular output (-x)
+            format: ("" , " -x") [value]
+            name: xlsoutput
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Html output (-w)
+            format: ("" , " -w") [value]
+            name: htmloutput
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Taxonomy report in Newick format (-t)
+            format: ("" , " -t") [value]
+            name: dndoutput
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output file name (-o)
+            format: (""  , " -o  " + str(value))  [value is not None ]
+            name: outputfile
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output option
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: str(outputfile)
+            name: outfile_name
+            precond:
+                '#and':
+                - {'#not': htmloutput}
+                - outputfile
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Output file
+            filenames: '"blast2taxonomy.out"'
+            name: outfile
+            precond:
+                '#not':
+                    '#and': [htmloutput, outputfile]
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Html output file
+            filenames: ("blast2taxonomy.html", str(outputfile)+".html")[outputfile
+                is not None]
+            name: htmloutfile
+            precond: htmloutput
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Alignment Html output file
+            filenames: '"alignment.html"'
+            name: htmloutfilealn
+            precond: htmloutput
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Newick tree file
+            filenames: ("blast2taxonomy.dnd", str(outputfile)+".dnd")[outputfile is
+                not None]
+            name: dndoutfile
+            precond: dndoutput
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"blast2taxonomy.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0258', 'EDAM_operation:0637']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0637']
+command: blast2taxonomy
+env: {}

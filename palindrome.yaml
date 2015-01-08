@@ -1,0 +1,133 @@
+!mobyle/program
+name: palindrome
+title: palindrome
+description: Finds inverted repeats in nucleotide sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Enter minimum length of palindrome (value greater than or equal
+                to 1)
+            format: ("", " -minpallen=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: minpallen
+            command: false
+            type: !mobyle/integertype {default: 10}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Enter maximum length of palindrome
+            format: ("", " -maxpallen=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: maxpallen
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            prompt: Enter maximum gap between repeated regions (value greater than
+                or equal to 0)
+            format: ("", " -gaplimit=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: gaplimit
+            command: false
+            type: !mobyle/integertype {default: 100}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Number of mismatches allowed (Positive integer)
+            format: ("", " -nummismatches=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: nummismatches
+            command: false
+            type: !mobyle/integertype {default: 0}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 6
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.pal}
+        - !mobyle/inputprogramparameter
+            prompt: Report overlapping matches
+            format: (" -nooverlap", "")[ bool(value) ]
+            argpos: 7
+            name: overlap
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 8
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"palindrome.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"palindrome.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0379', 'EDAM_operation:0278']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/palindrome.html', 'http://emboss.sourceforge.net/docs/themes']
+command: palindrome
+env: {}

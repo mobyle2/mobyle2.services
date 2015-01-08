@@ -1,0 +1,176 @@
+!mobyle/program
+name: rnasubopt
+title: RNAsubopt
+description: Calculate suboptimal secondary structures of RNAs
+authors: Wuchty, Hofacker, Fontana
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"RNAsubopt"'
+        name: rnasubopt
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {default: rnasubopt}
+    - !mobyle/inputprogramparameter {prompt: RNA Sequences File, format: '" < " +
+            str(value)', simple: true, argpos: 1000, mandatory: true, name: seq, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Calculate suboptimal structures within this range kcal/mol of
+                the mfe (-e)
+            format: ("", " -e " + str(value))[value is not None and value != vdef]
+            name: mfe
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temperature Celcius
+                (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/integertype {default: 37}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Change treatment of dangling ends, as in RNAfold and RNAeval.  The
+                default is -d2  (as  in  partition  function  folding).  If -d1 or
+                -d3 are specified the structures are generated as with -d2 but  energies  are  re-evaluated  before
+                printing.
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d2
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d0), value: -d0}
+                - {label: The check is ignored (-d2), value: -d2}
+                - {label: Coaxial stacking of adjacent helices in multi-loops (-d3),
+                    value: -d3}
+        - !mobyle/inputprogramparameter
+            comment: This option does not effect structure generation, only the energies
+                that is printed out. Since logML lowers energies somewhat, some structures
+                may be missing.
+            prompt: Recalculate energies of structures using a logarithmic energy
+                function for multi-loops (-logML)
+            format: ("", " -logML")[ value ]
+            name: logML
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Only print structures with energy within prange of the mfe.  Useful  in  conjunction  with  -logML,  -d1  or
+                -d3: while the -e option specifies the range before energies are re-evaluated,
+                -ep  specifies  the  maximum  energy  after re-evaluation.'
+            prompt: Only print structures with energy within this prange of the mfe
+                (-ep)
+            format: ("", " -ep " + str(value))[ value is not None]
+            name: ep
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: "Since the sort in is done in memory, this\n              becomes\
+                \ impractical when the number of structures  produced  goes  into\
+                \  millions."
+            prompt: Sort the structures by energy (-s)
+            format: ("", " -s")[value]
+            name: sort
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Only  produce  structures  without  lonely  pairs (helices of
+                length 1). This reduces the number of structures drastically and should
+                therefore be used for longer sequences and larger energy ranges.
+            prompt: Avoid lonely pairs (helices of length 1) (-noLP)
+            format: ("", " -noLP")[value]
+            name: noLP
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ("", " -noGU")[value]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ("", " -noCloseGU")[value]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Parameter file (-P), format: '(
+                "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+        - !mobyle/inputprogramparameter
+            prompt: Calculate z score
+            format: ( "" , " -z" )[ value ]
+            name: z
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"/path/to/ViennaRNA/readseq/readseq  -f=19 -a "+ str(seq) + " > "+
+            str(seq) +".tmp && (cp "+ str(seq) +" "+ str(seq) +".orig && mv "+ str(seq)
+            +".tmp "+ str(seq) +") ; "'
+        argpos: -10
+        name: readseq
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnasubopt.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnasubopt.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAsubopt reads RNA sequences from file and (in the default -e mode) calculates
+    all suboptimal secondary structures within a user defined energy range above the
+    minimum free energy (mfe).It prints the suboptimal structures in bracket  notation  followed
+    by  the  energy in kcal/mol to stdout. Be careful, the number of structures returned
+    grows exponentially with both sequence length and energy range.Alternatively,
+    when used with the -p option, RNAsubopt produces  Boltzmann  weighted samples
+    of secondary structures.
+references:
+- {doi: null, label: 'S. Wuchty, W. Fontana, I. L. Hofacker and P. Schuster Complete
+        Suboptimal Folding of RNA and the Stability of Secondary Structures, Biopolymers,
+        49, 145-165 (1999)', url: null}
+env: {}

@@ -1,0 +1,203 @@
+!mobyle/program
+name: phyml
+version: '3.0'
+title: PHYML
+description: A simple, fast, and accurate algorithm to estimate large phylogenies
+    by maximum likelihood
+authors: S. Guindon and O. Gascuel
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence Alignment
+        format: '" -i "+str(value)'
+        simple: true
+        mandatory: true
+        name: alignment
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        prompt: Data type (-d)
+        format: ( "" , " -d " + str(value) )[ value is not None ]
+        simple: true
+        name: seqtype
+        command: false
+        type: !mobyle/stringtype
+            default: nt
+            options:
+            - {label: DNA (nt), value: nt}
+            - {label: Amino-Acids (aa), value: aa}
+    - !mobyle/inputprogramparagraph
+        prompt: Input Options
+        name: inputopt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Number of data sets to analyse (-n)
+            format: ("", " -n "+str(value))[value is not None and value != vdef]
+            name: datasets
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Number of bootstraps sets to analyse (only works with one data
+                set to analyse) (-b)
+            format: ( "" , " -b " + str(value) )[ value is not None]
+            simple: true
+            name: bootstrap_sets
+            precond: {datasets: '1'}
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Control Options
+        name: control_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Nucleotide substitution model (-m)
+            format: ("", " -m "+str(value))[value != vdef]
+            name: ntmodel
+            precond: {seqtype: nt}
+            command: false
+            type: !mobyle/stringtype
+                default: HKY85
+                options:
+                - {label: HKY85, value: HKY85}
+                - {label: JC69, value: JC69}
+                - {label: K80, value: K80}
+                - {label: F81, value: F81}
+                - {label: F84, value: F84}
+                - {label: TN93, value: TN93}
+                - {label: GTR, value: GTR}
+        - !mobyle/inputprogramparameter
+            prompt: Amino-acid substitution model (-m)
+            format: ("", " -m "+str(value))[value != vdef]
+            name: aamodel
+            precond: {seqtype: aa}
+            command: false
+            type: !mobyle/stringtype
+                default: WAG
+                options:
+                - {label: WAG, value: WAG}
+                - {label: JTT, value: JTT}
+                - {label: MtREV, value: MtREV}
+                - {label: Dayhoff, value: Dayhoff}
+                - {label: DCMut, value: DCMut}
+                - {label: RtREV, value: RtREV}
+                - {label: CpREV, value: CpREV}
+                - {label: VT, value: VT}
+                - {label: Blosum62, value: Blosum62}
+                - {label: MtMam, value: MtMam}
+                - {label: MtArt, value: MtArt}
+                - {label: HIVw, value: HIVw}
+                - {label: HIVb, value: HIVb}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated transition/transversion ratio for DNA sequences? (-t)
+            format: ( ""  , " -t e")[ value ]
+            name: tstvratio1
+            precond: {seqtype: nt}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User transition/transversion ratio for DNA sequences? (-t)
+            format: ( ""  , " -t "+str(value))[ value is not None ]
+            name: tstvratio2
+            precond:
+                '#and':
+                - {seqtype: nt}
+                - {'#not': tstvratio1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated proportion of invariable sites? (-v)
+            format: ( ""  , " -v e")[ value ]
+            name: propinvar1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User proportion of invariable sites? (-v)
+            format: ( ""  , " -v "+str(value))[value is not None]
+            name: propinvar2
+            precond: {'#not': propinvar1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of relative substitution rate categories (-c)
+            format: ("", " -c "+str(value))[value is not None and value != vdef]
+            name: nbsubstcat
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Estimated Gamma distribution parameter? (-a)
+            format: ("", " -a e")[value]
+            name: gamma1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User gamma distribution parameter? (-a)
+            format: ("", " -a "+str(value))[value is not None]
+            name: gamma2
+            precond: {'#not': gamma1}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Tree topology search operation (-s)
+            format: ("", " -s "+str(value))[value != vdef]
+            name: move
+            command: false
+            type: !mobyle/stringtype
+                default: NNI
+                options:
+                - {label: NNI, value: NNI}
+                - {label: NNI+SPR, value: NNI+SPR}
+                - {label: SPR, value: SPR}
+        - !mobyle/inputprogramparameter
+            prompt: Starting tree filename (u)
+            format: ("", " -u "+str(value))[value is not None]
+            name: usertreefile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Output file, filenames: '"*_phyml_stats.txt"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Output tree
+        filenames: '"*_phyml_tree.txt"'
+        name: outtree
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Bootstrap output file, filenames: '"*_phyml_boot_stats.txt"',
+        name: boot_outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Bootstrap output trees
+        filenames: '"*_phyml_boot_trees.txt"'
+        name: boot_outtree
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"phyml.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"phyml.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0547']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: 'Guindon, S. and Gascuel, O. (2003) A simple, fast and accurate
+        algorithm to estimate large phylogenies by maximum likelihood Syst. Biol.,
+        52, 696-704', url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phyml/phyml_manual_2008.pdf']
+homepage_links: ['http://code.google.com/p/phyml']
+command: phyml
+env: {}
+source_links: ['http://code.google.com/p/phyml']

@@ -1,0 +1,214 @@
+!mobyle/program
+name: muscle
+version: 3.8.31
+title: Muscle
+description: MUSCLE is a program for creating multiple alignments of amino acid or
+    nucleotide sequences.
+authors: Edgar, R.C.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '" -quiet"'
+        name: quiet
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Inputs options
+        name: inputs
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequences (-in)
+            format: '" -in " + str(value)'
+            simple: true
+            argpos: 10
+            mandatory: true
+            name: sequence
+            precond:
+                '#and':
+                -   profile1: {'#eq': None}
+                -   profile2: {'#eq': None}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: By default, MUSCLE looks at the first 100 letters in the input
+                sequence data (excluding gaps). If 95% or more of those letters are
+                valid nucleotides (AGCTUN), then the file is treated as nucleotides,
+                otherwise as amino acids.This method almost always guesses correctly,
+                but you can make sure by specifying the sequence type on the command
+                line.
+            prompt: Determining sequence type (-seqtype)
+            format: ( "" , " -seqtype " + str(value) )[ value is not None and value
+                != vdef ]
+            name: seqtype
+            command: false
+            type: !mobyle/stringtype
+                default: auto
+                options:
+                - {label: Automatic, value: auto}
+                - {label: Protein, value: protein}
+                - {label: DNA, value: dna}
+                - {label: RNA, value: rna}
+    - !mobyle/inputprogramparagraph
+        prompt: Optimization parameters
+        name: optimization
+        children:
+        - !mobyle/inputprogramparameter
+            comment: You can control the number of iterations that MUSCLE does by
+                specifying the -maxiters option.If you specify 1, 2 or 3, then this
+                is exactly the number of iterations that will be performed.If the
+                value is greater than 3, then muscle will continue up to the maximum
+                you specify or until convergence is reached, which ever happens sooner.The
+                default is 16. If you have a large number of sequences, refinement
+                may be rather slow.
+            prompt: Maximum number of iterations (-maxiters)
+            format: ( "" , " -maxiters " + str( value ) )[ value is not None and value
+                != vdef]
+            name: maxiters
+            command: false
+            type: !mobyle/integertype {default: 16}
+        - !mobyle/inputprogramparameter
+            comment: Option controls the maximum number of new trees to create in
+                iteration 2.experience suggests that a point of diminishing returns
+                is typically reached after the first tree, so the default value is
+                1.If a larger value is given, the process will repeat until convergence
+                or until this number of trees has been created, which ever comes first.
+            prompt: Maximum number of trees (-maxtrees)
+            format: ( "" , " -maxtrees " + str( value ) )[ value is not None and value
+                != vdef]
+            name: maxtrees
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: If you have a large alignment, muscle may take a long time to
+                complete. It is sometimes convenient to say "I want the best alignment
+                I can get in 24 hours" rather than specifying a set of options that
+                will take an unknown length of time.This is done by using -maxhours,
+                which specifies a floating-point number of hours. If this time is
+                exceeded, muscle will write out current alignment and stop. For example,muscle
+                -in huge.fa -out huge.afa -maxiters 9999 -maxhours 24.0
+            prompt: Maximum time to run in hours (-maxhours)
+            format: ( "" , " -maxhours " + str( value ) )[ maxhours is not None ]
+            name: maxhours
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: Creating a pair-wise alignment by dynamic programming requires
+                computing an L1 * L2 matrix, where L1 and L2 are the sequence lengths.A
+                trick used in algorithms such as BLAST is to reduce the size of this
+                matrix by using fast methods to find "diagonals", i.e. short regions
+                of high similarity between the two sequences.This speeds up the algorithm
+                at the expense of some reduction in accuracy.
+            prompt: Find diagonals (faster for similar sequences) (-diags)
+            format: ( "" , " -diags " )[ value is not None and value != vdef]
+            name: diags
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        comment: Three different protein profile scoring functions are supported,-
+            the log-expectation score (-le option)- and a sum of pairs score using
+            either the PAM200 matrix (-sp)- or the VTML240 matrix (-sv).The log-expectation
+            score is the default as it gives better results on our tests, but is typically
+            somewhere between two or three times slower than the sum-of-pairs score.For
+            nucleotides, -spn is currently the only option (which is of course the
+            default for nucleotide data, so you don't need to specify this option).
+        prompt: The profile scoring function (for protein only)
+        name: scoring
+        precond:
+            seqtype: {'#ne': nucleo}
+        command: false
+        type: !mobyle/stringtype {default: le}
+    - !mobyle/inputprogramparagraph
+        comment: To align two sequence alignments. Not compatible with Input options.
+        prompt: Profile Alignments parameters
+        name: profile_option
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Profile 1
+            format: '" -in1 " + str(value)'
+            name: profile1
+            precond:
+                sequence: {'#eq': None}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            prompt: Profile 2
+            format: '" -in2 " + str(value)'
+            name: profile2
+            precond:
+                sequence: {'#eq': None}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            prompt: (-profile)
+            format: '" -profile "'
+            name: profile
+            precond:
+                '#and':
+                -   sequence: {'#eq': None}
+                -   profile1: {'#ne': None}
+                -   profile2: {'#ne': None}
+            command: false
+            hidden: true
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: outpout_options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'fasta : Write output in Fasta formathtml  : Write output in
+                HTML formatmsf   : Write output in GCG MSF formatphylip   : Write
+                output in Phylip (interleaved) formatmuscle   : Write output in CLUSTALW
+                format with muscle headerclustalw : Write output in CLUSTALW format
+                with CLUSTAL W (1.81)'
+            prompt: output format
+            name: outformat
+            command: false
+            type: !mobyle/stringtype {default: fasta}
+        - !mobyle/inputprogramparameter
+            prompt: Filename (-out)
+            format: ("", " -out " + str(value))[value is not None]
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Alignment
+        filenames: ( outfile , "muscle.out")[outfile is None]
+        name: alignmentout
+        precond:
+            outformat:
+                '#in': [fasta, msf, phyi, clwstrict, clw]
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Alignment
+        filenames: ( outfile , "muscle.out")[outfile is None]
+        name: muscleHtmlout
+        precond: {outformat: html}
+        output_type: stdout
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"muscle.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0492']
+topics: ['EDAM_topic:0182']
+references:
+- {doi: 10.1093/nar/gkh340, label: 'Edgar, Robert C. (2004), MUSCLE: multiple sequence
+        alignment with high accuracy and high throughput, Nucleic Acids Research 32(5),
+        1792-97.', url: null}
+documentation_links: ['http://www.drive5.com/muscle/']
+homepage_links: ['http://www.drive5.com/muscle/']
+command: muscle
+env: {}
+source_links: ['http://www.drive5.com/muscle/downloads.htm']

@@ -1,0 +1,120 @@
+!mobyle/program
+name: coderet
+title: coderet
+description: Extract CDS, mRNA and translations from feature tables
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Seqall option
+            format: ("", " -seqall=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: seqall
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 2
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.coderet}
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (cdsoutseq), format: '("" , " -cdsoutseq=" + str(value))[value is
+                not None]', argpos: 3, name: cdsoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 4, name: osformat_cdsoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (mrnaoutseq), format: '("" , " -mrnaoutseq=" + str(value))[value is
+                not None]', argpos: 5, name: mrnaoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 6, name: osformat_mrnaoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (translationoutseq), format: '("" , " -translationoutseq=" + str(value))[value
+                is not None]', argpos: 7, name: translationoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 8, name: osformat_translationoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (restoutseq), format: '("" , " -restoutseq=" + str(value))[value is
+                not None]', argpos: 9, name: restoutseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 10, name: osformat_restoutseq, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 11
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Cdsoutseq_out option
+            filenames: cdsoutseq
+            name: cdsoutseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/outputprogramparameter
+            prompt: Mrnaoutseq_out option
+            filenames: mrnaoutseq
+            name: mrnaoutseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/outputprogramparameter
+            prompt: Translationoutseq_out option
+            filenames: translationoutseq
+            name: translationoutseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/outputprogramparameter
+            prompt: Restoutseq_out option
+            filenames: restoutseq
+            name: restoutseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"coderet.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"coderet.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436', 'EDAM_operation:0371', 'EDAM_operation:0372']
+topics: ['EDAM_topic:0109']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/coderet.html', 'http://emboss.sourceforge.net/docs/themes']
+command: coderet
+env: {}

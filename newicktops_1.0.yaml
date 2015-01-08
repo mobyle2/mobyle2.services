@@ -1,0 +1,113 @@
+!mobyle/program
+name: newicktops
+version: '1.0'
+title: newicktops
+description: A phylogenetic tree drawing program for biologists
+authors: Manolo Gouy
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"newicktops"'
+        argpos: 0
+        name: command
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Tree file
+        format: '" " + str(value)'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: tree
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        prompt: paper format
+        format: ( "" , " -us" )[ value != vdef ]
+        argpos: 1
+        name: paper_format
+        command: false
+        type: !mobyle/stringtype
+            default: a4
+            options:
+            - {label: a4, value: a4}
+            - {label: us letter, value: us}
+    - !mobyle/inputprogramparameter
+        prompt: Font size used for taxon names
+        format: ( "" , " -size " + str( value ) )[ value is not None ]
+        argpos: 1
+        name: font_size
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        prompt: Show branch lengths if they appear in tree file
+        format: ( "" , " -lengths" )[ value ]
+        argpos: 2
+        name: lengths
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Show bootstrap values if they appear in tree file
+        format: ( "" , " -boot" )[ value ]
+        argpos: 3
+        name: boots
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Don't include title in postscript output
+        format: ( "" , " -notitle" )[ value ]
+        argpos: 4
+        name: no_title
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: the size of page for postscript
+        name: paper_size
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: width
+            name: width
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: height
+            name: height
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            format: '" -pssize %dx%d" %( width , height )'
+            name: ps_size
+            precond:
+                '#and':
+                -   width: {'#ne': None}
+                -   height: {'#ne': None}
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Tree draw, filenames: '"*.ps"', name: tree_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"newicktops.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"newicktops.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "newicktops is a tree drawing program able to draw any binary tree expressed\n\
+    \          in the standard phylogenetic tree format (e.g., the format used by\
+    \ the PHYLIP package).\n          NJplot allows display of bootstrap scores and\
+    \ printing in the PostScript format."
+operations: ['EDAM_operation:0567']
+topics: ['EDAM_topics:0092', 'EDAM_topics:0084']
+homepage_links: ['http://pbil.univ-lyon1.fr/software/njplot.html']
+env: {}
+source_links: ['ftp://pbil.univ-lyon1.fr/pub/mol_phylogeny/njplot/']

@@ -1,0 +1,99 @@
+!mobyle/program
+name: rnaduplex
+title: RNAduplex
+description: Compute the structure upon hybridization of two RNA strands
+authors: Ivo Hofacker
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: RNA Sequence File
+        format: '" < "+ str(value)'
+        simple: true
+        argpos: 1000
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Compute suboptimal structures with energy with range kcal/mol
+                of the optimum. Default is calculation of mfe structure only.
+            prompt: Suboptimal structures (-e)
+            format: ( "" , " -e " + str(value))[ value is not None and value != vdef
+                ]
+            name: suboptimal
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temp C. (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/integertype {default: 37}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Energy parameter file (-P),
+            format: '( "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+    - !mobyle/inputprogramparameter
+        format: '"/path/to/ViennaRNA/readseq/readseq  -f=19 -a "+ str(seq) + " > "+
+            str(seq) +".tmp && (cp "+ str(seq) +" "+ str(seq) +".orig && mv "+ str(seq)
+            +".tmp "+ str(seq) +") ; "'
+        argpos: -10
+        name: readseq
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnaduplex.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnaduplex.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "RNAduplex reads  two RNA  sequences from  file and\n       computes optimal\
+    \ and suboptimal secondary structures for their hybridization. The calculation\
+    \ is simplified  by  allowing  only inter-molecular base pairs."
+command: RNAduplex
+env: {}

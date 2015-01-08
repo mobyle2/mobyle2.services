@@ -1,0 +1,186 @@
+!mobyle/program
+name: squizz_convert
+version: '0.99'
+title: SQUIZZ
+description: Sequence/Alignment format converter
+authors: N. Joly
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Sequence section
+        name: seq
+        precond:
+            '#or':
+            - {'#not': infile_aln}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input
+            format: '" "+str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: infile_seq
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1942', 'EDAM_format:1948', 'EDAM_format:1948',
+                    'EDAM_format:1957', 'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Convert sequence into sequence format (-c)
+            format: ("", " -S -c "+str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: convert_seq
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: EMBL, value: EMBL}
+                - {label: FASTA, value: FASTA}
+                - {label: GCG, value: GCG}
+                - {label: GDE, value: GDE}
+                - {label: GENBANK, value: GENBANK}
+                - {label: IG, value: IG}
+                - {label: NBRF, value: NBRF}
+                - {label: PIR, value: PIR}
+                - {label: RAW, value: RAW}
+                - {label: SWISSPROT, value: SWISSPROT}
+    - !mobyle/inputprogramparagraph
+        prompt: Alignment section
+        name: aln
+        precond:
+            '#or':
+            - {'#not': infile_seq}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input
+            format: '" "+str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: infile_aln
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1982', 'EDAM_format:1955', 'EDAM_format:1956',
+                    'EDAM_format:1993', 'EDAM_format:1912', 'EDAM_format:1961', 'EDAM_format:2200',
+                    'EDAM_format:1991']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            prompt: Convert alignment into alignment format (-c)
+            format: ("", " -A -c "+str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: convert_aln
+            precond:
+                '#or':
+                -   convert_seq2: {'#eq': None}
+                -   '#and':
+                    -   convert_aln: {'#ne': None}
+                    -   convert_seq2: {'#ne': None}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: CLUSTAL, value: CLUSTAL}
+                - {label: FASTA, value: FASTA}
+                - {label: MEGA, value: MEGA}
+                - {label: MSF, value: MSF}
+                - {label: NEXUS, value: NEXUS}
+                - {label: PHYLIP Interleaved, value: PHYLIPI}
+                - {label: PHYLIP Sequential, value: PHYLIPS}
+                - {label: STOCKHOLM, value: STOCKHOLM}
+        - !mobyle/inputprogramparameter
+            prompt: Convert alignment into sequence format (-c)
+            format: ("", " -c "+str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: convert_seq2
+            precond:
+                '#or':
+                -   convert_aln: {'#eq': None}
+                -   '#and':
+                    -   convert_aln: {'#ne': None}
+                    -   convert_seq2: {'#ne': None}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose the output format, value: 'null'}
+                - {label: EMBL, value: EMBL}
+                - {label: FASTA, value: FASTA}
+                - {label: GCG, value: GCG}
+                - {label: GDE, value: GDE}
+                - {label: GENBANK, value: GENBANK}
+                - {label: IG, value: IG}
+                - {label: NBRF, value: NBRF}
+                - {label: PIR, value: PIR}
+                - {label: RAW, value: RAW}
+                - {label: SWISSPROT, value: SWISSPROT}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Sequence section
+        name: seq
+        precond:
+            '#or':
+            - {'#not': infile_aln}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Sequence(s) file
+            filenames: '"squizz_convert.out"'
+            name: seq_outfile
+            precond:
+                infile_seq: {'#ne': None}
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparagraph
+        prompt: Alignment section
+        name: aln
+        precond:
+            '#or':
+            - {'#not': infile_seq}
+            -   '#and': [infile_seq, infile_aln]
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Alignment file
+            filenames: '"squizz_convert.out"'
+            name: aln_outfile
+            precond:
+                '#and':
+                -   infile_aln: {'#ne': None}
+                -   convert_aln: {'#ne': None}
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Sequence(s) file
+            filenames: '"squizz_convert.out"'
+            name: seq2_outfile
+            precond:
+                '#and':
+                -   infile_aln: {'#ne': None}
+                -   convert_seq2: {'#ne': None}
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"squizz_convert.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0335']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/squizz/seqfmt.html', 'http://bioweb2.pasteur.fr/docs/squizz/alifmt.html']
+command: squizz
+env: {}

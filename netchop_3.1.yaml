@@ -1,0 +1,80 @@
+!mobyle/program
+name: netchop
+version: '3.1'
+title: netChop
+description: predict cleavage sites for human proteasome.
+authors: Morten Nielsen, mniel@cbs.dtu.dk
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"netChop "'
+        name: netchop
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input Sequence
+        format: '" " + str( value )'
+        simple: true
+        argpos: 50
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        comment: "netchop has  been  trained using  a  novel  sequence  encoding scheme,\
+            \ \n       and an improved neural network training strategy. \n      \
+            \ The netchop 3.0 version has two different network  methods  that  can\
+            \  be\n       used for prediction.  Cterm-3.0 and 20S-3.0."
+        prompt: Prediction method (-v).
+        format: ( "" , " -v "+ value )[ value is not None and value != vdef ]
+        argpos: 10
+        name: Method
+        command: false
+        type: !mobyle/stringtype
+            default: '0'
+            options:
+            - {label: Cterm-3.0, value: '0'}
+            - {label: 20S-3.0, value: '1'}
+    - !mobyle/inputprogramparameter
+        prompt: Use value as threshold for cleavage sites (-t).
+        format: ( "" , " -t "+str(value) )[value is not None and value != vdef]
+        argpos: 20
+        name: threshold
+        command: false
+        type: !mobyle/floattype {default: 0.5}
+    - !mobyle/inputprogramparameter
+        prompt: Use short format for output (-s).
+        format: ( ""," -s ")[ bool( value ) ]
+        argpos: 30
+        name: short_output
+        command: false
+        type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: netChop report.
+        filenames: '"netchop.out"'
+        name: results
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"netchop.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:3087', 'EDAM_operation:0422']
+topics: ['EDAM_topic:748']
+references:
+- {doi: null, label: "The role of the proteasome in generating cytotoxic T cell epitopes:\n\
+        \                 Insights obtained from improved predictions of proteasomal\
+        \ cleavage.\n                 M. Nielsen, C. Lundegaard, S. Brunak, O. Lund,\
+        \ and C. Kesmir.\n                 Immunogenetics., 57(1-2):33-41, 2005.",
+    url: null}
+documentation_links: ['http://www.cbs.dtu.dk/services/NetChop/']
+env: {}
+source_links: ['http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?netchop']

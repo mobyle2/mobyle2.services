@@ -1,0 +1,185 @@
+!mobyle/program
+name: getorf
+title: getorf
+description: Finds and extracts open reading frames (ORFs)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Genetic codes
+            format: ("", " -table=" + str(value))[value is not None and value!=vdef]
+            argpos: 2
+            name: table
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Standard, value: '0'}
+                - {label: Standard (with alternative initiation codons), value: '1'}
+                - {label: Vertebrate mitochondrial, value: '2'}
+                - {label: Yeast mitochondrial, value: '3'}
+                - {label: 'Mold, protozoan, coelenterate mitochondrial and  mycoplasma/spiroplasma',
+                    value: '4'}
+                - {label: Invertebrate mitochondrial, value: '5'}
+                - {label: Ciliate  macronuclear and dasycladacean, value: '6'}
+                - {label: Echinoderm mitochondrial, value: '9'}
+                - {label: Euplotid nuclear, value: '10'}
+                - {label: Bacterial, value: '11'}
+                - {label: Alternative yeast nuclear, value: '12'}
+                - {label: Ascidian mitochondrial, value: '13'}
+                - {label: Flatworm mitochondrial, value: '14'}
+                - {label: Blepharisma macronuclear, value: '15'}
+                - {label: Chlorophycean mitochondrial, value: '16'}
+                - {label: Trematode mitochondrial, value: '21'}
+                - {label: Scenedesmus obliquus, value: '22'}
+                - {label: Thraustochytrium mitochondrial, value: '23'}
+        - !mobyle/inputprogramparameter
+            prompt: Minimum nucleotide size of orf to report
+            format: ("", " -minsize=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: minsize
+            command: false
+            type: !mobyle/integertype {default: 30}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum nucleotide size of orf to report
+            format: ("", " -maxsize=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: maxsize
+            command: false
+            type: !mobyle/integertype {default: 1000000}
+        - !mobyle/inputprogramparameter
+            comment: 'This is a small menu of possible output options. The first four
+                options are to select either the protein translation or the  original
+                nucleic acid sequence of the open reading frame. There  are two possible
+                definitions of an open reading frame: it can  either be a region that
+                is free of STOP codons or a region that  begins with a START codon
+                and ends with a STOP codon. The last  three options are probably only
+                of interest to people who wish to  investigate the statistical properties
+                of the regions around  potential START or STOP codons. The last option
+                assumes that ORF  lengths are calculated between two STOP codons.'
+            prompt: Type of sequence to output
+            format: ("", " -find=" + str(value))[value is not None and value!=vdef]
+            argpos: 5
+            name: find
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Translation of regions between stop codons, value: '0'}
+                - {label: Translation of regions between start and stop codons, value: '1'}
+                - {label: Nucleic sequences between stop codons, value: '2'}
+                - {label: Nucleic sequences  between start and stop codons, value: '3'}
+                - {label: Nucleotides flanking start  codons, value: '4'}
+                - {label: Nucleotides flanking initial stop codons, value: '5'}
+                - {label: Nucleotides flanking ending stop codons, value: '6'}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: START codons at the beginning of protein products will usually
+                code for Methionine, despite what the codon will code for  when it
+                is internal to a protein. This qualifier sets all such  START codons
+                to code for Methionine by default.
+            prompt: Change initial start codons to methionine
+            format: (" -nomethionine", "")[ bool(value) ]
+            argpos: 6
+            name: methionine
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Is the sequence circular
+            format: ("", " -circular")[ bool(value) ]
+            argpos: 7
+            name: circular
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Set this to be false if you do not wish to find ORFs in the reverse
+                complement of the sequence.
+            prompt: Find orfs in the reverse sequence
+            format: (" -noreverse", "")[ bool(value) ]
+            argpos: 8
+            name: reverse
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If you have chosen one of the options of the type of sequence
+                to find that gives the flanking sequence around a STOP or  START codon,
+                this allows you to set the number of nucleotides  either side of that
+                codon to output. If the region of flanking  nucleotides crosses the
+                start or end of the sequence, no output is  given for this codon.
+            prompt: Number of flanking nucleotides to report
+            format: ("", " -flanking=" + str(value))[value is not None and value!=vdef]
+            argpos: 9
+            name: flanking
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter {prompt: Name of the output sequence file
+                (outseq), format: '("" , " -outseq=" + str(value))[value is not None]',
+            argpos: 10, name: outseq, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the sequence output format,
+            format: '("", " -osformat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 11, name: osformat_outseq, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 12
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2976']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"getorf.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"getorf.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436', 'EDAM_operation:0371']
+topics: ['EDAM_topic:0109']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/getorf.html', 'http://emboss.sourceforge.net/docs/themes']
+command: getorf
+env: {}

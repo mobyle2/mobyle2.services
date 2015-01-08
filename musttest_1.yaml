@@ -1,0 +1,37 @@
+!mobyle/program
+name: musttest
+version: '1'
+title: Multiple Steps Test
+description: Test case to implement a multiple steps program with a specific progress
+    report file.
+authors: GNU
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: type any kind of text
+        prompt: Input text
+        format: '" " + str(value)'
+        argpos: 1
+        name: input
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: This is the result
+        prompt: Output text
+        filenames: '"musttest.out"'
+        name: output
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"musttest.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: for i in 1 2 3 4 5 6 7 8 9 10; do echo "performing step $i">>progress.txt
+    && sleep 3; done && cat
+env: {}

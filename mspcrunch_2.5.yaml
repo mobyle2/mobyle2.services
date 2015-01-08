@@ -1,0 +1,290 @@
+!mobyle/program
+name: mspcrunch
+version: '2.5'
+title: MSPcrunch
+description: A BLAST post-processing filter
+authors: Sonnhammer, Durbin
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"MSPcrunch"'
+        argpos: 0
+        name: mspcrunch
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input Options
+        name: input_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: BLAST output File
+            format: '" "+str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: blast_output
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0857']
+        - !mobyle/inputprogramparameter
+            prompt: Force Blastp mode (default Blastx) (-p)
+            format: ( ""  , " -p" )[ value ]
+            name: force_blastp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Force Blastn mode (default Blastx) (-n)
+            format: ( ""  , " -n" )[ value ]
+            name: force_blastn
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: analyse_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Make gapped alignment of ungapped-MSP contigs (-G)
+            format: ( ""  , " -G" )[ value ]
+            name: gapped
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 0 = No coverage rejection
+            prompt: Set coverage limit (-l)
+            format: ( ""  , " -l "+str(value) )[ value is not None  and value !=vdef]
+            name: cov_limit
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Use old step cutoffs for adjacency instead of the new continuous
+                system. (-O)
+            format: ( ""  , " -O" )[ value ]
+            name: old_cutoff
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Don't reject any MSPs (-w)
+            format: ( ""  , " -w" )[ value ]
+            name: dont_reject
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Report only rejected MSPs (-r)
+            format: ( ""  , " -r" )[ value ]
+            name: report_rejected
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Reject all matches with less than this % identity (-I)
+            format: ( ""  , " -I " + str(value) )[ value is not None ]
+            name: threshold_id
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Reject all matches with length less than this value (-L)
+            format: ( ""  , " -L " + str(value) )[ value is not None ]
+            name: threshold_length
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Reject all matches with E-value higher than this value (-e)
+            format: ( "" , " -e " + str(value))[ value is not None ]
+            name: expect
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Read in query seq (for rereading .seqbl files) (-Q)
+            format: ( ""  , " -Q " + str(value) )[ value is not None ]
+            name: query
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Coverage limitation requires whole contig to be covered (always
+                for Blastp) (-a)
+            format: ( ""  , " -a" )[ value ]
+            name: whole_contig
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Accept hits to self (-s)
+            format: ( ""  , " -s" )[ value ]
+            name: hits_to_self
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Ignore hits to earlier seqnames (for All-vs-All) (-A)
+            format: ( ""  , " -A" )[ value ]
+            name: no_hits_to_earlier
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Recalculate percentage identity, ignoring X residues. (-j)
+            format: ( ""  , " -j" )[ value ]
+            name: stats_without_X
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Recalculate percentage identity, ignoring mismatches at ends.
+                (-J)
+            format: ( ""  , " -J" )[ value ]
+            name: stats_without_end
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do Statistics of Silent mutations (only cDNA!) (-S)
+            format: ( ""  , " -S" )[ value ]
+            name: silent_mutations
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print statistics on used matrices (-E)
+            format: ( ""  , " -E" )[ value ]
+            name: matrix_stats
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print all Expected scores (default only when positive) (-X)
+            format: ( ""  , " -X" )[ value ]
+            name: all_expected
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Line length of Wrapped alignment (-W)
+            format: ( ""  , " -W " +str(value) )[ value is not None ]
+            name: line_length
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Big Picture output (-P)
+            format: ( ""  , " -P" )[ value ]
+            name: big_pict
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: For Big Picture output, force all matches to the same subject
+                on one line (-F)
+            format: ( ""  , " -F" )[ value ]
+            name: matches_one_line
+            precond: big_pict
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce SFS output (-H)
+            format: ( "" , " -H" )[ value ]
+            name: sfs
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce seqbl  output for Blixem (-q)
+            format: ( ""  , " -q" )[ value ]
+            name: seqbl
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Indicate query insertions with numbers (For seqbl output from
+                Wublast) (-N)
+            format: ( ""  , " -N" )[ value ]
+            name: wublast_numbered
+            precond: seqbl
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce .ace output (for ACEDB 4) (-4)
+            format: ( ""  , " -4" )[ value ]
+            name: ace
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Don't mirror (i.e. print the subject object) in ACE4 format (-M)
+            format: ( ""  , " -M" )[ value ]
+            name: dont_mirror
+            precond: ace
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce exblx output (for easy parsing) (-x)
+            format: ( ""  , " -x" )[ value ]
+            name: exblx
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce exbldb output (as exblx with query names) (-d)
+            format: ( ""  , " -d" )[ value ]
+            name: exbldb
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce fasta output (unaligned, for mult.alignm.) (-2)
+            format: ( ""  , " -2" )[ value ]
+            name: fasta
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print 3 frame translation (blastn only) (-3)
+            format: ( ""  , " -3" )[ value ]
+            name: three_frame
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print footer with parameters and stats (-f)
+            format: ( ""  , " -f" )[ value ]
+            name: footer
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print percentage identity (seqbl output only) (-i)
+            format: ( ""  , " -i" )[ value ]
+            name: percentage_id
+            precond: seqbl
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output coverage stats?
+            format: '""'
+            name: stats
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Produce output for Domainer (trim overlaps) (-D)
+            format: ( ""  , " -D" )[ value ]
+            name: domainer
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Result file
+            filenames: '"mspcrunch.out"'
+            name: outfile
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {prompt: Coverage stats outputfile, filenames: '"mspcrunch.stats"',
+            name: stats_file, precond: stats}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"mspcrunch.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2463']
+topics: ['EDAM_topic:0182']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/mspcrunch/MSPcrunch2.pdf']
+homepage_links: ['http://sonnhammer.sbc.su.se/MSPcrunch.html']
+env: {}
+source_links: ['http://sonnhammer.sbc.su.se/download/software/MSPcrunch+Blixem/']

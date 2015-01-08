@@ -1,0 +1,181 @@
+!mobyle/program
+name: compseq
+title: compseq
+description: Calculate the composition of unique words in sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: "This is a file previously produced by 'compseq' that can be\
+                \ used to set the expected frequencies of words in this analysis.\
+                \ \n  The word size in the current run must be the same as the one\
+                \ in  this results file. Obviously, you should use a file produced\
+                \ from  protein sequences if you are counting protein sequence word\
+                \  frequencies, and you must use one made from nucleotide frequencies\
+                \  if you are analysing a nucleotide sequence."
+            prompt: Program compseq output file (optional)
+            format: ("", " -infile=" + str(value))[value is not None]
+            argpos: 2
+            name: infile
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "This is the size of word (n-mer) to count. \n Thus if you want\
+                \ to count codon frequencies for a nucleotide  sequence, you should\
+                \ enter 3 here."
+            prompt: Word size to consider (e.g. 2=dimer) (value greater than or equal
+                to 1)
+            format: ("", " -word=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: word
+            command: false
+            type: !mobyle/integertype {default: 2}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The normal behaviour of 'compseq' is to count the frequencies\
+                \ of all words that occur by moving a window of length  'word' up\
+                \ by one each time. \n  This option allows you to move the window\
+                \ up by the length of the  word each time, skipping over the intervening\
+                \ words. \n  You can count only those words that occur in a single\
+                \ frame of the  word by setting this value to a number other than\
+                \ zero. \n  If you set it to 1 it will only count the words in frame\
+                \ 1, 2 will  only count the words in frame 2 and so on."
+            prompt: Frame of word to look at (0=all frames) (value greater than or
+                equal to 0)
+            format: ("", " -frame=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: frame
+            command: false
+            type: !mobyle/integertype {default: 0}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+        - !mobyle/inputprogramparameter
+            comment: "The amino acid code B represents Asparagine or Aspartic acid\
+                \ and the code Z represents Glutamine or Glutamic acid. \n  These\
+                \ are not commonly used codes and you may wish not to count  words\
+                \ containing them, just noting them in the count of 'Other'  words."
+            prompt: Ignore the amino acids b and z and just count them as 'other'
+            format: (" -noignorebz", "")[ bool(value) ]
+            argpos: 5
+            name: ignorebz
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Set this to be true if you also wish to also count words in the
+                reverse complement of a nucleic sequence.
+            prompt: Count words in the forward and reverse sense
+            format: ("", " -reverse")[ bool(value) ]
+            argpos: 6
+            name: reverse
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "If this is set true then the expected frequencies of words are\
+                \ calculated from the observed frequency of single bases or  residues\
+                \ in the sequences. \n  If you are reporting a word size of 1 (single\
+                \ bases or residues)  then there is no point in using this option\
+                \ because the calculated  expected frequency will be equal to the\
+                \ observed frequency. \n  Calculating the expected frequencies like\
+                \ this will give an  approximation of the expected frequencies that\
+                \ you might get by  using an input file of frequencies produced by\
+                \ a previous run of  this program. If an input file of expected word\
+                \ frequencies has  been specified then the values from that file will\
+                \ be used instead  of this calculation of expected frequency from\
+                \ the sequence, even  if 'calcfreq' is set to be true."
+            prompt: Calculate expected frequency from sequence
+            format: ("", " -calcfreq")[ bool(value) ]
+            argpos: 7
+            name: calcfreq
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This is the results file.
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 8
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.composition}
+        - !mobyle/inputprogramparameter
+            comment: You can make the output results file much smaller if you do not
+                display the words with a zero count.
+            prompt: Display the words that have a frequency of zero
+            format: (" -nozerocount", "")[ bool(value) ]
+            argpos: 9
+            name: zerocount
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"compseq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"compseq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0236']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/compseq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: compseq
+env: {}

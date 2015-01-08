@@ -1,0 +1,129 @@
+!mobyle/program
+name: quicktree
+version: '1.1'
+title: QuickTree
+description: Rapid reconstruction of phylogenies by the Neighbor-Joining method
+authors: Kevin Howe, Alex Bateman, Richard Durbin
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        comment: You must enter either a distance matrix or a alignment.
+        prompt: Input file
+        name: inpufile
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Alignment file (-in a)
+            format: ( "" , " -in a " + str(value) )[ value is not None ]
+            argpos: 10
+            mandatory: true
+            name: aligfile
+            precond:
+                '#or':
+                -   distfile: {'#eq': None}
+                -   '#and': [distfile, aligfile]
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1961']
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/inputprogramparameter
+            comment: "Give a file containing a distance matrix\n      obtained by\
+                \ distance matrix programs like prodist or\n      dnadist, ..."
+            prompt: or Distance matrix (-in m)
+            format: ( "" , " -in m " + str(value) )[ value is not None ]
+            argpos: 10
+            mandatory: true
+            name: distfile
+            precond:
+                aligfile: {'#eq': None}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0870']
+    - !mobyle/inputprogramparameter
+        prompt: Output (-out)
+        format: ( "" , " -out " + str(value) )[ value is not None and value != vdef]
+        argpos: 3
+        name: out
+        command: false
+        type: !mobyle/stringtype
+            default: t
+            options:
+            - {label: Distance matrix in Phylip format(m), value: m}
+            - {label: Tree in New Hampshire format (t), value: t}
+    - !mobyle/inputprogramparagraph
+        prompt: Tree output options
+        name: treeopt
+        precond:
+            out: {'#ne': m}
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Bootstrapping is not available for a matrix output
+            prompt: Use the UPGMA method to construct the tree (-upgma)
+            format: ( "" , " -upgma" )[ value ]
+            argpos: 3
+            name: upgma
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Alignment options
+        name: aligopt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Bootstrapping is not available for a matrix output
+            prompt: Calculate bootstrap values with n iterations (-boot)
+            format: ( "" , " -boot " + str(value))[ value is not None ]
+            argpos: 3
+            name: boot
+            precond:
+                '#and':
+                -   distfile: {'#eq': None}
+                -   out: {'#ne': m}
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Use the kimura translation for pairwise distances (-kimura)
+            format: ( "" , " -kimura" )[ value ]
+            argpos: 3
+            name: kimura
+            precond:
+                aligfile: {'#ne': None}
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree file
+        filenames: '"quicktree.out"'
+        name: treefile
+        precond:
+            out: {'#ne': m}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Distance matrix
+        filenames: '"quicktree.out"'
+        name: distoutfile
+        precond: {out: m}
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"quicktree.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "QuickTree is an efficient implementation of\n\t  the Neighbor-Joining algorithm,\
+    \ capable of reconstructing\n\t  phylogenies from huge alignments in time less\
+    \ than the age of\n\t  the universe."
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Kevin Howe, Alex Bateman and Richard Durbin (2002).\n\tQuickTree:\
+        \ building huge Neighbour-Joining trees of protein\n\tsequences. Bioinformatics\
+        \ 18(11):1546-1547.", url: null}
+homepage_links: ['http://www.sanger.ac.uk/Software/analysis/quicktree/']
+command: quicktree
+env: {}
+source_links: ['http://www.sanger.ac.uk/Software/analysis/quicktree/']

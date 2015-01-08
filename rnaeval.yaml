@@ -1,0 +1,121 @@
+!mobyle/program
+name: rnaeval
+title: RNAeval
+description: Calculate energy of RNA sequences on given secondary structure
+authors: Hofacker, Stadler
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"RNAeval"'
+        name: rnaeval
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {comment: "Sequences and structures are read alternately\
+            \ from stdin.\n        The energy in Kcal/Mol is written to stdout.\n\
+            \        The program will continue to read new sequences and structures\
+            \ until  a  line\n       consisting of the single character \"@\" or an\
+            \ end of file condition is encountered.\n       If the input sequence\
+            \ or structure contains the separator character \"&\" the program\n  \
+            \     calculates the energy of the co-folding of two RNA strands, where\
+            \ the \"&\" marks the\n       boundary between the two strands.", prompt: Sequences/Structures
+            File, format: '" < " + str(value)', simple: true, argpos: 1000, mandatory: true,
+        name: seqstruct, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: others_options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temp C. (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/floattype {default: 37.0}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "How to treat 'dangling end' energies for bases adjacent to helices\
+                \ in free \n            ends and multiloops: Normally only unpaired\
+                \ bases can participate in at most one dangling end.-d     Do  not\
+                \  give  stabilizing energies to unpaired bases adjacent to helices\
+                \ in\n              multiloops and free ends (\"dangling ends\").\
+                \ Same as  -d0,  opposite  of  -d1\n              (the default).-d2\
+                \    Treat dangling ends as in the partition function algorithm, i.e.\
+                \ bases adjacent \n           to helices in multiloops and free ends\
+                \ give a stabilizing  energy  contribution, \n           regardless\
+                \ whether they're paired or unpaired.-d3    Allow coaxial stacking\
+                \ of adjacent helices in multi-loops."
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+        - !mobyle/inputprogramparameter
+            comment: "Let multiloop energies depend logarithmically on the size, \n\
+                \            instead of the usual linear energy function."
+            prompt: Let multiloop energies depend logarithmically on the size (-logML)
+            format: ( "" , " -logML" )[ value ]
+            name: logML
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: -circ  Assume a cricular (rather than linear) RNA molecule.
+            format: ( "" , " -circ" )[ value ]
+            name: circular
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {comment: '<html:p xmlns:html="http://www.w3.org/1999/xhtml">Read
+                energy parameters from paramfile, instead of using the default parameter
+                set.<html:a href="http://www.tbi.univie.ac.at/~ivo/RNA/RNAlib/Param-Files.html"
+                target="ParamFile">( documentation for details on the file format.)</html:a></html:p>',
+            prompt: Energy parameter file (-P), format: '( "" , " -P " + str(value)
+                )[ value is not None ]', name: parameter, command: false}
+        - !mobyle/inputprogramparagraph
+            prompt: Output options
+            name: output_options
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Print out energy contribution of each loop in the structure.
+                format: ( "" , " -v ")[ value ]
+                name: verbose
+                command: false
+                type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnaeval.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnaeval.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: RNAeval  evaluates  the  free  energy  of  an  RNA molecule in fixed secondary
+    structure.
+operations: ['EDAM_operation:2439']
+topics: ['EDAM_topic:0097']
+references:
+- {doi: null, label: 'I.L. Hofacker, W. Fontana, P.F. Stadler, S. Bonhoeffer, M. Tacker,
+        P. Schuster (1994) Fast Folding and Comparison of RNA Secondary Structures.
+        Monatshefte f. Chemie 125: 167-188', url: null}
+documentation_links: ['http://www.tbi.univie.ac.at/RNA/RNAeval.html']
+env: {}

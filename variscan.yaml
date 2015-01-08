@@ -1,0 +1,288 @@
+!mobyle/program
+name: variscan
+title: VariScan
+description: Analysis of large-scale DNA sequence polymorphism data
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: write to file for mobyle
+        name: write_to_file_for_mobyle
+        command: false
+        hidden: true
+        type: !mobyle/booleantype {}
+    - !mobyle/inputprogramparameter
+        prompt: "Will you upload reference file(s), or use\n\t\t\t\t\t\texisting reference\
+            \ file(s) on the server?"
+        name: local_remote_file_switch
+        command: false
+        type: !mobyle/stringtype
+            default: '1'
+            options:
+            - {label: Use existing file(s) on  /mobyle_share/data, value: '0'}
+            - {label: Use existing file(s) on Mugsy Jobs, value: '2'}
+            - {label: Upload file(s) or use bookmarked file(s), value: '1'}
+    - !mobyle/inputprogramparameter
+        prompt: Input file format (config file should be formatted accordingly)
+        name: extension
+        command: false
+        type: !mobyle/stringtype
+            default: .phy
+            options:
+            - {label: XMFA Format, value: .xmfa}
+            - {label: PHYLIP, value: .phy}
+            - {label: MGA, value: .mga}
+            - {label: MAF, value: .maf}
+    - !mobyle/inputprogramparagraph
+        prompt: Sequence File. No white spaces in the input fields
+        name: p1
+        children:
+        - !mobyle/inputprogramparameter {prompt: Sequence file, name: infile, command: false}
+        - !mobyle/inputprogramparameter
+            comment: "Only use if you selected to use a file on the\n\t\t\t\t\t\t\t\
+                server. This file must be in /mobyle_share/data and be sure to\n\t\
+                \t\t\t\t\t\tinclude the file extension"
+            prompt: File Name (If you chose to use a reference file from /mobyle_share/data)
+            name: input_filename1
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Only use if you selected to use a file on mobyle job folder
+            prompt: Mugsy Job ID. (if you chose to use a file in Mugsy Job ID.   ie
+                Q15572245995045)
+            name: JOBID
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Only use if you selected to use a file on mobyle job folder
+            prompt: Input File name.(if you chose to use a file in mugsy Job ID.   ie
+                myfile.maf)
+            name: FASTA_FILENAME
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Variscan Configuration. Put comma between items to input more than
+            one items.
+        name: p2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: 'StartPos:'
+            format: ( "" ,  ' ______StartPos='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 1
+            name: StartPos
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: 'EndPos:'
+            format: ( "" ,  ' ______EndPos=' +str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 2
+            name: EndPos
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: 'RefPos:'
+            format: ( "" ,  ' ______RefPos=' +str( value ).replace(' ','') +'______
+                ' )[ value is not None ]
+            argpos: 3
+            name: RefPos
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: 'BlockDataFile:'
+            format: ( "" , ' ______BlockDataFile='  +str( value ).replace(' ','')
+                +'______ '   )[ value is not None ]
+            argpos: 4
+            name: BlockDataFile
+            command: false
+            type: !mobyle/stringtype {default: none}
+        - !mobyle/inputprogramparameter
+            prompt: 'IndivNames:'
+            format: ( ' ______IndivNames= ' ,   ' ______IndivNames=' +str( value ).replace('
+                ','')+'______ '  )[ value is not None ]
+            argpos: 5
+            name: IndivNames
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'SeqChoice:'
+            format: ( "" ,  ' ______SeqChoice=' +str( value ).replace(' ','')+'______
+                '   )[ value is not None ]
+            argpos: 6
+            name: SeqChoice
+            command: false
+            type: !mobyle/stringtype {default: all}
+        - !mobyle/inputprogramparameter
+            prompt: 'Outgroup:'
+            format: ( "" ,   ' ______Outgroup='+str( value ).replace(' ','')+'______
+                '   )[ value is not None ]
+            argpos: 7
+            name: Outgroup
+            command: false
+            type: !mobyle/stringtype {default: none}
+        - !mobyle/inputprogramparameter
+            prompt: 'RefSeq:'
+            format: ( "" ,  ' ______RefSeq='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 8
+            name: RefSeq
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: RunMode
+            format: ( "" ,  ' ______RunMode='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 9
+            name: RunMode
+            command: false
+            type: !mobyle/stringtype
+                default: '11'
+                options:
+                - {label: 11 = Summary statistics Pi; Theta; n is greater than or
+                        equal to 2., value: '11'}
+                - {label: 12 = Summary statistics (Pi; Theta; Tajima\E2^\C0^\D9s D;
+                        Fu-Li\E2^\C0^\D9s D* and F*); n is greater than or equal to
+                        4., value: '12'}
+                - {label: '21 = Summary statistics with outgroup [Pi; K (divergence)];
+                        n is greater than or equal to 1.', value: '21'}
+                - {label: '22 = Summary statistics with outgroup (Pi; Fu-Li\E2^\C0^\D9s
+                        D, F; Fay-Wu\E2^\C0^\D9s H); n is greater than or equal to
+                        3.', value: '22'}
+                - {label: '31 = Linkage disequilibrium (D, D\E2^\C0^\D9, r2), Haplotype
+                        diversity and Fu''s FS; n is greater than or equal to 2. NOTE:
+                        Complete deletion is obligatory when running in RunMode 31!
+                        Please set CompleteDeletion to 1!', value: '31'}
+                - {label: 51 = Transforms a multiple alignment file (other that MGA)
+                        to PHYLI., value: '51'}
+        - !mobyle/inputprogramparameter
+            prompt: 'UseMuts:'
+            format: ( "" ,  ' ______UseMuts='+str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 10
+            name: UseMuts
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: 'CompleteDeletion:'
+            format: ( "" ,  ' ______CompleteDeletion='+ str( value ).replace(' ','')+'______
+                '   )[ value is not None ]
+            argpos: 11
+            name: CompleteDeletion
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: 'FixNum:'
+            format: ( "" ,  ' ______FixNum='+ str( value ).replace(' ','')+'______
+                '   )[ value is not None ]
+            argpos: 12
+            name: FixNum
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: 'NumNuc:'
+            format: ( "" ,  ' ______NumNuc='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 13
+            name: NumNuc
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            prompt: 'SlidingWindow:'
+            format: ( "" ,  ' ______SlidingWindow='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 14
+            name: SlidingWindow
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: 'WidthSW:'
+            format: ( "" , ' ______WidthSW='+  str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 15
+            name: WidthSW
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: 'JumpSW:'
+            format: ( "" ,  ' ______JumpSW='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 16
+            name: JumpSW
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            prompt: 'WindowType:'
+            format: ( "" ,  ' ______WindowType='+ str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 17
+            name: WindowType
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: 'UseLDSinglets:'
+            format: ( "" ,   ' ______UseLDSinglets='+str( value ).replace(' ','')+'______
+                '  )[ value is not None ]
+            argpos: 18
+            name: UseLDSinglets
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            format: ( ' % cp /mobyle_share/data/'+str(input_filename1)+' '+str(input_filename1).split('.')[0]+str(extension)+'
+                % python /home/mobyle/bin/bypass.py variscan '+str(input_filename1).split('.')[0]+str(extension)+'  data.conf
+                out.vs  ', ' % cp '+str(infile)+' '+str(infile).split('.')[0]+str(extension)+'  %
+                python /home/mobyle/bin/bypass.py variscan '+str(infile).split('.')[0]+str(extension)+'
+                data.conf out.vs  ','% cp '+'/mobyle_share/mobylePortal-html/v1.0.7/data/jobs/mugsy/'+str(JOBID).replace('_','')+'/'+str(FASTA_FILENAME)+'
+                '+str(FASTA_FILENAME).split('.')[0]+str(extension)+' %  python /home/mobyle/bin/bypass.py
+                variscan '+str(FASTA_FILENAME).split('.')[0]+str(extension)+' data.conf
+                out.vs ')[ int(local_remote_file_switch) ]
+            argpos: 19
+            name: step1
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Column number to extract from the variscan output into wiggle
+                track (optional. put 1:2:3:4 to extract column 1,2,3,4)
+            format: '['''','' %  perl ~/bin/variscan-2.0.3/scripts/vs2bed.PLS out.vs
+                --stat_col ''+str(value)][value is not None]'
+            argpos: 20
+            name: step2
+            command: false
+            type: !mobyle/stringtype {default: '9'}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Variscan Configuration. Put comma between items to input more than
+            one items.
+        name: p2
+        children:
+        - !mobyle/outputprogramparameter {filenames: '"std.err"', name: stdoutfile}
+        - !mobyle/outputprogramparameter {filenames: '"*.vs"', name: e}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: '''*.bed''',
+            name: output1}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: '''*.vs''',
+            name: output1}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"variscan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"variscan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Vilella, A, J., Blanco-Garcia, A., Hutter, S. and Rozas, J.
+        (2005). VariScan: Analysis of evolutionary patterns from large-scale DNA sequence
+        polymorphism data. Bioinformatics  21: 2791-2793.
+
+        Hutter, S., Vilella, A, J. and Rozas, J. (2006). Genome-wide DNA polymorphism
+        analyses using VariScan. BMC Bioinformatics 7: 409.', url: null}
+documentation_links: ['http://www.ub.edu/softevol/variscan/VariScan_v2_Documentation.pdf']
+command: runbsub -n 1 -W 10:00 -o std.out -e std.err -N __bsubArgsEnd__ runner python
+    /home/mobyle/bin/variconfmaker.py
+env: {}

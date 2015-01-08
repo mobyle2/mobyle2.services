@@ -1,0 +1,378 @@
+!mobyle/program
+name: pftools
+version: '2.3'
+title: PFTOOLS
+description: Profile Tools
+authors: P. Bucher
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: 'pfscan compares a protein or nucleic acid sequence against a profile
+            library (default: Prosite).pfsearch compares a query profile against a
+            DNA or protein sequence library.The result is an unsorted list of profile-sequence
+            matches written to the standard output.'
+        prompt: PFTOOLS program
+        format: str(value) + " -v"
+        simple: true
+        mandatory: true
+        name: pftools
+        command: true
+        type: !mobyle/stringtype
+            default: pfscan
+            options:
+            - {label: 'pfscan: scan a sequence with a profile db', value: pfscan}
+            - {label: 'pfsearch: search a sequence db for segments matching a profile',
+                value: pfsearch}
+    - !mobyle/inputprogramparameter
+        format: '" -f"'
+        argpos: 1
+        name: fasta_format
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: PFSCAN parameters
+        name: pfscan
+        precond: {pftools: pfscan}
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This DNA or protein sequence will be used to  search  for  matches  to  a
+                library of PROSITE profiles.
+            prompt: Sequence File
+            format: '" " + str(value)'
+            simple: true
+            argpos: 90
+            mandatory: true
+            name: seqfile
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Prosite library
+            prompt: Scan PROSITE db?
+            format: ( "" , " /path/to/Prosite/prosite.dat" )[ value ]
+            simple: true
+            argpos: 100
+            name: prosite
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This  file  should contain one or several PROSITE profiles, against
+                which the query sequence will be matched.  Each entry in this library
+                should be separated  from the next by a line containing only the code.
+            prompt: Profile(s) file in PROSITE format
+            format: '" " + str(value)'
+            simple: true
+            argpos: 100
+            mandatory: true
+            name: profiledb
+            precond: {'#not': prosite}
+            command: false
+    - !mobyle/inputprogramparagraph
+        prompt: PFSEARCH parameters
+        name: pfsearch
+        precond: {pftools: pfsearch}
+        children:
+        - !mobyle/inputprogramparameter {comment: The PROSITE profile contained in
+                this file will be  used  to  search  for profile  to  sequence  matches  in  a
+                biological sequence library., prompt: Profile(s) file in PROSITE format,
+            format: '" " + str(value)', simple: true, argpos: 90, mandatory: true,
+            name: profile, command: false}
+        - !mobyle/inputprogramparameter
+            comment: The  program pfsearch  tries  to  identify  matches  between
+                the input profile and all individual sequences of this library.
+            prompt: Library of DNA or protein sequences?
+            format: '""'
+            simple: true
+            mandatory: true
+            name: aa_or_nuc_db
+            command: false
+            type: !mobyle/stringtype
+                default: 'Null'
+                options:
+                - {label: Choose type of library, value: 'Null'}
+                - {label: User library, value: user}
+                - {label: Protein, value: protein}
+                - {label: DNA, value: dna}
+        - !mobyle/inputprogramparameter
+            prompt: Protein library
+            format: ("", " /path/to/fasta/databank/dir/" + str(value))[value is not
+                None and value != vdef]
+            simple: true
+            argpos: 100
+            mandatory: true
+            name: aadb
+            precond: {aa_or_nuc_db: protein}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'uniprot: Universal Protein Resource', value: uniprot}
+                - {label: 'uniprot_sprot: Universal Protein Resource (SwissProt part)',
+                    value: uniprot_sprot}
+                - {label: 'uniprot_trembl: Universal Protein Resource (TrEmbl part)',
+                    value: uniprot_trembl}
+                - {label: 'nrprot: NCBI non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot}
+                - {label: 'nrprot_month: NCBI month non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot_month}
+                - {label: 'genpept: Genbank translations (last rel. + upd.)', value: genpept}
+                - {label: 'genpept_new: genpept updates', value: genpept_new}
+                - {label: 'gpbct: genpept bacteries', value: gpbct}
+                - {label: 'gppri: primates', value: gppri}
+                - {label: 'gpmam: other mammals', value: gpmam}
+                - {label: 'gprod: rodents', value: gprod}
+                - {label: 'gpvrt: other vertebrates', value: gpvrt}
+                - {label: 'gpinv: invertebrates', value: gpinv}
+                - {label: 'gppln: plants (including yeast)', value: gppln}
+                - {label: 'gpvrl: virus', value: gpvrl}
+                - {label: 'gpphg: phages', value: gpphg}
+                - {label: 'gpsts: STS', value: gpsts}
+                - {label: 'gpsyn: synthetic', value: gpsyn}
+                - {label: 'gppat: patented', value: gppat}
+                - {label: 'gpuna: unatotated', value: gpuna}
+                - {label: 'gphtg: GS (high throughput Genomic Sequencing)', value: gphtg}
+                - {label: 'sbase: annotated domains sequences', value: sbase}
+        - !mobyle/inputprogramparameter
+            prompt: Nucleic library
+            format: ("", " /path/to/fasta/databank/dir/" + str(value))[value is not
+                None and value != vdef]
+            simple: true
+            argpos: 100
+            mandatory: true
+            name: nucdb
+            precond: {aa_or_nuc_db: dna}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'embl: Embl last release + updates', value: embl}
+                - {label: 'embl_new: Embl updates', value: embl_new}
+                - {label: 'genbank: Genbank last release + updates', value: genbank}
+                - {label: 'genbank_new: Genbank updates', value: genbank_new}
+                - {label: 'gbbct: genbank bacteria', value: gbbct}
+                - {label: 'gbpri: primates', value: gbpri}
+                - {label: 'gbmam: other mammals', value: gbmam}
+                - {label: 'gbrod: rodents', value: gbrod}
+                - {label: 'gbvrt: other vertebrates', value: gbvrt}
+                - {label: 'gbinv: invertebrates', value: gbinv}
+                - {label: 'gbpln: plants (including yeast)', value: gbpln}
+                - {label: 'gbvrl: virus', value: gbvrl}
+                - {label: 'gbphg: phages', value: gbphg}
+                - {label: 'gbest: EST (Expressed Sequence Tags)', value: gbest}
+                - {label: 'gbsts: STS (Sequence Tagged sites)', value: gbsts}
+                - {label: 'gbsyn: synthetic', value: gbsyn}
+                - {label: 'gbpat: patented', value: gbpat}
+                - {label: 'gbuna: unannotated', value: gbuna}
+                - {label: 'gbgss: Genome Survey Sequences', value: gbgss}
+                - {label: 'gbhtg: GS (high throughput Genomic Sequencing)', value: gbhtg}
+                - {label: 'imgt: IMGT/LIGM-DB, ImMunoGeneTics sequence database',
+                    value: imgt}
+                - {label: 'borrelia: Borrelia burgdorferi complete genome', value: borrelia}
+                - {label: 'ecoli: Escherichia Coli complete genome', value: ecoli}
+                - {label: 'genitalium: Mycoplasma Genitalium complete genome', value: genitalium}
+                - {label: 'pneumoniae: Mycoplasma Pneumoniae complete genome', value: pneumoniae}
+                - {label: 'hpylori: Helicobacter Pylori complete genome', value: hpylori}
+                - {label: 'bsubtilis: Bacillus Subtilis complete genome', value: bsubtilis}
+                - {label: 'tuberculosis: Mycobacterium tuberculosis complete genome',
+                    value: tuberculosis}
+                - {label: 'ypestis: Yersinia pestis unfinished genome', value: ypestis}
+                - {label: 'yeast: Yeast chromosomes', value: yeast}
+                - {label: 'pfalciparum: Plasmodium falciparum 3D7', value: pfalciparum}
+        - !mobyle/inputprogramparameter
+            prompt: User library
+            format: ("", " "+str(value) )[value is not None]
+            simple: true
+            argpos: 100
+            mandatory: true
+            name: userdb
+            precond: {aa_or_nuc_db: user}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Reformat PSA result file to Fasta multiple sequence alignment
+                file?
+            format: ( ""  , " | psa2msa - " )[ value ]
+            argpos: 110
+            name: psa2msa
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The value should be the numerical identifier  of  a  cut-off
+                level  defined in the profile.  The raw or normalized score of this
+                level will then be used to include profile to sequence matches  in  the  output
+                list. If the specified level does not exist in the profile, the next
+                higher (if cut_off is negative) or next lower (if cut_off is positive)
+                level defined is used instead.
+            prompt: Cut-off level to be used for match selection (-C)
+            format: ("" , " -C " + str(value))[ value is not None and value != vdef]
+            name: cutoff
+            precond: {'#not': optimal}
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: The value specifies which normalization mode defined in the profile
+                should be used to compute the normalized scores for profile  to  sequence
+                matches. This option will override the profile's PRIORITY parameter.
+                If  the  specified  normalization  mode does not exist in the profile,
+                an error message will be output to standard error and the search  is  interrupted.
+            prompt: Normalization mode to use for score (-M)
+            format: ("" , " -M " + str(value))[value is not None]
+            name: mode
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Search the complementary strands of DNA sequences as well (-b)
+            format: ("" , " -b")[ value ]
+            name: compl
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use raw scores rather than normalized scores for match selection.
+                Normalized scores will not be listed in the output. (-r)
+            format: ("" , " -r")[ value ]
+            name: raw_score
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Forces DISJOINT=UNIQUE (-u)
+            format: ("" , " -u")[ value ]
+            name: unique
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option simultaneously forces DISJOINT=UNIQUE.
+            prompt: Report optimal alignment scores for all sequences regardless of
+                the cut-off value (-a)?
+            format: ("" , " -a")[ value ]
+            name: optimal
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If the profile is circular, each match between a sequence and  a  profile
+                can  be  composed  of  a stretch of individual matches of the profile.
+                By default, pfscan reports only the total matched region. When  this  option
+                is  set, detailed information for each individual match will be output
+                as well.
+            prompt: Report individual matches for circular profiles (-m)?
+            format: ("" , " -m")[ value ]
+            name: individual_match
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Indicate the value of the highest cut-off level  exceeded  by  the  match
+                score (-l)?
+            format: ("" , " -l")[ value ]
+            name: value_hightest_cut_off
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The generalized profile format includes a  text  string  field  to
+                specify  a name for a cut-off level. The -L option causes the program
+                to display the first two characters of this text string (usually something
+                like !, ?, ??, etc.) at the beginning of each match description.
+            prompt: Indicate by  character  string of the highest cut-off level  exceeded  by  the  match
+                score (-L)?
+            format: ("" , " -L")[ value ]
+            name: char_hightest_cut_off
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If this option is set, the description of the profile on the
+                header line will be limited in length. If the match information is  longer  than  the
+                output  width specified using option -W, the profile description will
+                not be printed. Else the description will be truncated to fit the
+                -W value.By default, the profile description is not truncated. This
+                option can not be used when option -k is set.
+            prompt: Limit profile description length (-d)?
+            format: ("" , " -d")[ value ]
+            name: Length
+            precond: {'#not': xpsa}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: When this option is set, all output type will use an xpsa style
+                header line.This format uses keyword=value pairs to output  alignment  parameters.  It
+                is useful to transfer information between different sequence alignment
+                tools.
+            prompt: xpsa headers for output (-k)?
+            format: ("" , " -k")[ value ]
+            name: xpsa
+            precond: {'#not': Length}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: List the sequences of the matched regions as well. The output
+                will be a Pearson/Fasta-formatted sequence library. (-s)
+            format: ("" , " -s")[ value ]
+            name: listseq
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: List profile-sequence alignments in pftools PSA format. (-x)
+            format: ("" , " -x")[ value ]
+            name: psa_format
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Display alignments between the profile and the matched sequence
+                regions in a human-friendly format. (-y)
+            format: ("" , " -y")[ value ]
+            name: between
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The latter position will be given as a negative offset from the  end  of  the
+                profile. Thus the range [1,-1] means entire profile.
+            prompt: Indicate  starting  and ending position of the matched profile
+                range. (-z)
+            format: ("" , " -z")[ value ]
+            name: start_end
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The value specifies how many residues will be  output  on  one
+                line when any of the -s, -x or -y options is set.
+            prompt: Set alignment output width (-W)
+            format: ("" , " -W "+str(value))[value is not None and value != vdef]
+            name: width
+            precond:
+                '#or': [listseq, psa_format, between]
+            command: false
+            type: !mobyle/integertype {default: 60}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"pftools.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"pftools.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Bucher P, Karplus K, Moeri N and Hofmann, K. (1996). A flexible
+        motif search technique based on generalized profiles. Comput. Chem. 20:3-24.',
+    url: null}
+env: {}
+source_links: ['http://www.isrec.isb-sib.ch/ftp-server/pftools/']

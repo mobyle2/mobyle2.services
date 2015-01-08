@@ -1,0 +1,38 @@
+!mobyle/program
+name: SequenceFetcher
+version: '1.0'
+title: Sequence Fetcher
+description: Fetch Database Entry
+authors: Hajar Sadrarhami
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: Database, format: '" " + db + " "', simple: true,
+        argpos: 1, mandatory: true, name: db, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Query (Enter accession numbers with a space to separate)
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: query
+        precond:
+            db: {'#ne': None}
+        command: false
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Sequence
+        filenames: '"SequenceFetcher.out"'
+        name: SequenceFetcher_out
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"SequenceFetcher.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: SequenceFetcher
+env: {}

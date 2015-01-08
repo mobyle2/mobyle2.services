@@ -1,0 +1,114 @@
+!mobyle/program
+name: lvb
+version: '2.3'
+title: LVB
+description: Reconstructing Evolution With Parsimony And Simulated Annealing
+authors: D. Barker
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"lvb <lvb.params"'
+        argpos: 0
+        name: lvb
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Alignment File
+        format: '"ln -s " + str(value) + " infile; "'
+        argpos: -1
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1955']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        prompt: Format is INTERLEAVED or SEQUENTIAL
+        format: str(value) + "\n"
+        argpos: 1
+        paramfile: lvb.params
+        name: format
+        command: false
+        hidden: true
+        type: !mobyle/stringtype
+            default: I
+            options:
+            - {label: INTERLEAVED (I), value: I}
+            - {label: SEQUENTIAL (S), value: S}
+    - !mobyle/inputprogramparameter
+        comment: A gap represented by the letter 'O' in the data matrix is always
+            treated as a character state in its own right (fifth state). lvb can treat
+            gaps represented by'-' in either of the following ways:Fifth state '-'
+            is treated as equivalent to 'O'.Unknown '-' is treated as equivalent to
+            '?', i.e., as an ambiguous site that may contain 'A' or 'C' or 'G' or
+            'T' or 'O'.'Fifth state' may give excessive weight to multi-site gaps,
+            since each affected base will be counted as one event.
+        prompt: Treatment of gaps represented by '-'
+        format: str(value) + "\n"
+        argpos: 2
+        paramfile: lvb.params
+        name: gaps_treatment
+        command: false
+        type: !mobyle/stringtype
+            default: U
+            options:
+            - {label: UNKNOWN (U), value: U}
+            - {label: FIFTH STATE (F), value: F}
+    - !mobyle/inputprogramparameter
+        comment: When prompted for the random number seed, enter an integer in the
+            range 0 to 900000000 inclusive. The default value is taken from the system
+            clock and hence will vary from one analysis to the next, changing every
+            second. The default is usually appropriate.
+        prompt: Seed for the random number generator
+        format: ( "\n" , str(value) + "\n" )[ value is not None ]
+        argpos: 3
+        paramfile: lvb.params
+        name: seed
+        command: false
+        type: !mobyle/integertype {}
+    - !mobyle/inputprogramparameter
+        comment: Number of bootstrap replicates required as an integer in the range
+            1 to 1000 inclusive, or 0 for no bootstrapping (this server allows no
+            more than 1000 replicates)
+        prompt: How many bootstrap replicates required (bootstrap)
+        format: str(value) + "\n"
+        argpos: 5
+        paramfile: lvb.params
+        mandatory: true
+        name: bootstrap
+        command: false
+        type: !mobyle/integertype {default: 0}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Tree file
+        filenames: '"outtree"'
+        name: res
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Results files, filenames: '"ini*"',
+        name: other_results}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"lvb.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"lvb.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Barker, D. 2004. LVB: Parsimony and simulated annealing in the
+        search for phylogenetic trees. Bioinformatics, 20, 274-275.', url: null}
+documentation_links: ['http://biology.st-andrews.ac.uk/cegg/lvb.htm']
+homepage_links: ['http://biology.st-andrews.ac.uk/cegg/lvb.htm']
+env: {}
+source_links: ['http://biology.st-andrews.ac.uk/cegg/lvb.htm']

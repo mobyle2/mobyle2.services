@@ -1,0 +1,151 @@
+!mobyle/program
+name: forest2consense
+title: forest2consense
+description: Consensus tree "list processor"
+authors: Eric Deveaud
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: Input is a tree file which contains a series of trees in the Newick
+            standard form
+        prompt: First series of trees in file (intree)
+        format: '" %s " % value'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: infile1
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        comment: Input is a tree file which contains a series of trees in the Newick
+            standard form
+        prompt: Second series of trees in file (intree)
+        format: '" %s " % value'
+        simple: true
+        argpos: 3
+        mandatory: true
+        name: infile2
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparameter
+        comment: the map file contains the mapping between short IDs that may have
+            been used for tree generation and the real entry names
+        prompt: Map file
+        format: '" -m " + str(value)'
+        argpos: 1
+        name: map_file
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/inputprogramparameter
+        prompt: Consensus type
+        paramfile: params
+        name: type
+        command: false
+        type: !mobyle/stringtype {default: MRE}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ( "3\n" , "" )[ value ]
+            argpos: 1
+            paramfile: params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (4)
+            format: ( "4\n" , "" )[ value ]
+            argpos: 1
+            paramfile: params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Outgroup species (O)
+            format: ( "" , "O\n"+ str( value ) +"\n" )[ value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Trees to be treated as rooted (R)
+            format: ( "" , "R\n" )[ value ]
+            argpos: 1
+            paramfile: params
+            name: rooted
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -1
+        paramfile: params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Consense tree files
+        filenames: '"%s-%s-*.outtree" % (infile1,infile2)'
+        argpos: 50
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Consense output files, filenames: '"%s-%s-*.outfile"
+            % (infile1,infile2)', argpos: 40, name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"forest2consense.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"forest2consense.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: forest2consense processes two files containing lists of trees, and, for each
+    of the possible combinations between the a tree of file 1 and a tree of file 2,
+    a consensus tree using PHYLIP's consense package. tree leaves IDs renaming is
+    processed using nw_rename
+operations: ['EDAM_operation:0326']
+topics: ['EDAM_topic:0084']
+command: forest2consense.py
+env: {}

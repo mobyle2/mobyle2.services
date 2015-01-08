@@ -1,0 +1,164 @@
+!mobyle/program
+name: emowse
+title: emowse
+description: Search protein sequences by digest fragment molecular weight
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2976']
+        - !mobyle/inputprogramparameter {prompt: Peptide molecular weight values file,
+            format: '("", " -infile=" + str(value))[value is not None]', simple: true,
+            argpos: 2, mandatory: true, name: infile, command: false}
+        - !mobyle/inputprogramparameter {prompt: Molecular weights data file, format: '("",
+                " -mwdata=" + str(value))[value is not None ]', argpos: 3, name: mwdata,
+            command: false}
+        - !mobyle/inputprogramparameter {prompt: Amino acid frequencies data file,
+            format: '("", " -frequencies=" + str(value))[value is not None ]', argpos: 4,
+            name: frequencies, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Whole sequence molwt
+            format: ("", " -weight=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: weight
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            prompt: Use monoisotopic weights
+            format: ("", " -mono")[ bool(value) ]
+            argpos: 6
+            name: mono
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Enzymes and reagents
+            format: ("", " -enzyme=" + str(value))[value is not None and value!=vdef]
+            argpos: 7
+            name: enzyme
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Trypsin, value: '1'}
+                - {label: Lys-c, value: '2'}
+                - {label: Arg-c, value: '3'}
+                - {label: Asp-n, value: '4'}
+                - {label: V8-bicarb, value: '5'}
+                - {label: V8-phosph, value: '6'}
+                - {label: Chymotrypsin, value: '7'}
+                - {label: Cnbr, value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Allowed whole sequence weight variability (value from 0 to 75)
+            format: ("", " -pcrange=" + str(value))[value is not None and value!=vdef]
+            argpos: 8
+            name: pcrange
+            command: false
+            type: !mobyle/integertype {default: 25}
+            ctrls:
+            -   message: Value greater than or equal to 0 is required
+                test:
+                    value: {'#gte': '0'}
+            -   message: Value less than or equal to 75 is required
+                test:
+                    value: {'#lte': '75'}
+        - !mobyle/inputprogramparameter
+            prompt: Tolerance (value from 0.1 to 1.0)
+            format: ("", " -tolerance=" + str(value))[value is not None and value!=vdef]
+            argpos: 9
+            name: tolerance
+            command: false
+            type: !mobyle/floattype {default: 0.1}
+            ctrls:
+            -   message: Value greater than or equal to 0.1 is required
+                test:
+                    value: {'#gte': '0.1'}
+            -   message: Value less than or equal to 1.0 is required
+                test:
+                    value: {'#lte': '1.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Partials factor (value from 0.1 to 1.0)
+            format: ("", " -partials=" + str(value))[value is not None and value!=vdef]
+            argpos: 10
+            name: partials
+            command: false
+            type: !mobyle/floattype {default: 0.4}
+            ctrls:
+            -   message: Value greater than or equal to 0.1 is required
+                test:
+                    value: {'#gte': '0.1'}
+            -   message: Value less than or equal to 1.0 is required
+                test:
+                    value: {'#lte': '1.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 11
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: emowse.outfile}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 12
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"emowse.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"emowse.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0356']
+topics: ['EDAM_topic:0123', 'EDAM_topic:0141']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/emowse.html', 'http://emboss.sourceforge.net/docs/themes']
+command: emowse
+env: {}

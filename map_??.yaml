@@ -1,0 +1,200 @@
+!mobyle/program
+name: map
+version: ??
+title: Map
+description: Collapses DNA sequences
+authors: Aylor, D.L., Price, E.W., and I. Carbone
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: initiation
+        format: '" -n 1 -W 12 -o std.out -e std.err -N __bsubArgsEnd__ map -"'
+        argpos: 0
+        name: bsubinit
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter {prompt: Multiple sequence alignment file (PHYLIP
+            format), format: '" " + str( value )', simple: true, argpos: 10, mandatory: true,
+        name: infile, command: false}
+    - !mobyle/inputprogramparameter {prompt: Phenotype file (tab-delimited) (Phenotype
+            File), format: '( "" , " -i2 " + str( value ))[ value is not None ]',
+        argpos: 11, name: phenotypein, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: General settings
+        name: general
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Select desired function
+            format: ( "" , ( str( value ) + "m" , str( value ) )[ exclude or show
+                ] )[ value is not None]
+            argpos: 3
+            name: indels
+            command: false
+            type: !mobyle/stringtype
+                default: G
+                options:
+                - {label: Remove indels from alignment, value: G}
+                - {label: Recode indels in alignment, value: g}
+        - !mobyle/inputprogramparameter
+            prompt: Exclude infinite-sites violations
+            format: ( "" ,( "vm" ,"v" )[ show ])[ value ]
+            argpos: 4
+            name: exclude
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Collapse sequences into haplotypes
+            format: ( "" ,"c" )[ value ]
+            argpos: 2
+            name: haplotypes
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show entire sequence (if collapsing sequences into haplotypes)
+            format: ( ( "" ,"s" )[ haplotypes ] ,"" )[ value ]
+            argpos: 1
+            name: show
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'Note: for this option to work properly must exclude infinite
+                sites'
+            prompt: Encode variation as binary (0/1)
+            format: ( "" , " -b" )[ value ]
+            argpos: 13
+            name: binary
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 12
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This file will be INVALID if you select "collapse into haplotypes"Must
+                exclude indels and provide a phenotype file for MDIV infile
+            prompt: Haplotype sequence alignment file name
+            format: ( "" , " -o1 " + str( value))[ value is not None ]
+            name: seq
+            command: false
+            type: !mobyle/stringtype {default: sequences.seq}
+        - !mobyle/inputprogramparameter
+            prompt: Haplotypes assigned to each individual in multiple alignment
+            format: ( "" , " -o2 " + str( value))[ value is not None ]
+            name: hap
+            command: false
+            type: !mobyle/stringtype {default: identity.hap}
+        - !mobyle/inputprogramparameter
+            prompt: Consensus sequence file name
+            format: ( "" , " -o3 " + str( value))[ value is not None ]
+            name: map
+            command: false
+            type: !mobyle/stringtype {default: sequences.map}
+        - !mobyle/inputprogramparameter
+            prompt: Haplotype seqeunce file for compatibility analysis
+            format: ( "" , " -o4 " + str( value))[ value is not None ]
+            name: gtr
+            command: false
+            type: !mobyle/stringtype {default: haplotype.gtr}
+        - !mobyle/inputprogramparameter
+            prompt: Ancestral haplotype seqeunce file for compatibility analysis
+            format: ( "" , " -o5 " + str( value))[ value is not None ]
+            name: anc
+            command: false
+            type: !mobyle/stringtype {default: haplotype.anc}
+        - !mobyle/inputprogramparameter
+            prompt: File for Myers and Griffiths analysis
+            format: ( "" , " -o6 " + str( value))[ value is not None ]
+            name: rec
+            command: false
+            type: !mobyle/stringtype {default: haplotype.rec}
+        - !mobyle/inputprogramparameter
+            prompt: File for Hein analysis
+            format: ( "" , " -o7 " + str( value))[ value is not None ]
+            name: min
+            command: false
+            type: !mobyle/stringtype {default: haplotype.min}
+        - !mobyle/inputprogramparameter
+            prompt: File for Griffiths and Marjoram analysis
+            format: ( "" , " -o8 " + str( value))[ value is not None ]
+            name: recom
+            command: false
+            type: !mobyle/stringtype {default: haplotype.recom}
+        - !mobyle/inputprogramparameter
+            comment: This file will be INVALID if you select "collapse into haplotypes"You
+                must exclude infinite sites violations
+            prompt: Sequence file
+            format: ( "" , " -o9 " + str( value))[ value is not None ]
+            name: fins
+            command: false
+            type: !mobyle/stringtype {default: sequences.hud}
+        - !mobyle/inputprogramparameter
+            comment: This file will be INVALID if you select "collapse into haplotypes"
+            prompt: Sequence file for MIGRATE
+            format: ( "" , " -o0 " + str( value))[ value is not None ]
+            name: mig
+            command: false
+            type: !mobyle/stringtype {default: sequences.mig}
+        - !mobyle/inputprogramparameter
+            prompt: File for Shrub analysis
+            format: ( "" , " -oC " + str( value))[ value is not None ]
+            name: shb
+            command: false
+            type: !mobyle/stringtype {default: haplotype.shb}
+        - !mobyle/inputprogramparameter
+            prompt: Variable sites file
+            format: ( "" , " -oB " + str( value))[ value is not None ]
+            name: pos
+            command: false
+            type: !mobyle/stringtype {default: variable.pos}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {filenames: '"std.out"', name: stdoutfile}
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 12
+        children:
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(seq),
+            name: seqout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(hap),
+            name: hapout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(map),
+            name: mapout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(gtr),
+            name: gtrout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(anc),
+            name: ancout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(rec),
+            name: recout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(min),
+            name: minout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(recom),
+            name: recomout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(fins),
+            name: finsout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(mig),
+            name: migout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(shb),
+            name: shbout}
+        - !mobyle/outputprogramparameter {prompt: Output file, filenames: str(pos),
+            name: posout}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"map.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"map.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'SNAP: Combine and Map modules for multilocus population genetic
+        analysis. (2006) Bioinformatics 22:1399-1401', url: null}
+command: runbsub
+env: {}

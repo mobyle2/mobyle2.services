@@ -1,0 +1,151 @@
+!mobyle/program
+name: genscan
+version: '1.0'
+title: GENSCAN
+description: Gene Identification
+authors: C. Burge
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: DNA Sequence File
+        format: '" " + str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: seq
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparameter
+        comment: Currently available parameter files are:HumanIso.smat for human/vertebrate
+            sequences (also Drosophila)Arabidopsis.smat for Arabidopsis thaliana sequencesMaize.smat
+            for Zea mays sequences
+        prompt: Organism
+        format: '" "+str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: organism
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose an organism, value: 'null'}
+            - {label: Arabidopsis, value: Arabidopsis.smat}
+            - {label: HumanIso, value: HumanIso.smat}
+            - {label: Maize, value: Maize.smat}
+    - !mobyle/inputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Add some extra explanatory information to the text output. This
+                information may be helpful the first few times you run the program
+                but will soon become tiresome (that's why its optional).
+            prompt: Verbose output (-v)
+            format: ("" , " -v")[ value ]
+            argpos: 3
+            name: verbose
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print predicted coding sequences (-cds)
+            format: ("" , " -cds")[ value ]
+            argpos: 3
+            name: cds
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'The default output of the program is the optimal ''parse'' of
+                the sequence, i.e. the highest probability gene structure(s) which
+                is present: the exons in this optimal parse are referred to as ''optimal
+                exons'' and are always printed out by GENSCAN.Suboptimal exons, on
+                the other hand, are defined as potential exons which have probability
+                above a certian threshold but which are not contained in the optimal
+                parse of the sequence.Suboptimal exons have a variety of potential
+                uses.First, suboptimal exons sometimes correspond to real exons which
+                were missed for whatever reason by the optimal parse of the sequence.Second,
+                regions of a prediction which contain multiple overlapping and/or
+                incompatible optimal and suboptimal exons may in some cases indicate
+                alternatively spliced regions of a gene (Burge & Karlin, in preparation).'
+            prompt: Identify suboptimal exons (-subopt)?
+            format: ("" , " -subopt " + str( cutoff ))[ value and cutoff is not None]
+            argpos: 3
+            name: subopt
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The cutoff is the probability cutoff used to determine which
+                potential exons qualify as suboptimal exons.This argument should be
+                a number between 0.01 and 0.99.For most applications, a cutoff value
+                of about 0.10 is recommended.Setting the value much lower than 0.10
+                will often lead to an explosion in the number of suboptimal exons,
+                most of which will probably not be useful.On the other hand, if the
+                value is set much higher than 0.10, then potentially interesting suboptimal
+                exons may be missed.
+            prompt: Cutoff value for suboptimal exons
+            argpos: 3
+            mandatory: true
+            name: cutoff
+            precond: subopt
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            prompt: Create Postscript output (-ps)
+            format: ( "" , (" -ps " + str( psfname ), " -ps " + str( psfname ) + "
+                " + str( scale ))[scale is not None] )[ value ]
+            argpos: 3
+            name: ps
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Scale for PostScript output
+            name: scale
+            precond: ps
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Filename for PostScript output
+            mandatory: true
+            name: psfname
+            precond: ps
+            command: false
+            type: !mobyle/stringtype {default: genscan.ps}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: output
+        argpos: 3
+        children:
+        - !mobyle/outputprogramparameter {prompt: PostScript output, filenames: str(
+                psfname ), name: psFile, precond: ps}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"genscan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"genscan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0109']
+references:
+- {doi: null, label: 'Burge, C., Karlin, S. (1997) Prediction of complete gene structures
+        in human genomic DNA. J. Mol. Biol. 268, 78-94.', url: null}
+- {doi: null, label: 'Burge, C., Karlin, S. (1997) Gene structure, exon prediction,
+        and alternative splicing. (in preparation).', url: null}
+- {doi: null, label: 'Burge, C. (1997) Identification of genes in human genomic DNA.
+        PhD thesis, Stanford University, Stanford, CA.', url: null}
+- {doi: null, label: 'Burset, M., Guigo, R. (1996) Evaluation of gene structure prediction
+        programs. Genomics 34, 353-367.', url: null}
+homepage_links: ['http://genes.mit.edu/GENSCANinfo.html']
+command: genscan
+env: {}

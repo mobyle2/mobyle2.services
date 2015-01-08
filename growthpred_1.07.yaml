@@ -1,0 +1,177 @@
+!mobyle/program
+name: growthpred
+version: '1.07'
+title: growthpred
+description: Sequence-based Prediction of Minimum Generation Times for Bacteria and
+    Archaea
+authors: S. Vieira-Silva, E. Rocha
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: Use a set of example files (E. coli K12) to run the program.The expected
+            results depending on the choosen option and the example files are shown
+            in the program help pages (end of the form).
+        prompt: Run with example data (-e)
+        format: ( "" , " -e " )[value]
+        argpos: 4
+        name: example
+        command: false
+        type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set of genes under purifying selection for codon usage.
+            prompt: Enter sequences of highly expressed genes (-f)
+            format: ( "" , " -f " + str( value ) + " " )[value is not None]
+            mandatory: true
+            name: hsequence
+            precond:
+                '#and':
+                - {'#not': example}
+                - {'#not': b}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter
+            prompt: Retrieve ribosomal protein genes by blast (-b)
+            format: ( "" , " -b")[value]
+            name: b
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Set of control genes with near random codon usage.
+            prompt: Enter sequences of non-highly expressed genes/Complete genome
+                (-g)
+            format: ( "" , " -g " + str( value ) + " " )[value is not None]
+            mandatory: true
+            name: nhsequence
+            precond: {'#not': example}
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:2200']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter
+            comment: You need to precise to the program if your sequences are metagenome
+                or mixed organisms sequences.
+            prompt: Mixed organisms sequences
+            format: ( "" , " -m" )[value]
+            name: typeg
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Remove from sequences
+        name: codon_remove
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: First codon (-s)
+            format: ( " -s " , "" )[value!=vdef]
+            name: fc
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Last codon (-S)
+            format: ( " -S " , "" )[value]
+            name: lc
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Choose genetic code (-c)
+            format: '" -c " + str( value )'
+            name: geneticcode
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: Universal, value: '0'}
+                - {label: Yeast Mitochondrial, value: '1'}
+                - {label: Vertebrate Mitochondrial, value: '2'}
+                - {label: Mold/Protozoan/Mycoplasma/Spiroplasma, value: '3'}
+                - {label: Invertebrate Mitochondrial, value: '4'}
+                - {label: Candida cylindracea, value: '5'}
+                - {label: Ciliate, value: '6'}
+                - {label: Euplotes, value: '7'}
+                - {label: Echinoderm/Flatworm Mitochondrial, value: '8'}
+        - !mobyle/inputprogramparameter
+            prompt: Recover file with ribosomal protein genes retrieved by blast or
+                given as input (-r)
+            format: ( "" , " -r")[value]
+            name: rfiles
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Recover file with codon usage bias indexes for each gene (-i)
+            format: ( "" , " -i")[value ]
+            name: ifiles
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Estimate optimal growth temperature (-t)
+            format: ( "" , " -t")[value ]
+            name: autotemp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Enter optimal growth temperature (Celsius) (-T)
+            format: ( "" , " -T " + str( value ) )[value is not None and value !=
+                vdef]
+            name: temp
+            precond: {'#not': autotemp}
+            command: false
+            type: !mobyle/integertype {default: 36}
+        - !mobyle/inputprogramparameter
+            prompt: Outfile name (-o)
+            format: ( "" , " -o " + str(value))[ value is not None ]
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Prediction results, filenames: '"*.results"',
+        name: res}
+    - !mobyle/outputprogramparameter {prompt: Prediction error(s), filenames: '"*.errors"',
+        name: err}
+    - !mobyle/outputprogramparameter {prompt: Codon usage bias indexes for each gene,
+        filenames: '"*.cub"', name: cubs, precond: ifiles}
+    - !mobyle/outputprogramparameter {prompt: Ribosomal protein genes retrieved by
+            blast, filenames: '"*.ribs"', name: ribs, precond: rfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"growthpred.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"growthpred.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "This application predicts the minimum generation time for a bacterial or\
+    \ archaeal organism based on  its codon usage bias intensity (CUB). \n    \tThe\
+    \ CUB index is calculated given two input sets of sequences: 1) highly expressed\
+    \ genes 2) other genes. \n    \tThe application runs 1000 bootstraps and outputs\
+    \ the average and the standard deviation of the predictions."
+operations: ['EDAM_operation:0286']
+topics: ['EDAM_topic:3053']
+references:
+- {doi: null, label: '<html:a xmlns:html="http://www.w3.org/1999/xhtml" href="ftp://ftp.pasteur.fr/pub/gensoft/projects/growthpred/"
+        target="ftp">The program sources and Example files are downloadable here.</html:a>',
+    url: null}
+- {doi: null, label: 'Vieira-Silva S,  Rocha EPC, 2010 The Systemic Imprint of Growth
+        and Its Uses in Ecological (Meta)Genomics. PLoS Genet 6(1): e1000808. doi:10.1371/journal.pgen.1000808',
+    url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/growthpred/growthpred.pdf']
+command: growthpred
+env: {}
+source_links: ['ftp://ftp.pasteur.fr/pub/GenSoft/projects/growthpred/']

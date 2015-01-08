@@ -1,0 +1,237 @@
+!mobyle/program
+name: rnaalifold
+title: RNAalifold
+description: Calculate secondary structures for a set of aligned RNAs
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: Aligned RNA Sequences File, format: '"
+            "+str( value )', simple: true, argpos: 1000, mandatory: true, name: seq,
+        command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set  the  weight  of  the  covariance  term in the energy function
+                to factor. Default is 1.
+            prompt: Weight of the covariance (-cv)
+            format: ( "" , " -cv " + str(value) )[ value is not None and value !=
+                vdef]
+            name: covariance
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: Set the penalty for non-compatible sequences in the covariance  term  of  the
+                energy function to factor. Default is 1.
+            prompt: Penalty for non-compatible sequences in the covariance (-nc)
+            format: ( "" , " -nc " + str(value) )[ value is not None and value !=
+                vdef]
+            name: non_compatible
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: Score pairs with endgaps same as gap-gap pairs.
+            prompt: Score pairs with endgaps (-E)
+            format: ( "" , " -E" )[ value ]
+            name: endgaps
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Calculate  the  partition function and base pairing probability
+                matrix in addition to the mfe structure. Default is calculation  of  mfe  structure
+                only.
+            prompt: Calculate the partition function and base pairing probability
+                matrix (-p)
+            format: ( "" , " -p" )[ value ]
+            name: partition
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temp C. (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/integertype {default: 37}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "How to treat 'dangling end' energies for bases adjacent to helices\
+                \ in free ends and multiloops: Normally only unpaired bases can participate\
+                \ in at most one dangling end.\n             With -d2 this check is\
+                \ ignored, this is the default for partition function folding (-p).\
+                \ \n             -d ignores dangling ends altogether. Note that by\
+                \ default pf and mfe folding treat dangling ends differently, \n \
+                \            use -d2 (or -d) in addition to -p to ensure that both\
+                \ algorithms use the same energy model. \n             The -d2 options\
+                \ is available for RNAfold, RNAeval, and RNAinverse only."
+            prompt: How to treat dangling end energies for bases adjacent to helices
+                in free ends and multiloops (-d)
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding (-d2)', value: -d2}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Assume circular (instead of linear) RNA molecules.
+            prompt: Circular RNA molecules (-circ)?
+            format: ( "" , " -circ" )[ value ]
+            name: circ
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Produce structures without lonely pairs (helices of length 1).  For  partition  function  folding  this  only
+                disallows pairs that can only occur isolated. Other pairs may still
+                occasionally occur as helices  of  length 1.
+            prompt: Avoid structures without lonely pairs (helices of length 1) (-noLP)
+            format: ( "" , " -noLP" )[ value ]
+            name: noLP
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Allow other pairs in addition to the usual AU,GC,and GU pairs.
+                pairs is a comma seperated list of additionally allowed pairs. If
+                a the first character is a '-' then AB will imply that AB and BA are
+                allowed pairs. e.g. RNAfold -nsp -GA will allow GA and AG pairs. Nonstandard
+                pairs are given 0 stacking energy.
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: 'Read energy parameters from paramfile,
+                instead of using the default parameter set. A sample parameterfile
+                should accompany your distribution. See the RNAlib documentation for
+                details on the file format.', prompt: Energy parameter file (-P),
+            format: '( "" , " -P " + str(value) )[ value is not None ]', name: parameter,
+            command: false}
+        - !mobyle/inputprogramparameter {comment: "use specified Ribosum Matrix instead\
+                \ of normal energy model. Matrices to use\n              should be\
+                \ 6x6 matrices, the order of the terms is AU, CG, GC, GU, UA, UG.",
+            prompt: use specified Ribosum Matrix instead of normal energy model.,
+            format: '( "" , " -P " + str(value) )[ value is not None ]', name: ribosum_matrix,
+            command: false}
+        - !mobyle/inputprogramparameter
+            comment: "use  Ribosum  scoring  matrix. The matrix is chosen according\
+                \ to the minimal\n              and maximal pairwise identities of\
+                \ the sequences in the  file.   When  using\n              Ribosum\
+                \  scores,  best  benchmark results were achieved with options -cv\
+                \ 0.6\n              -nc 0.5 (see above)."
+            prompt: use  Ribosum  scoring  matrix.
+            format: ( "" , " -r ")[ value ]
+            name: use_ribosum_matrix
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter {comment: 'The programm reads first the sequence
+                then the a string containg constraints on the structure encoded with
+                the symbols:| (the corresponding base has to be paired x (the base
+                is unpaired)< (base i is paired with a base j>i)> (base i is paired
+                with a base j<i)matching brackets ( ) (base i pairs base j)Pf folding
+                ignores constraints of type ''|'' ''<'' and ''>'', but disallow all
+                pairs conflicting with a constraint of type ''x'' or ''( )''. This
+                is usually sufficient to enforce the constraint.', prompt: Calculate
+                structures subject to constraints (-C), format: '( "" , " -C <" +
+                str( value) )[ value is not None ]', name: constraints, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Print most informative sequence instead of simple consensus (-mis)?
+            format: ( "" , " -mis" )[ value ]
+            name: informative
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Produce a colored version of the consensus strcture plot "alirna.ps"
+                (default black and white).
+            prompt: Produce a colored version of the consensus strcture plot (-color)?
+            format: ( "" , " -color" )[ value ]
+            name: color
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Produce a colored and structure annotated alignment in PostScript  format  in
+                the file "aln.ps".
+            prompt: Produce a colored and structure annotated alignment in PostScript
+                format (-aln) ?
+            format: ( "" , " -aln" )[ value ]
+            name: aln
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Postscript file, filenames: '"*.ps"',
+        name: psfiles}
+    - !mobyle/outputprogramparameter {comment: "The  file  \"alifold.out\"  will \
+            \ contain a list of likely pairs sorted by\n       credibility, suitable\
+            \ for viewing  with \"AliDot.pl\"", prompt: list of likely pairs, filenames: '"alifold.out"',
+        name: alifold_out, precond: partition}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnaalifold.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnaalifold.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "RNAalifold reads aligned RNA sequences from file and  calculates \n    \
+    \    their minimum free energy (mfe) structure, partition function (pf) and base\
+    \ pairing probability matrix. \n        Currently, the input alignment  has  to\
+    \  be  in  CLUSTAL  format.  \n        It returns  the  mfe  structure in bracket\
+    \ notation, its energy, \n        the free energy of the thermodynamic ensemble\
+    \ and the frequency of the mfe structure \n        in  the  ensemble  to outfile.\
+    \  It  also  produces  Postscript files with plots of the resulting \n       \
+    \ secondary structure graph (\"alirna.ps\") and a \"dot plot\" of the  base  pairing\
+    \  matrix  (\"alidot.ps\"). \n        The file \"alifold.out\" will contain a\
+    \ list of likely pairs sorted by credibility.CAVEATS: Since gaps are not removed\
+    \ for the evaluation of energies, \n        it may be of advantage to remove any\
+    \ columns with more than, say, \n        75% gaps from the alignment before folding\
+    \ with RNAalifold.Sequences are not weighted. If possible, do not mix very similar\
+    \ and dissimilar sequences. \n\t\tDuplicate sequences, for example, can distort\
+    \ the prediction."
+operations: ['EDAM_operation:0278']
+topics: ['EDAM_topic:0697']
+references:
+- {doi: null, label: 'D.H. Mathews, J. Sabina, M. Zuker and H. Turner "Expanded Sequence
+        Dependence of Thermodynamic Parameters Provides Robust Prediction of RNA Secondary
+        Structure" JMB, 288, pp 911-940, 1999', url: null}
+- {doi: null, label: 'vo L. Hofacker, Martin Fekete, and Peter F. Stadler "Secondary
+        Structure Prediction for Aligned RNA Sequences" J.Mol.Biol. 319: 1059-1066
+        (2002).', url: null}
+documentation_links: ['http://www.tbi.univie.ac.at/RNA/RNAalifold.html']
+command: RNAalifold
+env: {}

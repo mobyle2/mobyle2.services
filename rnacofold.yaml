@@ -1,0 +1,242 @@
+!mobyle/program
+name: rnacofold
+title: RNAcofold
+description: Calculate secondary structures of two RNAs with dimerization
+authors: Ivo L Hofacker, Peter F Stadler, Stephan Bernhart
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {comment: "Each line of file corresponds to one\
+            \ sequence, \n        except for lines starting with \">\" which contain\
+            \ the name of the next sequence. \n        To compute the hybrid structure\
+            \ of two molecules, \n        the two sequences must be concatenated using\
+            \ the & character as separator.", prompt: RNA Sequence File, format: '"
+            < " + str(value)', simple: true, argpos: 1000, mandatory: true, name: seq,
+        command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Control options
+        name: control
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Compute the partition function and free energies not only of\
+                \ the hetero-dimer\n             consisting of the two input sequences\
+                \ (the \"AB dimer\"), but also of the homodimers  AA  and  BB\n  \
+                \            as well as A and B monomers.  The output will contain\
+                \ the free energies for each of these species,\n              as well\
+                \ as 5  dot  plots  containing the  conditional pair probabilities,\
+                \ called ABname5.ps,\n              AAname5.ps and so on. For later\
+                \ use, these dot plot files also  contain  the  free  energy  of\n\
+                \              the ensemble as a comment. Using -a automatically toggles\
+                \ the -p option."
+            prompt: Compute the partition function and free energies (-a)
+            format: ( "" , " -a" )[ value ]
+            name: partition_free
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "In addition to everything listed under the -a option, \n   \
+                \         read in initial monomer concentrations and compute the expected\
+                \ equilibrium \n            concentrations of  the  5 possible species\
+                \ (AB, AA, BB, A, B). \n            Start concentrations are read\
+                \ from stdin (unless the -f option is used) in\n            [mol/l],\
+                \  equilibrium  concentrations  are given  realtive  to the sum of\
+                \ \n            the two inputs. An arbitrary number of initial concentrations\
+                \ can be \n            specified (one pair of concentrations per line)."
+            prompt: Compute the expected equilibrium concentrations of  AB, AA, BB,
+                A, B. (-c)
+            format: ( "" , " -c" )[ value ]
+            name: equilibrium
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Calculate the partition function and base pairing probability\n\
+                \             matrix in addition to the mfe structure. Default is\
+                \ calculation  of  mfe  \n             structure only. Prints a coarse\
+                \ representation of the pair probabilities \n             in form\
+                \ of a pseudo bracket notation, the ensemble free energy, the frequency\n\
+                \             of the mfe  structure,  and  the  structural  diversity.\
+                \  \n             See the description of pf_fold() and mean_bp_dist()\
+                \ in the RNAlib documentation \n             for details. Note that\
+                \ unless you also specify -d2 or -d0, the partition function\n   \
+                \          and mfe calculations will use a slightly different energy\
+                \ model. \n             See the dis- cussion of dangling end options\
+                \ below."
+            prompt: Calculate the partition function and base pairing probability
+                matrix (-p)
+            format: ( "" , " -p" )[ value ]
+            name: partition
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Calculate the partition function but not the pair probabilities,\
+                \ \n            saving about 50% in runtime. Prints the ensemble free\
+                \ energy -kT ln(Z)."
+            prompt: Calculate the pf without pairing matrix (-p0)
+            format: ( "" , " -p0" )[ value ]
+            name: pf
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Rescale energy parameters to a temperature of temp C. (-T)
+            format: ( "" , " -T " + str(value) )[ value is not None and value != vdef]
+            name: temperature
+            command: false
+            type: !mobyle/floattype {default: 37.0}
+        - !mobyle/inputprogramparameter
+            prompt: Do not include special stabilizing energies for certain tetraloops
+                (-4)
+            format: ( "" , " -4" )[ value ]
+            name: tetraloops
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: 'How to treat ''dangling end'' energies for bases adjacent to
+                helices in free ends and multiloops: Normally only unpaired bases
+                can participate in at most one dangling end. With -d2 this check is
+                ignored, this is the default for partition function folding (-p).
+                -d ignores dangling ends altogether. Note that by default pf and mfe
+                folding treat dangling ends differently, use -d2 (or -d) in addition
+                to -p to ensure that both algorithms use the same energy model. The
+                -d2 options is available for RNAfold, RNAeval, and RNAinverse only.'
+            prompt: "How to treat dangling end energies for bases adjacent to helices\
+                \ in free ends \n          and multiloops (-d)"
+            format: ( "" , " " + str(value) )[ value is not None and value != vdef]
+            name: dangling
+            command: false
+            type: !mobyle/stringtype
+                default: -d1
+                options:
+                - {label: Only unpaired bases can participate in at most one dangling
+                        end (-d1), value: -d1}
+                - {label: Ignores dangling ends altogether (-d), value: -d}
+                - {label: 'The check is ignored, this is the default for partition
+                        function folding. (-d2)', value: -d2}
+        - !mobyle/inputprogramparameter
+            comment: "In the calculation of the pf use scale*mfe as an estimate for\
+                \ the ensemble \n            free energy (used to avoid overflows).\
+                \ The default is 1.07, usefull values are 1.0 to 1.2. \n         \
+                \   Occasionally needed for long sequences."
+            prompt: Use scale*mfe as an estimate for the free energy (-S)
+            format: ( "" , " -S " + str(value) )[ value is not None ]
+            name: scale
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input parameters
+        name: input
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The programm reads first the sequence then the a string containg
+                constraints on the structure encoded with the symbols:| (the corresponding
+                base has to be paired x (the base is unpaired)< (base i is paired
+                with a base j>i)> (base i is paired with a base j<i)matching brackets
+                ( ) (base i pairs base j)Pf folding ignores constraints of type '|'
+                '<' and '>', but disallow all pairs conflicting with a constraint
+                of type 'x' or '( )'. This is usually sufficient to enforce the constraint.
+            prompt: Calculate structures subject to constraints (-C)
+            format: ( "" , " -C" )[ value ]
+            name: constraints
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Produce structures without lonely pairs (helices of length 1).\
+                \  \n            For partition function folding this only disallows\
+                \ pairs that can only occur isolated. \n            Other pairs may\
+                \ still occasionally occur as helices of length 1."
+            prompt: Avoid lonely pairs (helices of length 1) (-noLP)
+            format: ( "" , " -noLP" )[ value ]
+            name: noLP
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs (-noGU)
+            format: ( "" , " -noGU" )[ value ]
+            name: noGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not allow GU pairs at the end of helices (-noCloseGU)
+            format: ( "" , " -noCloseGU" )[ value ]
+            name: noCloseGU
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Allow other pairs in addition to the usual AU,GC,and GU pairs.\
+                \ \n            pairs is a comma seperated list of additionally allowed\
+                \ pairs. \n            If a the first character is a '-' then AB will\
+                \ imply that AB and BA are allowed \n            pairs. e.g. RNAfold\
+                \ -nsp -GA will allow GA and AG pairs. \n            Nonstandard pairs\
+                \ are given 0 stacking energy."
+            prompt: Non standard pairs (comma seperated list) (-nsp)
+            format: ( ""  , " -nsp " + str(value) )[ value is not None ]
+            name: nsp
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter {comment: '<html:p xmlns:html="http://www.w3.org/1999/xhtml">Read
+                energy parameters from paramfile, instead of using the default parameter
+                set.<html:a href="http://www.tbi.univie.ac.at/~ivo/RNA/RNAlib/Param-Files.html"
+                target="ParamFile">( documentation for details on the file format.)</html:a></html:p>',
+            prompt: Energy parameter file (-P), format: '( "" , " -P " + str(value)
+                )[ value is not None ]', name: parameter, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Do not produce postscript drawing of the mfe structure.
+            format: ( "" , " -noPS ")[ value ]
+            name: no_ps
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output options
+        name: output_options
+        children:
+        - !mobyle/outputprogramparameter {prompt: Poscript output file, filenames: '"*.ps"',
+            name: psfiles}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"rnacofold.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"rnacofold.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "RNAcofold works much like RNAfold, but allows to specify two RNA sequences\
+    \ wich  are then  allowed to  form  a dimer structure. \n        RNA sequences\
+    \ are read from infile in the usual format, i.e. each line of file corresponds\
+    \ to one sequence,\n        except for  lines starting  with  \">\"  which  contain\
+    \  the  name of the next sequence. \n        To compute the hybrid structure of\
+    \ two molecules, the two sequences must be concatenated using  the & character\
+    \ as separator.\n        RNAcofold can compute minimum free energy (mfe) structures,\
+    \ as well as partition function (pf) and base pairing probability matrix (using\
+    \ the -p switch).Since dimer formation is concentration dependent, RNAcofold can\
+    \ be used to compute equilibrium concentrations for all five  monomer  and  (homo/hetero)-dimer\
+    \  species,\n         given input concentrations for the monomers.Output  consists\
+    \ of the mfe structure in bracket notation as well as PostScript structure plots\
+    \ and \"dot plot\" files containing the pair probabilities,\n        see the RNAfold\
+    \ man page for details. In the dot plots a cross marks the chain break between\
+    \ the two concatenated sequences."
+operations: ['EDAM_operation:0278']
+topics: ['EDAM_topic:0173']
+references:
+- {doi: null, label: 'I.L. Hofacker, W. Fontana, P.F. Stadler, S. Bonhoeffer, M. Tacker,
+        P. Schuster (1994) Fast Folding and Comparison of RNA Secondary Structures.
+        Monatshefte f. Chemie 125: 167-188', url: null}
+- {doi: null, label: 'S.H.Bernhart, Ch. Flamm, P.F. Stadler, I.L. Hofacker Partition
+        Function and Base Pairing Probabilities of RNA Heterodimers Algorithms Mol.
+        Biol. (2006)', url: null}
+- {doi: null, label: 'D.H. Mathews, J. Sabina, M. Zuker and H. Turner "Expanded Sequence
+        Dependence of Thermodynamic Parameters Provides Robust Prediction of RNA Secondary
+        Structure" JMB, 288, pp 911-940, 1999', url: null}
+documentation_links: ['http://www.tbi.univie.ac.at/RNA/RNAcofold.html']
+command: RNAcofold
+env: {}

@@ -1,0 +1,472 @@
+!mobyle/program
+name: trnascan
+version: '1.23'
+title: tRNAscan-SE
+description: Detection of transfer RNA genes
+authors: T. Lowe, S. Eddy
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Sequence File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: sequence
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Search Mode options
+        name: search_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This parameter loosens the search parameters for EufindtRNA to
+                improve detection of prokaryotic tRNAs. Use this option when scanning
+                prokaryotic sequences or both eukaryotic and prokaryotic sequences
+                in the same sequence file. This option also disables pseudogene checking
+                automatically since criteria for pseudogene checking were developed
+                for eukaryotic pseudogenes.Use of this mode with prokaryotic sequences
+                will also improve bounds prediction of the 3' end (the terminal CCA
+                triplet).
+            prompt: Improve detection of prokaryotic tRNAs (-P)
+            format: ("" , " -P")[ value ]
+            simple: true
+            name: prokaryotic
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option selects an archaeal-specific covariance model for
+                tRNA analysis, as well as slightly loosening the EufindtRNA search
+                cutoffs.
+            prompt: Select archeal-specific covariance model (-A)
+            format: ( "" , " -A" )[ value ]
+            simple: true
+            name: archeal
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This parameter bypasses the fast first-pass scanners that are
+                poor at detecting organellar tRNAs and runs Cove analysis only. Since
+                true organellar tRNAs have been found to have Cove scores between
+                15 and 20 bits, the search cutoff is lowered from 20 to 15 bits. Also,
+                pseudogene checking is disabled since it is only applicable to eukaryotic
+                cytoplasmic tRNA pseudogenes. Since Cove-only mode is used, searches
+                will be very slow (see -C option below) relative to the default mode.
+            prompt: Bypasses the fast first-pass scanners that are poor at detecting
+                organellar tRNAs (-O)
+            format: ("" , " -O")[ value ]
+            name: organellar
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option selects the general tRNA covariance model that was
+                trained on tRNAs from all three phylogenetic domains (archaea, bacteria,
+                & eukarya). This mode can be used when analyzing a mixed collection
+                of sequences from more than one phylogenetic domain, with only slight
+                loss of sensitivity and selectivity.The original publication describing
+                this program and tRNAscan-SE version 1.0 used this general tRNA model
+                exclusively.  If you wish to compare scores to those found in the
+                paper or scans using v1.0, use this option.  Use of this option is
+                compatible with all other search mode options described in this section.
+            prompt: General covariance model trained on all three phylogenetic domains
+                (-G)
+            format: ( "" , " -G" )[ value ]
+            name: general
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Directs tRNAscan-SE to analyze sequences using Cove analysis
+                only. This option allows a slightly more sensitive search than the
+                default tRNAscan + EufindtRNA -> Cove mode, but is much slower (by
+                approx. 250 to 3,000 fold). Output format and other program defaults
+                are otherwise identical to the normal analysis.
+            prompt: Analyze sequences using Cove only (-C)
+            format: ("" , " -C")[ value ]
+            name: cove_only
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Since tRNA pseudogenes often have one very low component (good
+                secondary structure but poor primary sequence similarity to the tRNA
+                model, or vice versa), this information may be useful in deciding
+                whether a low-scoring tRNA is likely to be a pseudogene.  The heuristic
+                pseudogene detection filter uses this information to flag possible
+                pseudogenes -- use this option to see why a hit is marked as a possible
+                pseudogene.  The user may wish to examine score breakdowns from known
+                tRNAs in the organism of interest to get a frame of reference.
+            prompt: Show both primary and secondary structure components to covariance
+                model bit score (-H)
+            format: ( "" , " -H" )[ value ]
+            name: breakdown
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This will slightly speed the program and may be necessary for
+                non-eukaryotic sequences that are flagged as possible pseudogenes
+                but are known to be functional tRNAs.
+            prompt: Disable pseudogene checking (-D)
+            format: ("" , " -D")[ value ]
+            name: disable_checking
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Special options
+        name: special_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Directs tRNAscan-SE to use only tRNAscan to analyze sequences.
+                This mode will default to using 'strict' parameters with tRNAscan
+                analysis (similar to tRNAscan version 1.3 operation). This mode of
+                operation is faster (3-5 times faster than default mode analysis),
+                but will result in approximately 0.2 to 0.6 false positive tRNAs per
+                Mbp, decreased sensitivity, and less reliable prediction of anticodons,
+                tRNA isotype, and introns.
+            prompt: Use tRNAscan only to analyze sequences (-T)
+            format: ("" , " -T")[ value ]
+            name: trnascan_only
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Since Cove is not being used as a secondary filter to remove
+                false positives, this run mode defaults to 'Normal' parameters which
+                more closely approximates the sensitivity and selectivity of the original
+                algorithm describe by Pavesi and colleagues (see the option -e for
+                a description of the various run modes).
+            prompt: Use EufindtRNA only to search for tRNAs (-E)
+            format: ("" , " -E")[ value ]
+            name: eufindtrna_only
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Relaxed parameters may give very slightly increased search sensitivity,
+                but increase search time by 20-40 fold.
+            prompt: Strict or relaxed tRNAscan mode (-t)
+            format: ("" , " -t "+ str(value))[ value is not None and value != vdef]
+            name: trnascan_mode
+            command: false
+            type: !mobyle/stringtype
+                default: S
+                options:
+                - {label: Strict (S), value: S}
+                - {label: Relaxed (R), value: R}
+        - !mobyle/inputprogramparameter
+            comment: Explicitly set EufindtRNA params, where <mode>= R, N, or S (relaxed,
+                normal, or strict). The 'relaxed' mode is used for EufindtRNA when
+                using tRNAscan-SE in default mode. With relaxed parameters, tRNAs
+                that lack pol III poly-T terminators are not penalized, increasing
+                search sensitivity, but decreasing selectivity. When Cove analysis
+                is being used as a secondary filter for false positives (as in tRNAscan-SE's
+                default mode), overall selectivity is not decreased.Using 'normal'
+                parameters with EufindtRNA does incorporate a log odds score for the
+                distance between the B box and the first poly-T terminator, but does
+                not disqualify tRNAs that do not have a terminator signal within 60
+                nucleotides. This mode is used by default when Cove analysis is not
+                being used as a secondary false positive filter.Using 'strict' parameters
+                with EufindtRNA also incorporates a log odds score for the distance
+                between the B box and the first poly-T terminator, but _rejects_ tRNAs
+                that do not have such a signal within 60 nucleotides of the end of
+                the B box. This mode most closely approximates the originally published
+                search algorithm (3); sensitivity is reduced relative to using 'relaxed'
+                and 'normal' modes, but selectivity is increased which is important
+                if no secondary filter, such as Cove analysis, is being used to remove
+                false positives. This mode will miss most prokaryotic tRNAs since
+                the poly-T terminator signal is a feature specific to eukaryotic tRNAs
+                genes (always use 'relaxed' mode for scanning prokaryotic sequences
+                for tRNAs).
+            prompt: EufindtRNA mode (-e)
+            format: ("" , " -e "+ str(value))[ value is not None ]
+            simple: true
+            name: eufindtrna_mode
+            command: false
+            type: !mobyle/stringtype
+                default: S
+                options:
+                - {label: Strict (S), value: S}
+                - {label: Relaxed (R), value: R}
+                - {label: Normal (N), value: N}
+        - !mobyle/inputprogramparameter
+            comment: Save tabular, formatted output results from tRNAscan and/or EufindtRNA
+                first pass scans. The format is similar to the final tabular output
+                format, except no Cove score is available at this point in the search
+                (if EufindtRNA has detected the tRNA, the negative log likelihood
+                score is given). Also, the sequence ID number and source sequence
+                length appear in the columns where intron bounds are shown in final
+                output. This option may be useful for examining false positive tRNAs
+                predicted by first-pass scans that have been filtered out by Cove
+                analysis.
+            prompt: Save first pass results (-r)
+            format: ("" , " -r#")[ value ]
+            name: save_first_pass
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to re-generate results from regions
+                identified to have tRNAs by a previous tRNAscan-SE run. Either a regular
+                tabular result file, or output saved with the -r option may be used
+                as the specified <file>. This option is particularly useful for generating
+                either secondary structure output (-f option) or ACeDB output (-a
+                option) without having to re-scan entire sequences. Alternatively,
+                if the -r option is used to generate the previous results file, tRNAscan-SE
+                will pick up at the stage of Cove-confirmation of tRNAs and output
+                final tRNA predictons as with a normal run.
+            prompt: Use a previous first pass result tabular file (-u)
+            format: ("" , " -u "+ str(value))[ value is not None ]
+            name: previous_first_pass_result
+            precond:
+                '#and': [matching, start]
+            command: false
+        - !mobyle/inputprogramparameter
+            comment: Save first-pass candidate tRNAs that were then found to be false
+                positives by Cove analysis. This option saves candidate tRNAs found
+                by either tRNAscan and/or EufindtRNA that were then rejected by Cove
+                analysis as being false positives. tRNAs are saved in the FASTA sequence
+                format.
+            prompt: Save false positives (-F)
+            format: ("" , " -F#")[ value ]
+            name: false_positives
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Specify Alternate Cutoffs / Data Files options
+        name: specify_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This option allows the user to specify a different Cove score
+                threshold for reporting tRNAs. It is not recommended that novice users
+                change this cutoff, as a lower cutoff score will increase the number
+                of pseudogenes and other false positives found by tRNAscan-SE (especially
+                when used with the 'Cove only' scan mode). Conversely, a higher cutoff
+                than 20.0 bits will likely cause true tRNAs to be missed by tRNAscan
+                (numerous 'real' tRNAs have been found just above the 20.0 cutoff).
+                Knowledgable users may wish to experiment with this parameter to find
+                very unusual tRNAs or pseudogenes beyond the normal range of detection
+                with the preceding caveats in mind.
+            prompt: Cove cutoff score for reporting tRNAs (-X)
+            format: ("" , " -X "+ str(value))[ value is not None and value != vdef]
+            name: cutoff
+            command: false
+            type: !mobyle/integertype {default: 20}
+        - !mobyle/inputprogramparameter
+            comment: 'Set max length of tRNA intron+variable region (default=116bp).
+                The default maximum tRNA length for tRNAscan-SE is 192 bp, but this
+                limit can be increased with this option to allow searches with no
+                practical limit on tRNA length. In the first phase of tRNAscan-SE,
+                EufindtRNA searches for A and B boxes of <length> maximum distance
+                apart, and passes only the 5'' and 3'' tRNA ends to covariance model
+                analysis for confirmation (removing the bulk of long intervening sequences).
+                tRNAs containing group I and II introns have been detected by setting
+                this parameter to over 800 bp. Caution: group I or II introns in tRNAs
+                tend to occur in positions other than the canonical position of protein-spliced
+                introns, so tRNAscan-SE mispredicts the intron bounds and anticodon
+                sequence for these cases. tRNA bound predictions, however, have been
+                found to be reliable in these same tRNAs.'
+            prompt: Max length of tRNA intron+variable region (-L)
+            format: ("" , " -L "+ str(value))[ value is not None and value !=vdef]
+            name: Length
+            command: false
+            type: !mobyle/integertype {default: 116}
+        - !mobyle/inputprogramparameter
+            comment: By default, tRNAscan-SE adds 7 nucleotides to both ends of tRNA
+                predictions when first-pass tRNA predictions are passed to covariance
+                model (CM) analysis.  CM analysis generally trims these bounds back
+                down, but on occasion, allows prediction of an otherwise truncated
+                first-pass tRNA prediction.
+            prompt: Number of nucleotids to add to both ends during first-pass (-z)
+            format: ( "" , " -z "+ str(value) )[ value is not None and value != vdef]
+            name: add_to_both_ends
+            command: false
+            type: !mobyle/integertype {default: 7}
+        - !mobyle/inputprogramparameter
+            comment: This option does not have any effect when using the -T or -E
+                options -- you must be running in default or Cove only analysis mode.
+            prompt: Genetic code (-g)
+            format: ("" , " -g "+ str(value))[ value is not None and value != vdef]
+            name: genetic
+            precond:
+                '#and':
+                - {'#not': trnascan_only}
+                - {'#not': eufindtrna_only}
+            command: false
+            type: !mobyle/stringtype
+                default: Standard
+                options:
+                - {label: Standard, value: Standard}
+                - {label: 'Ciliate, Dasycladacean, & Hexamita Nuclear', value: gcode.cilnuc}
+                - {label: Echinoderm mitochondrial, value: gcode.echdmito}
+                - {label: Invertebrate mitochondrial, value: gcode.invmito}
+                - {label: 'Mold, Protozoan, & Coelenterate mitochondrial', value: gcode.othmito}
+                - {label: Vertebrate mitochondrial, value: gcode.vertmito}
+                - {label: Yeast mitochondrial, value: gcode.ystmito}
+        - !mobyle/inputprogramparameter {prompt: Specify an alternate covariance model
+                (-c), format: '("" , " -c " + str(value))[ value is not None]', name: covariante,
+            command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Misc options
+        name: misc_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Search only sequences with names matching this string. Only those
+                sequences with names (first non-white space word after '>' symbol
+                on FASTA name/description line) matching this string are analyzed
+                for tRNAs.
+            prompt: Search only sequences with names matching this string (-n)
+            format: ("" , " -n "+ str(value))[ value is not None]
+            name: matching
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Start search at first sequence with name matching <EXPR> string
+                and continue to end of input sequence file(s). This may be useful
+                for re-starting crashed/aborted runs at the point where the previous
+                run stopped. (If same names for output file(s) are used, program will
+                ask if files should be over-written or appended to -- choose append
+                and run will successfully be restarted where it left off).
+            prompt: Start search at first sequence with name matching this string
+                (-s)
+            format: ("" , " -s "+ str(value))[ value is not None ]
+            name: start
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Save final results and Cove tRNA secondary structure predictions.
+                This output format makes visual inspection of individual tRNA predictions
+                easier since the tRNA sequence is displayed along with the predicted
+                tRNA base pairings.
+            prompt: Save secondary structure results file (-f)
+            format: ("" , " -f#")[ value ]
+            name: secondary_structure
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output final results in ACeDB format instead of the default tabular
+                format (-a)
+            format: ("" , " -a")[ value ]
+            name: acedb
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This option directs tRNAscan-SE to write a brief summary to a
+                file which contains the run options selected as well as statistics
+                on the number of tRNAs detected at each phase of the search, search
+                speed, and other bits of information. See Manual documentation for
+                explanation of each statistic.
+            prompt: Save statistics summary for run (-m)
+            format: ("" , " -m#")[ value ]
+            name: statistics
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Messages indicating which phase of the tRNA search are printed
+                to standard output. If final results are also being sent to standard
+                output, some of these messages will be suppressed so as to not interrupt
+                display of the results.
+            prompt: Display program progress (-d)
+            format: ("" , " -d")[ value ]
+            name: progress
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Save log of program progress (-l)
+            format: ("" , " -l#")[ value ]
+            name: log
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The credits & run option selections normally printed to standard
+                error at the beginning of each run are suppressed.
+            prompt: Quiet mode (-q)
+            format: ("" , " -q")[ value ]
+            name: quiet
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: This eliminates column headers that appear by default when writing
+                results in tabular output format. Useful if results are to be parsed
+                or piped to another program.
+            prompt: Use brief output format (-b)
+            format: ("" , " -b")[ value ]
+            name: brief
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Output a tRNA's corresponding codon in place of its anticodon
+                (-N)
+            format: ("" , " -N")[ value ]
+            name: trna_codon
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use prefix for all default output file names (-p)
+            format: ("" , " -p "+str(value))[ value is not None ]
+            name: label
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: '''Ts'', ''Eu'', or ''Bo'' will appear in the last column of
+                Tabular output, indicating that either tRNAscan 1.4, EufindtRNA, or
+                both scanners detected the tRNA, respectively.'
+            prompt: Displays which of the first-pass scanners detected the tRNA being
+                output (-y)
+            format: ("" , " -y")[ value ]
+            argpos: 1
+            name: scanners
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Results files, filenames: '"*.fpos"',
+        name: results}
+    - !mobyle/outputprogramparameter {prompt: First pass scan result, filenames: '"*.fpass.out"',
+        name: first_pass_scan_results}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"trnascan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"trnascan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: 'tRNAscan-SE identifies transfer RNA genes in genomic DNA or RNA sequences.  It
+    combines the specificity of the Cove probabilistic RNA prediction package (Eddy
+    & Durbin, 1994) with the speed and sensitivity of tRNAscan 1.3 (Fichant & Burks,
+    1991) plus an implementation of an algorithm described by Pavesi and colleagues
+
+    (1994) which searches for eukaryotic pol III tRNA promoters (our implementation
+    referred to as EufindtRNA).  tRNAscan and EufindtRNA are used as first-pass prefilters
+    to identify "candidate" tRNA regions of the sequence.  These subsequences are
+    then passed to Cove for further analysis, and output if Cove confirms the initial
+    tRNA prediction.'
+operations: ['EDAM_operation:0464']
+topics: ['EDAM_topic:0659']
+references:
+- {doi: null, label: 'Fichant, G.A. and Burks, C. (1991) Identifying potential tRNA
+        genes in genomic DNA sequences, J. Mol. Biol., 220, 659-671.', url: null}
+- {doi: null, label: 'Eddy, S.R. and Durbin, R. (1994) RNA sequence analysis using
+        covariance models, Nucl. Acids Res., 22, 2079-2088.', url: null}
+- {doi: null, label: 'Pavesi, A., Conterio, F., Bolchi, A., Dieci, G., Ottonello,
+        S. (1994) Identification of new eukaryotic tRNA genes in genomic DNA databases
+        by a multistep weight matrix analysis of trnascriptional control regions,
+        Nucl. Acids Res., 22, 1247-1256.', url: null}
+- {doi: null, label: 'Lowe, T.M. and Eddy, S.R. (1997) tRNAscan-SE: A program for
+        improved detection of transfer RNA genes in genomic sequence, Nucl. Acids
+        Res., 25, 955-964.', url: null}
+homepage_links: ['http://selab.janelia.org/software.html#trnascan']
+command: tRNAscan-SE
+env: {}
+source_links: ['ftp://selab.janelia.org/pub/software/tRNAscan-SE/']

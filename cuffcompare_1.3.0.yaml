@@ -1,0 +1,230 @@
+!mobyle/program
+name: cuffcompare
+version: 1.3.0
+title: Cuffcompare
+description: 'Cuffcompare helps you: (a) compare your assembled transcripts to a reference
+    annotation and (b) track Cufflinks transcripts across multiple experiments (e.g.
+    across a time course)'
+authors: Trapnell C., Williams B.A., Pertea G., Mortazavi A.M., Kwan G., van Baren
+    M.J., Salzberg S.L., Wold B. & Pachter L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: Initial Command
+        format: '"cuffcompare"'
+        argpos: 0
+        name: cufflinks_cmd
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input1
+        argpos: 2
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file format (-G)
+            format: ("", " -G " + str(value)) [value is not None and value != vdef]
+            simple: true
+            name: file_format
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Cufflinks GTF, value: 'null'}
+                - {label: Generic GFF, value: -G}
+        - !mobyle/inputprogramparameter
+            prompt: Input data (GTF or GFF format)
+            format: '" " + str( value )'
+            simple: true
+            argpos: 10
+            mandatory: true
+            name: input_0
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Input data 2 (GTF or GFF format)
+            format: (""," " + str( value ))[value is not None]
+            simple: true
+            argpos: 11
+            name: input_1
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: A multi-fasta file with all the genomic sequences (-s)
+            format: ('', ' -s ' + str(value))[value is not None]
+            name: seq_path
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: File containing a list of GTF files to process (-i)
+            format: ('', ' -i ' + str(value))[value is not None]
+            name: file_list
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/inputprogramparagraph
+        prompt: Reference mRNA options
+        name: reference_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: An optional "reference" annotation GTF.
+            prompt: Select Reference Annotation(-r)
+            format: (""," -r " + str(value))[value is not None and value != "upload"]
+            simple: true
+            mandatory: true
+            name: refernce_annotation
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a genome annotation, value: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: A set of known mRNAs to use as a reference for assessing the
+                accuracy of mRNAs or gene models given in input GTF/GFF file(s).Each
+                sample is matched against this file, and sample isoforms are tagged
+                as overlapping, matching, or novel where appropriate
+            prompt: Reference mRNA regions (GFF format) (-r)
+            format: ("", " -r " + str(value)) [value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: reference_region
+            precond: {refernce_annotation: upload}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Enables the "contained" transcripts to be also written in the
+                <outprefix>.combined.gtffile, with the attribute "contained_in" showing
+                the first container transfrag found. By default, without this option,
+                cuffcompare does not write in that file isoforms that were found to
+                be fully contained/covered (with the same compatible intron structure)
+                by other transfrags in the same locus.
+            prompt: Restrict results to reference mRNA regions overlapping input Cufflinks
+                GTF file (-R)
+            format: ("", " -R")[value]
+            argpos: 2
+            name: restrict_result
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not generate .tmap and .refmap files for each input file (-T)
+            format: ("", " -T")[value]
+            argpos: 3
+            name: suppress_map
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Verbose processing mode (showing all GFF parsing warnings) (-V)
+            format: ("", " -V")[value]
+            argpos: 4
+            name: verbose_mode
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 5
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Ignore single-exon transfrags and reference transcripts (-M)
+            format: ("", " -M")[value]
+            name: discard_1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Ignore single-exon reference transcripts (-N)
+            format: ("", " -N")[value]
+            name: discard_2
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Maximum distance (range) for grouping transcript start sites
+                (-d):'
+            format: ("", " -d" + str(value)) [value is not None and value != vdef]
+            name: max_distance
+            command: false
+            type: !mobyle/integertype {default: 100}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 7
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Enables the "contained" transcripts to be also written in the
+                <outprefix>.combined.gtffile, with the attribute "contained_in" showing
+                the first container transfrag found. By default, without this option,
+                cuffcompare does not write in that file isoforms that were found to
+                be fully contained/covered (with the same compatible intron structure)
+                by other transfrags in the same locus.
+            prompt: Include the "contained" transcripts in the .combined.gtf file
+                (-C)
+            format: ("", " -C")[value]
+            simple: true
+            name: include_contained
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Enter output prefix name (-o)
+            format: (" -o " + str(vdef) , " -o " + str(value))[value is not None]
+            simple: true
+            argpos: 9
+            name: output_0
+            command: false
+            type: !mobyle/stringtype {default: cuff_results}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: Output
+        argpos: 7
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: GTF map
+            filenames: str(output_0)+"."+str(input_0)+".tmap"
+            name: map_outfile
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Combined GTF out
+            filenames: str(output_0)+".combined.gtf"
+            name: combined_gtf
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Loci file
+            filenames: str(output_0)+".loci"
+            name: loci_file
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Stats report
+            filenames: str(output_0)+".stats"
+            name: stats_file
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Tracking file
+            filenames: str(output_0)+".tracking"
+            name: tracking_file
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cuffcompare.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cuffcompare.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+env: {}

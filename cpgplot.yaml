@@ -1,0 +1,257 @@
+!mobyle/program
+name: cpgplot
+title: cpgplot
+description: Identify and plot CpG islands in nucleotide sequence(s)
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The percentage CG content and the Observed frequency of CG is
+                calculated within a window whose size is set by this parameter.  The
+                window is moved down the sequence and these statistics are  calculated
+                at each position that the window is moved to.
+            prompt: Window size (value greater than or equal to 1)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 100}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            comment: This sets the minimum length that a CpG island has to be before
+                it is reported.
+            prompt: Minimum length of an island (value greater than or equal to 1)
+            format: ("", " -minlen=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: minlen
+            command: false
+            type: !mobyle/integertype {default: 200}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            comment: This sets the minimum average observed to expected ratio of C
+                plus G to CpG in a set of 10 windows that are required before a  CpG
+                island is reported.
+            prompt: Minimum observed/expected (value from 0. to 10.)
+            format: ("", " -minoe=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: minoe
+            command: false
+            type: !mobyle/floattype {default: 0.6}
+            ctrls:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 10. is required
+                test:
+                    value: {'#lte': '10.0'}
+        - !mobyle/inputprogramparameter
+            comment: This sets the minimum average percentage of G plus C a set of
+                10 windows that are required before a CpG island is reported.
+            prompt: Minimum percentage (value from 0. to 100.)
+            format: ("", " -minpc=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: minpc
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+            ctrls:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 100. is required
+                test:
+                    value: {'#lte': '100.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This sets the name of the file holding the report of the input
+                sequence name, CpG island parameters and the output details  of any
+                CpG islands that are found.
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 6
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: cpgplot.outfile}
+        - !mobyle/inputprogramparameter
+            prompt: Plot cpg island score
+            format: (" -noplot", "")[ bool(value) ]
+            argpos: 7
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 8
+            name: graph
+            precond: plot
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 9
+            name: xy_goutfile
+            precond: plot
+            command: false
+            type: !mobyle/stringtype {default: cpgplot_xygraph}
+        - !mobyle/inputprogramparameter
+            comment: If this is set to true then the graph of the observed to expected
+                ratio of C plus G to CpG within a window is displayed.
+            prompt: Show observed/expected threshold line
+            format: (" -noobsexp", "")[ bool(value) ]
+            argpos: 10
+            name: obsexp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If this is set to true then the graph of the regions which have
+                been determined to be CpG islands is displayed.
+            prompt: Show cpg rich regions
+            format: (" -nocg", "")[ bool(value) ]
+            argpos: 11
+            name: cg
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If this is set to true then the graph of the percentage C plus
+                G within a window is displayed.
+            prompt: Show percentage line
+            format: (" -nopc", "")[ bool(value) ]
+            argpos: 12
+            name: pc
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter {comment: File for output features, prompt: Name
+                of the output feature file (outfeat), format: '("" , " -outfeat="
+                + str(value))[value is not None]', argpos: 13, name: outfeat, command: false}
+        - !mobyle/inputprogramparameter {prompt: Choose the feature output format,
+            format: '("", " -offormat=" + str(value))[value is not None and value!=vdef]',
+            argpos: 14, name: offormat_outfeat, command: false}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 15
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond:
+                '#and':
+                - plot
+                - {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond:
+                '#and':
+                - plot
+                - {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                -   '#and':
+                    - plot
+                    - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond:
+                '#and':
+                - plot
+                - {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond:
+                '#and':
+                - plot
+                - {graph: data}
+        - !mobyle/outputprogramparameter {prompt: Outfeat_out option, filenames: outfeat,
+            name: outfeat_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"cpgplot.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cpgplot.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0430', 'EDAM_operation:0576']
+topics: ['EDAM_topic:0157']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/cpgplot.html', 'http://emboss.sourceforge.net/docs/themes']
+command: cpgplot
+env: {}

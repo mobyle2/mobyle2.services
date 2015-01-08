@@ -1,0 +1,123 @@
+!mobyle/program
+name: xxr
+version: '3.02'
+title: xxr
+description: Integrons Analysis and Cassette Identification
+authors: P. Bouige
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"xxr <xxr.params"'
+        name: xxr
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Input sequence
+        format: str( value )+"\n.\n"
+        simple: true
+        paramfile: xxr.params
+        mandatory: true
+        name: input
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: input_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Extension to add to files
+            format: ( "\n" , str( value ) + "\n" )[value is not None]
+            paramfile: xxr.params
+            name: outsuffix
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Minimal core size
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: minsize
+            command: false
+            type: !mobyle/integertype {default: 4}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal core size
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: maxsize
+            command: false
+            type: !mobyle/integertype {default: 10}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal XXR size
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: maxxxr
+            command: false
+            type: !mobyle/integertype {default: 200}
+        - !mobyle/inputprogramparameter
+            prompt: Maximal gene size
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: maxgene
+            command: false
+            type: !mobyle/integertype {default: 2800}
+        - !mobyle/inputprogramparameter
+            comment: By default, Core Site is GCGTT.
+            prompt: Core Site (CS) - Variable site part upstream GTT
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: cs
+            command: false
+            type: !mobyle/stringtype {default: GC}
+        - !mobyle/inputprogramparameter
+            comment: By default, Inverted Core Site is AACAAA.
+            prompt: Inverted Core Site (ICS) - Variable site part downstream AAC
+            format: ( "\n" , str( value ) + "\n" )[value != vdef]
+            paramfile: xxr.params
+            name: ICS
+            command: false
+            type: !mobyle/stringtype {default: AAA}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: XXR results report, filenames: '"Resultat_*"',
+        name: res}
+    - !mobyle/outputprogramparameter {comment: 'If they exist, the 3th cassette gene
+            files ONLY are displayed but you will find ALL of them in the job archive.',
+        prompt: Cassette gene files, filenames: '"3_*_XXR_*"', name: sk7}
+    - !mobyle/outputprogramparameter
+        prompt: XXR fasta
+        filenames: '"XXR.fasta_*"'
+        name: xxrfasta
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Cassette gene files
+        filenames: '"*_XXR_*"'
+        name: hk7
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"xxr.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"xxr.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: This software is able to extract putative cassette structures that fulfill
+    the criteria established from analysis of previously known cassettes from integrons
+    and superintegrons.
+operations: ['EDAM_operation:3024']
+topics: ['EDAM_topic:0114']
+references:
+- {doi: null, label: 'Rowe-Magnus D.A., Guerout A.M., Biskri L., Bouige P., Mazel
+        D. Comparative analysis of superintegrons: Engineering extensive genetic diversity
+        in the Vibrionaceae. Genome Res. 2003;13:428-442.', url: null}
+env: {}

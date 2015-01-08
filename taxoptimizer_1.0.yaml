@@ -1,0 +1,107 @@
+!mobyle/program
+name: taxoptimizer
+version: '1.0'
+title: taxoptimizer
+description: taxoptimizer reports taxonomic information for each Blast HIT
+authors: C. Maufrais
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: Tabulated file
+        prompt: Blast Result input file
+        format: ''' -i '' + str(value)'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: inputFile
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: ptaxoptimizerOptions
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Column number to parse (default second column: 2)'
+            prompt: 'Column number to parse (default second column: 2)'
+            format: ''' -c '' + str(value)'
+            argpos: 20
+            name: columnNumber
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: Specified Database name for finding taxonomy in only one database.
+            prompt: Specific database to reduce the query
+            format: ('',' -d '+ str(value))[value is not None]
+            argpos: 40
+            name: database
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Add description (DE) in output
+            prompt: Add description in output
+            format: ('',' -e ')[value]
+            argpos: 70
+            name: description
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            comment: Only write lines with taxonomy information in output file
+            prompt: Limit the output only to sequences with taxonomic information
+            format: ('',' -x ')[value]
+            simple: true
+            argpos: 70
+            name: OnlyTaxonomyInformation
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            comment: Outputs sequences with no taxonomic information
+            prompt: Reports sequences with no taxo output in another output file
+            simple: true
+            argpos: 80
+            name: NoTaxonomyInfo
+            command: false
+            type: !mobyle/booleantype {}
+    - !mobyle/inputprogramparameter
+        prompt: Output File Name
+        name: OutputFileName
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {default: taxoptimizer.out}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: taxoptimizer secondary output
+        prompt: SequencesWithNoTaxoOutput
+        filenames: '"ptaxoptimizer_NoTaxo.out"'
+        argpos: 85
+        name: OutputNoTaxonomy
+        precond:
+            NoTaxonomyInfo: {'#ne': None}
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        comment: Reports Taxonomic annotation and concatenates to blast results
+        prompt: Output file
+        filenames: '"ptaxoptimizer.out"'
+        argpos: 90
+        name: OutputFile
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"taxoptimizer.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"taxoptimizer.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0258', 'EDAM_operation:0637', 'EDAM_operation:0337']
+topics: ['EDAM_topic:0182', 'EDAM_topic:0637', 'EDAM_topic:0092']
+command: taxoptimizer
+env: {}

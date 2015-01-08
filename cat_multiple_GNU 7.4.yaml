@@ -1,0 +1,30 @@
+!mobyle/program
+name: cat_multiple
+version: GNU 7.4
+title: cat
+description: concatenate files and print on the standard output - prototype version
+    to implement multiple parameter values
+authors: GNU
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {comment: type any kind of text, prompt: Input
+            text, format: '" %s "%value', argpos: 1, name: input, command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        comment: This is the result
+        prompt: Output text
+        filenames: '"cat_multiple.out"'
+        argpos: 1
+        name: output
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"cat_multiple.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: cat
+env: {}

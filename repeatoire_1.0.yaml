@@ -1,0 +1,182 @@
+!mobyle/program
+name: repeatoire
+version: '1.0'
+title: repeatoire
+description: Locating DNA repeats inside of sequenced genome
+authors: Todd Treangen, Aaron Darling and Eduardo PC Rocha
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: Fasta sequence input file
+        prompt: Input sequence
+        format: '" --sequence=" + str(value)'
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: infile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Main options
+        name: main
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Forms the foundation of the repeats families. Smaller values\
+                \ are more sensitive\n        but allow for more noise (less specific),\
+                \ whereas larger values are less sensitive but more specific."
+            prompt: Seed weight
+            format: ( "" , " --z=" + str(value))[ value is not None and value != vdef
+                ]
+            simple: true
+            name: seedSize
+            command: false
+            type: !mobyle/integertype {default: 17}
+        - !mobyle/inputprogramparameter
+            comment: "Often one wants to only analyze repeats in the same orientation.\
+                \ Else, program will include\n            inverted repeats in the\
+                \ output."
+            prompt: Only process seed matches on same strand
+            format: ( "" , " --onlydirect=1")[ value ]
+            simple: true
+            name: onlydirect
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: If gapped extension is disabled, output will be the local multiple
+                alignments of the gapped chains.
+            prompt: Perform gapped extension
+            format: ( " --extend=0" , "" )[ value ]
+            simple: true
+            name: extend
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Optimize for large repeats
+            format: ( " --large-repeats=0" , "" )[ value ]
+            simple: true
+            name: large-repeats
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: To increase specificity when wanting to focus on larger repeats,
+                this option will only return repeat families containing repeats >
+                value
+            prompt: Minimum final repeat length
+            format: ( "" , " --minreplen=" + str(value))[ value is not None and value
+                != vdef ]
+            simple: true
+            name: minreplen
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            comment: "Option to increase specificity. If one knows a priori that high\
+                \ copy repeats can be excluded from \n            the analysis, this\
+                \ option can be used to discard all repeat families with more repeat\
+                \ copies than this specified value."
+            prompt: Maximum repeat multiplicity
+            format: ( "" , " --maxmulti=" + str(value))[ value is not None and value
+                != vdef ]
+            simple: true
+            name: maxmulti
+            command: false
+            type: !mobyle/integertype {default: 500}
+        - !mobyle/inputprogramparameter
+            comment: Similar to maxmulti, this option can be used to discard all repeat
+                families that have fewer copies than this value.
+            prompt: Minimum repeat multiplicity
+            format: ( "" , " --minmulti=" + str(value))[ value is not None and value
+                != vdef ]
+            simple: true
+            name: minmulti
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: "By default, the program uses palindromic spaces seed patterns\
+                \ to find seed matches inside of the input\n            sequence.\
+                \ However, this can be turned off, which will use solid seed patterns\
+                \ (no mismatches in the seed matches allowed)."
+            prompt: Use solid/exact seeds
+            format: ( "" , " --solid=1")[ value  ]
+            simple: true
+            name: solid
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Expert options
+        name: expert
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Allow redundant alignments
+            format: ( "" , " --allow-redundant=1" )[ value  ]
+            name: redundant
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Require two hits for gapped extension
+            format: ( "" , " --two-hits=1" )[ value  ]
+            name: two_hits
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Chain seeds
+            format: ( " --chain=0" , "" )[ value ]
+            name: chain
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: XML format output
+            format: ( "" , " --xml=repeatoire.xml" )[ value ]
+            name: xml
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: General results
+        filenames: '"reps.out"'
+        name: gle_output
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Statistical results
+        filenames: '"stats.highest"'
+        name: stat_output
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Xml output
+        filenames: '"repeatoire.xml"'
+        name: xml_output
+        precond: xml
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"repeatoire.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"repeatoire.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0237']
+topics: ['EDAM_topic:0157']
+references:
+- {doi: null, label: "Todd J. Treangen, Aaron E. Darling, Guillaume Achaz, Mark A.\
+        \ Ragan, Xavier\n       Messeguer, Eduardo P.C. Rocha, \"A Novel Heuristic\
+        \ for Local Multiple Alignment of\n       Interspersed DNA Repeats,\" IEEE/ACM\
+        \ Transactions on Computational Biology and\n       Bioinformatics, vol. 6,\
+        \ no. 2, pp. 180-189", url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/repeatoire/Repeatoire_UserGuide.pdf']
+homepage_links: ['http://wwwabi.snv.jussieu.fr/public/Repeatoire/']
+command: repeatoire
+env: {}
+source_links: ['http://wwwabi.snv.jussieu.fr/public/Repeatoire/']

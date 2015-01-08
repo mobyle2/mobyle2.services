@@ -1,0 +1,246 @@
+!mobyle/program
+name: neighbor
+title: neighbor
+description: Neighbor-Joining and UPGMA methods
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"neighbor <neighbor.params"'
+        argpos: 0
+        name: neighbor
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        prompt: Distance method
+        format: ( "" , "N\n")[ value == "upgma" ]
+        argpos: 1
+        paramfile: neighbor.params
+        mandatory: true
+        name: distance_method
+        command: false
+        type: !mobyle/stringtype
+            default: neighbor
+            options:
+            - {label: Neighbor-joining, value: neighbor}
+            - {label: UPGMA, value: upgma}
+    - !mobyle/inputprogramparameter
+        comment: "Give a file containing a distance matrix\n\t  obtained by distance\
+            \ matrix programs like protdist or\n\t  dnadist"
+        prompt: Distances matrix File
+        format: '"ln -s "+str(infile)+" infile && "'
+        simple: true
+        argpos: -10
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/inputprogramparagraph
+        prompt: Randomize options
+        name: jumble_opt
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Randomize (jumble) input order (J)
+            format: ( "" , "J\n" + str( jumble_seed ) + "\n" )[ value ]
+            argpos: 20
+            paramfile: neighbor.params
+            name: jumble
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed for jumble (must be odd)
+            format: '""'
+            mandatory: true
+            name: jumble_seed
+            precond: jumble
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Analyze multiple data sets (M)
+            format: ("", "M\n"+str(multiple_number)+"\n"+str(multiple_seed)+"\n")[
+                value ]
+            argpos: 10
+            paramfile: neighbor.params
+            name: multiple
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: How many data sets
+            format: '""'
+            mandatory: true
+            name: multiple_number
+            precond: multiple
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed for multiple dataset (must be odd)
+            format: '""'
+            paramfile: neighbor.params
+            mandatory: true
+            name: multiple_seed
+            precond: multiple
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Compute a consensus tree
+            format: ("" , " && cp infile neighbor.infile &&  cp neighbor.outtree intree
+                && consense <consense.params && mv outtree consense.outtree && mv
+                outfile consense.outfile")[ value ]
+            argpos: 10
+            name: consense
+            precond:
+                '#and': [multiple, print_treefile]
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_confirm
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -2
+        paramfile: consense.params
+        name: consense_terminal_type
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ( "3\n" , "" )[ value ]
+            argpos: 1
+            paramfile: neighbor.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (4)
+            format: ( "4\n" , "" )[ value ]
+            argpos: 1
+            paramfile: neighbor.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: neighbor.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The O (Outgroup) option specifies which species is to have the
+                root of the tree be on the line leading to it.For example, if the
+                outgroup is a species "Mouse" then the root of the tree will be placed
+                in the middle of the branch which is connected to this species, with
+                Mouse branching off on one side of the root and the lineage leading
+                to the rest of the tree on the other.This option is toggle on by choosing
+                the number of the outgroup (the species being taken in the numerical
+                order that they occur in the input file).Outgroup-rooting will not
+                be attempted  if it is a user-defined tree, despite your invoking
+                the option.When it is used, the tree as printed out is still listed
+                as being an unrooted tree, though the outgroup is connected to the
+                bottommost node so that it is easy to visually convert the tree into
+                rooted form.
+            prompt: Outgroup species (default, use as outgroup species 1) (O)
+            format: ( "" , "O\n" +str( value )+ "\n" )[ value is not None and value
+                != vdef]
+            argpos: 1
+            paramfile: neighbor.params
+            name: outgroup
+            precond: {distance_method: neighbor}
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Matrix format
+            argpos: 1
+            paramfile: neighbor.params
+            name: triangular
+            command: false
+            type: !mobyle/stringtype {default: square}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: neighbor.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: neighbor.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Consense output file, filenames: '"consense.outfile"',
+        name: consense_outfile, precond: consense}
+    - !mobyle/outputprogramparameter
+        prompt: Consense output tree
+        filenames: '"consense.outtree"'
+        name: consense_treefile
+        precond: consense
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Neighbor output file, filenames: '"neighbor.outfile"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Neighbor output tree file
+        filenames: '"neighbor.outtree"'
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"neighbor.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"neighbor.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "This program implements the Neighbor-Joining\n\t method of Saitou and Nei\
+    \ (1987) and the UPGMA method of\n\t clustering.NEIGHBOR constructs a tree by\
+    \ successive\n\t clustering of lineages, setting branch lengths as the\n\t lineages\
+    \ join. The tree is not rearranged thereafter. The\n\t tree does not assume an\
+    \ evolutionary clock, so that it is in\n\t effect an unrooted tree."
+operations: ['EDAM_operation:0546']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/neighbor.html']
+env: {}

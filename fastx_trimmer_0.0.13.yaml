@@ -1,0 +1,108 @@
+!mobyle/program
+name: fastx_trimmer
+version: 0.0.13
+title: FASTX Toolkit - Trimmer
+description: FASTX Toolkit trimmer.
+authors: Assaf Gordon
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: Input
+        argpos: 6
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file format.
+            format: (" " + str(value),"")[value == "fasta" or value =="fastq64"]
+            simple: true
+            mandatory: true
+            name: fasta_or_fastq
+            command: false
+            type: !mobyle/stringtype
+                default: -Q 33
+                options:
+                - {label: FASTQ (33), value: -Q 33}
+                - {label: FASTQ (64), value: fastq64}
+                - {label: FASTA, value: fasta}
+        - !mobyle/inputprogramparameter
+            comment: FASTA/Q input file - Default is STDIN
+            prompt: FASTA/Q Input File (-i)
+            format: '" -i " + str( value )'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: input_fastx
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: Options
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Default is 1 (=first base)
+            prompt: First base to keep (-f N)
+            format: '" -f " + str( value )'
+            simple: true
+            argpos: 1
+            name: first_base_pos
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            comment: Default is entire read
+            prompt: Last base to keep (-l N)
+            format: (" -l " + str( value ),"")[value is None]
+            simple: true
+            argpos: 2
+            name: last_base_pos
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_para
+        argpos: 10
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Output compressed with GZIP.
+            prompt: Compress output? (-z)
+            format: ("" ," -z ")[value is not None and compress_output]
+            simple: true
+            argpos: 3
+            name: compress_output
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: FASTA/Q output file - Default is STDOUT
+            prompt: Enter experiment name (-o)
+            format: (" -o " + str(vdef) , " -o " + str(value))[value is not None]
+            simple: true
+            argpos: 11
+            name: out_file
+            command: false
+            type: !mobyle/stringtype {default: trimmed_seq.fq}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: GenomeSequence
+        filenames: ( out_file , "trimmed_seq.fq")[out_file is None]
+        name: trimmer_out
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fastx_trimmer.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fastx_trimmer.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2511']
+topics: ['EDAM_topic:3168']
+command: fastx_trimmer
+env: {}

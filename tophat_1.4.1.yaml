@@ -1,0 +1,790 @@
+!mobyle/program
+name: tophat
+version: 1.4.1
+title: TopHat
+description: TopHat is a fast splice junction mapper for RNA-Seq reads.
+authors: Trapnell C., Pachter L. & Salzberg S.L.
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input
+        name: input_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Input file format
+            format: ("", " -C")[value == "csfasta" or value == "csfastq"]
+            simple: true
+            name: read_format
+            command: false
+            type: !mobyle/stringtype
+                default: fastq
+                options:
+                - {label: FASTQ format, value: fastq}
+                - {label: FASTA format, value: fasta}
+                - {label: CSFASTA format (-C), value: csfasta}
+                - {label: CSFASTQ format (-C), value: csfastq}
+        - !mobyle/inputprogramparameter
+            comment: If uploading a custom genome, please load a single file containing
+                the index and the FASTA file.
+            prompt: 'Select a reference genome:'
+            format: (""," " + str(value))[value is not None and value != "upload"]
+            simple: true
+            argpos: 50
+            mandatory: true
+            name: ref_genome
+            precond:
+                read_format:
+                    '#in': [fastq, fasta]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+        - !mobyle/inputprogramparameter
+            prompt: Upload a custom reference genome
+            format: (""," " + str(value))[value is not None]
+            simple: true
+            argpos: 50
+            name: custom_ref_genome
+            precond:
+                '#and':
+                - {ref_genome: upload}
+                -   read_format:
+                        '#in': [fastq, fasta]
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: If uploading a custom genome, please load a single zip file containing
+                the index and the FASTA file.
+            prompt: 'Select a reference genome:'
+            format: (""," " + str(value))[value is not None and value != "upload"]
+            simple: true
+            argpos: 50
+            mandatory: true
+            name: color_ref_genome
+            precond:
+                read_format:
+                    '#in': [csfasta, csfastq]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+        - !mobyle/inputprogramparameter
+            prompt: Upload a custom colorspace genome
+            format: (""," " + str(value))[value is not None]
+            simple: true
+            argpos: 50
+            name: custom_color_genome
+            precond:
+                '#and':
+                - {color_ref_genome: upload}
+                -   read_format:
+                        '#in': [csfasta, csfastq]
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Is this library mate-paired?
+            simple: true
+            mandatory: true
+            name: mate_type
+            command: false
+            type: !mobyle/stringtype
+                options:
+                - {label: Single-end, value: single}
+                - {label: Paired-end, value: paired}
+        - !mobyle/inputprogramparameter
+            comment: "TopHat will treat the reads as strand specific. Every read alignment\
+                \ will have an XS attribute tag. Consider supplying library type options\
+                \ below to select the correct RNA-seq protocol.Unstranded - \tReads\
+                \ from the left-most end of the fragment (in transcript coordinates)\
+                \ map to the transcript strand, and the right-most end maps to the\
+                \ opposite strand.First Strand - Same as above except we enforce the\
+                \ rule that the right-most end of the fragment (in transcript coordinates)\
+                \ is the first sequenced (or only sequenced for single-end reads).\
+                \ Equivalently, it is assumed that only the strand generated during\
+                \ first strand synthesis is sequenced.Second Strand - Same as above\
+                \ except we enforce the rule that the left-most end of the fragment\
+                \ (in transcript coordinates) is the first sequenced (or only sequenced\
+                \ for single-end reads). Equivalently, it is assumed that only the\
+                \ strand generated during second strand synthesis is sequenced."
+            prompt: 'Library Type: (--library-type)'
+            format: ("", " --library-type " + str(value))[value is not None and value
+                != vdef]
+            simple: true
+            name: library_type
+            precond: {mate_type: paired}
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a library, value: 'null'}
+                - {label: FR Unstranded, value: fr-unstranded}
+                - {label: FR First Strand, value: fr-firststrand}
+                - {label: FR Second Strand, value: fr-secondstrand}
+        - !mobyle/inputprogramparameter
+            comment: colorspace read files (CSFASTA) come with separate qual files
+            prompt: Do you have separate quality value files?
+            format: (""," -Q")[value]
+            simple: true
+            name: color_quals
+            precond: {read_format: csfasta}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: 'Color qual file:'
+            format: '" " + str(value)'
+            simple: true
+            argpos: 110
+            name: qual_file_left
+            precond:
+                '#and':
+                - {color_quals: '1'}
+                - {read_format: csfasta}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: 'Right color qual file:'
+            format: '" " + str(value)'
+            simple: true
+            argpos: 111
+            name: qual_file_right
+            precond:
+                '#and':
+                - {mate_type: paired}
+                - {color_quals: '1'}
+                - {read_format: csfasta}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Quality value format (for FASTQ format)
+            format: ("", " " + str(value))[value != vdef]
+            name: quality_format
+            precond: {read_format: fastq}
+            command: false
+            type: !mobyle/stringtype
+                default: default
+                options:
+                - {label: 'Phred +33 (Sanger, Illumina 1.8+)', value: default}
+                - {label: Phred +64 (Illumina 1.3-1.7), value: --phred64-quals}
+                - {label: Solexa (Illumina < 1.3), value: --solexa-quals}
+        - !mobyle/inputprogramparameter
+            comment: Must have Sanger-scaled quality values with ASCII offset 33.Upload
+                the left RNA sequence data file for paired-end library, or the RNA
+                sequence file for single-end.
+            prompt: 'Left RNA-Sequence file:'
+            format: '" " + str(value)'
+            simple: true
+            argpos: 102
+            mandatory: true
+            name: input_rnaseq_left
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: Must have Sanger-scaled quality values with ASCII offset 33.This
+                is the right RNA sequence data file for paired-end library.
+            prompt: 'Right RNA-Sequence file:'
+            format: '" " + str(value)'
+            simple: true
+            argpos: 103
+            mandatory: true
+            name: input_rnaseq_right
+            precond: {mate_type: paired}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: number of threads to run
+            format: '" -p 10"'
+            name: num_threads
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: Reads are initially mapped, allowing up to this many mismatches
+                in each read alignment.
+            prompt: 'Initial read mismatches (--initial-read-mismatches):'
+            format: ("", " --initial-read-mismatches " + str(value))[value != vdef]
+            name: init_read_mismatches
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: Default is to use "v". In the "-n" alignment mode, an alignment's
+                "stratum" is defined as the number of mismatches in the "seed" region,
+                i.e. the leftmost L bases, where L is set with the -l option. In the
+                -v alignment mode, an alignment's stratum is defined as the total
+                number of mismatches in the entire alignment. Please refer to the
+                Bowtie manual about the "-n" and "-v" alignment modes
+            prompt: Use "-n" of Bowtie for initial read mapping? (--bowtie-n)
+            format: (""," --bowtie-n")[value==1]
+            name: initial_read_mapping
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Instructs TopHat to allow up to this many alignments to the reference
+                for a given read, and suppresses all alignments for reads with more
+                than this many alignments. The default is 20 for read mapping (and
+                it uses two time larger number (40) for segment mapping).
+            prompt: 'Maximum number of alignments to be allowed: (-g)'
+            format: ("", " -g " + str(value))[value != vdef]
+            name: max_alignment_count
+            command: false
+            type: !mobyle/integertype {default: 20}
+        - !mobyle/inputprogramparameter
+            comment: TopHat filters out junctions supported by too few alignments.
+                Suppose a junction spanning two exons, is supported by S reads. Let
+                the average depth of coverage of exon A be D, and assume that it is
+                higher than B. If S / D is less than the minimum isoform fraction,
+                the junction is not reported. A value of zero disables the filter.
+                The default is 0.15.
+            prompt: 'Minimum isoform fraction - filter out junctions supported by
+                too few alignments: (-F)'
+            format: ("", " -F " + str(value))[value != vdef]
+            name: min_isoform_fraction
+            command: false
+            type: !mobyle/floattype {default: 0.15}
+        - !mobyle/inputprogramparameter
+            prompt: Maximum insertion length (--max-insertion-length)
+            format: ("", " --max-insertion-length " + str(value))[value != vdef]
+            name: max_insertion_length
+            command: false
+            type: !mobyle/integertype {default: 3}
+        - !mobyle/inputprogramparameter
+            prompt: Maxiumum deletion length (--max-deletion-length)
+            format: ("", " --max-deletion-length " + str(value))[value != vdef]
+            name: max_deletion_length
+            command: false
+            type: !mobyle/integertype {default: 3}
+    - !mobyle/inputprogramparagraph
+        prompt: Junction Options
+        name: junction_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The options below allow you validate your own junctions with
+                your RNA-Seq data. Note that the chromosome names in the files provided
+                with the options below must match the names in the Bowtie index. These
+                names are case-senstitive
+            prompt: 'Input junction (-j/-G):'
+            name: junction_format
+            precond:
+                read_format:
+                    '#in': [fastq, fasta]
+            command: false
+            type: !mobyle/stringtype {default: 'null'}
+        - !mobyle/inputprogramparameter
+            comment: The options below allow you validate your own junctions with
+                your RNA-Seq data. Note that the chromosome names in the files provided
+                with the options below must match the names in the Bowtie index. These
+                names are case-senstitive
+            prompt: 'Input junction (-j/-G):'
+            name: color_junction_format
+            precond:
+                read_format:
+                    '#in': [csfasta, csfastq]
+            command: false
+            type: !mobyle/stringtype {default: 'null'}
+        - !mobyle/inputprogramparameter
+            prompt: Enter Junction data
+            format: (" -G " + str(value), " -j " + str(value))[value is not None and
+                junction_format == "raw"]
+            name: junc_data
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format:
+                            '#in': [gtf, raw]
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    -   color_junction_format:
+                            '#in': [gtf, raw]
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            comment: The name prefix which will indicate where the transcriptome data
+                files will be stored. The file is optional and is in case you want
+                to save an index and use it later
+            prompt: 'Transcriptome index name prefix: (--transcriptome-index)'
+            format: ("", " --transcriptome-index="+ str(value))[value is not None
+                and value != '']
+            name: transcript_index
+            precond:
+                '#or':
+                -   '#and':
+                    - {junction_format: gtf}
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    - {color_junction_format: gtf}
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Only look for reads across junctions indicated in the supplied
+                GTF or junctions file? (--no-novel-juncs)
+            format: (""," --no-novel-juncs")[value==1]
+            name: skip_default_novel_junc
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format: {'#ne': None}
+                    -   junction_format: {'#ne': 'null'}
+                -   '#and':
+                    -   color_junction_format: {'#ne': None}
+                    -   color_junction_format: {'#ne': 'null'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: When mapping reads on the transcriptome, some repetitive or low
+                complexity reads that would be discarded in the context of the genome
+                may appear to align to the transcript sequences and thus may end up
+                reported as mapped to those genes only. This option directs TopHat
+                to first align the reads to the whole genome in order to determine
+                and exclude such multi-mapped reads (according to the value of the
+                -g/--max-multihits option).
+            prompt: 'Pre-filter to exclude multi-mapped reads: (-M)'
+            format: (""," -M")[value]
+            name: prefilter_multi
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    -   color_junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Only align the reads to the transcriptome and report only those
+                mappings as genomic mappings.
+            prompt: 'Map only to the transcriptome: (-T)'
+            format: (""," -T")[value]
+            name: transcript_mapping
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    -   color_junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: When aligned to the transcriptome any reads found with more then
+                this number of mappings will be discarded
+            prompt: 'Maximum number of mappings allowed for a read: (-x)'
+            format: ("", " -x " + str(value))[value is not None and value != vdef]
+            name: trans_max_hits
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    -   color_junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            comment: Maximum number of mismatches allowed when reads are aligned to
+                the transcriptome.
+            prompt: 'Maximum number of mismatches allowed: (-n)'
+            format: ("", " -n " + str(value))[value is not None and value != vdef]
+            name: trans_mismatch
+            precond:
+                '#or':
+                -   '#and':
+                    -   junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [fastq, fasta]
+                -   '#and':
+                    -   color_junction_format:
+                            '#nin': [raw, 'null']
+                    -   read_format:
+                            '#in': [csfastq, csfasta]
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: Spliced Alignment Options
+        name: spliced_align_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Read segments are mapped independently, allowing up to this many
+                mismatches in each segment alignment. The default is 2.
+            prompt: 'Number of mismatches allowed in each segment alignment for reads
+                mapped independently: (--segment-mismatches)'
+            format: ("", " --segment-mismatches " + str(value))[value != vdef]
+            name: segment_mismatch
+            command: false
+            type: !mobyle/integertype {default: 2}
+        - !mobyle/inputprogramparameter
+            comment: Each read is cut up into segments, each at least this long. These
+                segments are mapped independently. The default is 25.
+            prompt: 'Minimum length of read segments: (--segment-length)'
+            format: ("", " --segment-length " + str(value))[value != vdef]
+            name: segment_min_length
+            command: false
+            type: !mobyle/integertype {default: 25}
+        - !mobyle/inputprogramparameter
+            comment: The "anchor length". TopHat will report junctions spanned by
+                reads with at least this many bases on each side of the junction.
+                Note that individual spliced alignments may span a junction with fewer
+                than this many bases on one side. However, every junction involved
+                in spliced alignments is supported by at least one read with this
+                many bases on each side. This must be at least 3 and the default is
+                8.
+            prompt: Minimum anchor length (-a)
+            format: ("", " -a " + str(value))[value != vdef]
+            name: min_anchor_length
+            command: false
+            type: !mobyle/integertype {default: 8}
+        - !mobyle/inputprogramparameter
+            comment: During closure search for paired end reads, exonic hops in the
+                potential splice graph must be at least this long. The default is
+                50.
+            prompt: 'Minimum closure exon: (--min-closure-exon)'
+            format: ("", " --min-closure-exon " + str(value))[value is not None and
+                value != vdef]
+            name: min_closure_exon
+            command: false
+            type: !mobyle/integertype {default: 100}
+        - !mobyle/inputprogramparameter
+            comment: The maximum intron length. When searching for junctions ab initio,
+                TopHat will ignore donor/acceptor pairs farther than this many bases
+                apart, except when such a pair is supported by a split segment alignment
+                of a long read. The default is 500000.
+            prompt: 'The maximum intron length: (-I)'
+            format: ("", " -I " + str(value))[value != vdef]
+            name: max_intron_length
+            command: false
+            type: !mobyle/integertype {default: 500000}
+        - !mobyle/inputprogramparameter
+            comment: The minimum intron length. TopHat will ignore donor/acceptor
+                pairs closer than this many bases apart. The default is 70.
+            prompt: 'The minimum intron length: (-i)'
+            format: ("", " -i " + str(value))[value != vdef]
+            name: min_intron_length
+            command: false
+            type: !mobyle/integertype {default: 70}
+        - !mobyle/inputprogramparameter
+            comment: The maximum number of mismatches that may appear in the "anchor"
+                region of a spliced alignment. The default is 0.
+            prompt: 'Maximum number of mismatches that can appear in the anchor region
+                of spliced alignment: (-m)'
+            format: ("", " -m " + str(value))[value != vdef]
+            name: max_anchor_mismatches
+            command: false
+            type: !mobyle/integertype {default: 0}
+        - !mobyle/inputprogramparameter
+            comment: The minimum intron length that may be found during split-segment
+                search. The default is 50.
+            prompt: 'Minimum intron length that may be found during split-segment
+                (default) search: (--min-segment-intron)'
+            format: ("", " --min-segment-intron " + str(value))[value != vdef]
+            name: min_segment_intron_length
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            comment: The maximum intron length that may be found during split-segment
+                search. The default is 500000.
+            prompt: 'Maximum intron length that may be found during split-segment
+                (default) search: (--max-segment-intron)'
+            format: ("", " --max-segment-intron " + str(value))[value != vdef]
+            name: max_segment_intron_length
+            command: false
+            type: !mobyle/integertype {default: 500000}
+        - !mobyle/inputprogramparameter
+            comment: The maximum intron length that may be found during coverage search.
+                The default is 20000. --min-coverage-intron
+            prompt: 'Maximum intron length that may be found during coverage search:
+                (--max-coverage-intron)'
+            format: ("", " --max-coverage-intron " + str(value))[value != vdef]
+            name: max_coverage_intron_length
+            command: false
+            type: !mobyle/integertype {default: 20000}
+        - !mobyle/inputprogramparameter
+            comment: The minimum intron length that may be found during closure search.
+            prompt: 'Minimum intron length that may be found during coverage search:
+                (-min-coverage-intron)'
+            format: ("", " --min-coverage-intron " + str(value))[value != vdef]
+            name: min_coverage_intron_length
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            comment: The minimum intron length that may be found during closure search.
+            prompt: 'Minimum closure intron: (--min-closure-intron)'
+            format: ("", " --min-closure-intron " + str(value))[value != vdef]
+            name: min_closure_intron
+            command: false
+            type: !mobyle/integertype {default: 50}
+        - !mobyle/inputprogramparameter
+            comment: The maximum intron length that may be found during closure search.
+            prompt: 'Maximum closure intron: (--max-closure-intron)'
+            format: ("", " --max-closure-intron " + str(value))[value != vdef]
+            name: max_closure_intron
+            command: false
+            type: !mobyle/integertype {default: 5000}
+    - !mobyle/inputprogramparagraph
+        prompt: Indel Options
+        name: indel_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'Supply TopHat with a list of insertions with respect to the
+                reference. Indels are specified one per line, in a tab-delimited format,
+                identical to that of junctions. Records look like:  <chrom> <left>
+                <right> <+/-> left and right are zero-based coordinates, and specify
+                the last character of the left sequenced to be spliced to the first
+                character of the right sequence, inclusive.'
+            prompt: 'Known insertions: (--insertions)'
+            name: known_insertions
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Known insertions file:'
+            format: '" --insertions " + str(value)'
+            name: insertions_file
+            precond: {known_insertions: '1'}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/inputprogramparameter
+            comment: 'Supply TopHat with a list of deletions with respect to the reference.
+                Indels are specified one per line, in a tab-delimited format, identical
+                to that of junctions. Records look like:  <chrom> <left> <right> <+/->
+                left and right are zero-based coordinates, and specify the last character
+                of the left sequenced to be spliced to the first character of the
+                right sequence, inclusive.'
+            prompt: 'Known deletions: (--deletions)'
+            name: known_deletions
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Known deletions file:'
+            format: '" --deletions " + str(value)'
+            name: deletions_file
+            precond: {known_deletions: '1'}
+            command: false
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/inputprogramparameter
+            comment: Enables the coverage based search for junctions. Use when coverage
+                search is disabled by default (such as for reads 75bp or longer),
+                for maximum sensitivity.
+            prompt: Coverage search?
+            format: ("", " "+str(value))[value is not None and value != vdef]
+            name: coverage_search
+            command: false
+            type: !mobyle/stringtype
+                default: default
+                options:
+                - {label: Use default, value: default}
+                - {label: Use coverage (--coverage-search), value: --coverage-search}
+                - {label: No coverage (--no-coverage-search), value: --no-coverage-search}
+        - !mobyle/inputprogramparameter
+            comment: Enables the mate pair closure-based search for junctions. Closure-based
+                search should only be used when the expected inner distance between
+                mates is small (<= 50bp)
+            prompt: Use closure search? (--closure-search)
+            format: ("", " --closure-search ")[value == 1]
+            name: allow_closure_search
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: With this option, the pipeline will attempt to find alignments
+                incident to microexons. Works only for reads 50bp or longer.
+            prompt: Use microexon search? (--microexon-search)
+            format: ("", " --microexon-search ")[value == 1]
+            name: allow_microexon_search
+            command: false
+            type: !mobyle/booleantype {}
+        - !mobyle/inputprogramparameter
+            comment: TopHat will use a slower but potentially more sensitive algorithm
+                to find junctions in addition to its standard search. Consider using
+                this if you expect that your experiment produced a lot of reads from
+                pre-mRNA, that fall within the introns of your transcripts.
+            prompt: Use butterfly search? (--butterfly-seach)
+            format: ("", " --butterfly-search ")[value == 1]
+            name: allow_butterfly_search
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Paired-End Options
+        name: paired_end_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This is the expected (mean) inner distance between mate pairs.
+                For, example, for paired end runs with fragments selected at 300bp,
+                where each end is 50bp, you should set -r to be 200. There is no default,
+                and this parameter is required for paired end runs.
+            prompt: 'Expected Mean Inner Distance between Mate Pairs: (-r/--mate-inner-dist)'
+            format: ("" , " -r "+str(value))[value is not None and value != vdef]
+            name: mate_pair_distance
+            precond: {mate_type: paired}
+            command: false
+            type: !mobyle/floattype {}
+        - !mobyle/inputprogramparameter
+            comment: The standard deviation for the distribution on inner distances
+                between mate pairs. The default is 20bp.
+            prompt: 'Std. Dev for Distance between Mate Pairs: (--mate-std-dev)'
+            format: ("" , " --mate-std-dev "+str(value))[value is not None and value
+                != vdef]
+            name: mate_pair_std_dev
+            command: false
+            type: !mobyle/integertype {default: 20}
+    - !mobyle/inputprogramparagraph
+        prompt: SAM Header Options
+        name: sam_header_para
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: 'Read group ID: (--rg-id)'
+            format: ("" , " --rg-id "+str(value))[value is not None and value != '']
+            name: read_group_id
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Sample ID: (--rg-sample)'
+            format: ("" , " --rg-sample "+str(value))[value is not None and value
+                != '']
+            name: read_group_sample_id
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Library ID: (--rg-library)'
+            format: ("" , " --rg-library "+str(value))[value is not None and value
+                != '']
+            name: read_group_library
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: No tabs allowed.
+            prompt: 'Descriptive string: (--rg-description)'
+            format: ("" , " --rg-description "+str(value))[value is not None and value
+                != '']
+            name: read_group_description
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: e.x. Illumina lane ID
+            prompt: 'Platform unit: (--rg-platform-unit)'
+            format: ("" , " --rg-platform-unit "+str(value))[value is not None and
+                value != '']
+            name: read_group_platform_unit
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Sequencing center name: (--rg-center)'
+            format: ("" , " --rg-center "+str(value))[value is not None and value
+                != '']
+            name: read_group_center
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: ISO 8601 date of the sequencing run.
+            prompt: 'Sequencing run date: (--rg-date)'
+            format: ("" , " --rg-date "+str(value))[value is not None and value !=
+                '']
+            name: read_group_date
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: 'Sequencing platform description: (--rg-platform)'
+            format: ("" , " --rg-platform "+str(value))[value is not None and value
+                != '']
+            name: read_group_platform
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output
+        name: output_para
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Causes TopHat to preserve its intermediate files produced during
+                the run. By default, they are deleted upon exit.
+            prompt: Preserve intermediate file? (--keep-tmp)
+            format: ("", " --keep-tmp")[value]
+            name: preserve_intermediate_file
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Output BAM is not coordinate-sorted.
+            prompt: Do not sort BAM? (--no-sort-bam)
+            format: ("", " --no-sort-bam")[value]
+            name: no_sort_bam
+            precond: {no_convert_bam: '0'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Do not convert to BAM format? (--no-convert-bam)
+            format: ("", " --no-convert-bam")[value]
+            name: no_convert_bam
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: TopHatOutputDir
+            format: '" -o ./ "'
+            argpos: 5
+            name: outdir_tophat
+            command: false
+            hidden: true
+            type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output
+        name: output_para
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: TopHatJunctions
+            filenames: '"accepted_hits.bam"'
+            name: bamout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: TopHatOutput
+            filenames: '"junctions.bed"'
+            name: junctions
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"tophat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"tophat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+command: export PATH=$PATH; tophat
+env: {}

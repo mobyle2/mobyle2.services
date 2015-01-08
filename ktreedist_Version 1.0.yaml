@@ -1,0 +1,147 @@
+!mobyle/program
+name: ktreedist
+version: Version 1.0
+title: Ktreedist
+description: Calculation of the minimum branch length distance (K tree score) between
+    phylogenetic trees
+authors: Victor Soria-Carrasco, Jose Castresana
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        comment: The program is supposed to run with one reference tree and one or
+            several comparison trees. If the reference file contains more than one
+            tree, only the first one will be used.
+        prompt: Input
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This is the file that contains the tree to which you want to
+                compare the comparison tree/s.Only NEWICK or NEXUS tree format are
+                accepted by ktreedist.The input tree must be write in one line. for
+                nexus tree the tree itself must be write in one line
+            prompt: Reference Tree
+            format: '" -rt "+str(value)'
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: ref_tree
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910', 'EDAM_format:1912']
+                data_terms: ['EDAM_data:0872']
+        - !mobyle/inputprogramparameter
+            comment: This is the file that contains the tree or the set of trees you
+                want to compare to the reference tree. They will be scaled to match
+                as much as possible the reference tree.Only NEWICK or NEXUS tree format
+                are accepted by ktreedist.The input tree must be write in one line.
+                for nexus tree the tree itself must be write in one line
+            prompt: Comparison Tree
+            format: '" -ct "+str(value)+" "'
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: comp_tree
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910', 'EDAM_format:1912']
+                data_terms: ['EDAM_data:0872']
+    - !mobyle/inputprogramparagraph
+        prompt: Options
+        name: options
+        argpos: 4
+        children:
+        - !mobyle/inputprogramparameter
+            comment: A file containing a table of results is generated.
+            prompt: Output file for table of results (-t)
+            format: ("", " -t")[ value ]
+            name: output_res
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: A file containing a table of partitions for each comparison tree
+                is generated.
+            prompt: Output file for table of partitions (-p)
+            format: ("", " -p")[ value ]
+            name: output_part
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: A file containing the scaled comparison tree/s is generated.
+            prompt: Output file for comparison tree/s after scaling (-s)
+            format: ("", " -s")[ value ]
+            name: output_comp
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "The symmetric difference is defined as the number of partitions\
+                \ that are not shared between two trees, \n\t\t\t\t\t\tthat is, the\
+                \ number of partitions of the first tree that are not present in the\
+                \ second tree plus the number of partitions \n\t\t\t\t\t\tof the second\
+                \ tree that are not present in the first tree."
+            prompt: Output symmetric difference (Robinson-Foulds) (-r)
+            format: ("", " -r")[ value ]
+            name: output_rf
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: The knowledge of the number of partitions may be useful to detect
+                trees with polytomies.
+            prompt: Output number of partitions in the comparison tree/s (-n)
+            format: ("", " -n")[ value ]
+            name: output_nbpf
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Equivalent to all options.
+            prompt: Equivalent to all options (-a)
+            format: ("", " -a")[ value ]
+            name: output_all
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Output file for table of results
+        filenames: '"*.tab"'
+        name: output_res_f
+        precond:
+            '#or': [output_res, output_all]
+    - !mobyle/outputprogramparameter
+        prompt: Output file for table of partitions
+        filenames: '"*.part"'
+        name: output_part_f
+        precond:
+            '#or': [output_part, output_all]
+    - !mobyle/outputprogramparameter
+        prompt: Output file for comparison tree/s after scaling
+        filenames: '"*.scaled"'
+        name: output_comp_f
+        precond:
+            '#or': [output_comp, output_all]
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"ktreedist.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"ktreedist.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0557']
+topics: ['EDAM_topic:0084']
+references:
+- {doi: null, label: "Soria-Carrasco, V., Talavera, G., Igea, J., and Castresana,\
+        \ J. (2007). The K tree score: quantification of differences \n      \t\t\
+        in the relative branch length and topology of phylogenetic trees. Bioinformatics\
+        \ 23, 2954-2956.", url: null}
+documentation_links: ['http://bioweb2.pasteur.fr/docs/ktreedist/']
+homepage_links: ['http://molevol.cmima.csic.es/castresana/Ktreedist.html']
+command: ktreedist
+env: {}
+source_links: ['http://molevol.cmima.csic.es/castresana/Ktreedist.html']

@@ -1,0 +1,379 @@
+!mobyle/program
+name: dan
+title: dan
+description: Calculates nucleic acid melting temperature
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The values of melting point and other thermodynamic properties
+                of the sequence are determined by taking a short length  of sequence
+                known as a window and determining the properties of  the sequence
+                in that window. The window is incrementally moved  along the sequence
+                with the properties being calculated at each  new position.
+            prompt: Enter window size (value from 1 to 100)
+            format: ("", " -windowsize=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: windowsize
+            command: false
+            type: !mobyle/integertype {default: 20}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+            -   message: Value less than or equal to 100 is required
+                test:
+                    value: {'#lte': '100'}
+        - !mobyle/inputprogramparameter
+            comment: This is the amount by which the window is moved at each increment
+                in order to find the melting point and other properties  along the
+                sequence.
+            prompt: Enter shift increment (value greater than or equal to 1)
+            format: ("", " -shiftincrement=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: shiftincrement
+            command: false
+            type: !mobyle/integertype {default: 1}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+        - !mobyle/inputprogramparameter
+            prompt: Enter dna concentration (nm) (value from 1. to 100000.)
+            format: ("", " -dnaconc=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 4
+            mandatory: true
+            name: dnaconc
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+            ctrls:
+            -   message: Value greater than or equal to 1. is required
+                test:
+                    value: {'#gte': '1.0'}
+            -   message: Value less than or equal to 100000. is required
+                test:
+                    value: {'#lte': '100000.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Enter salt concentration (mm) (value from 1. to 1000.)
+            format: ("", " -saltconc=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 5
+            mandatory: true
+            name: saltconc
+            command: false
+            type: !mobyle/floattype {default: 50.0}
+            ctrls:
+            -   message: Value greater than or equal to 1. is required
+                test:
+                    value: {'#gte': '1.0'}
+            -   message: Value less than or equal to 1000. is required
+                test:
+                    value: {'#lte': '1000.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparagraph
+            prompt: Product options
+            name: productsection
+            children:
+            - !mobyle/inputprogramparameter
+                comment: This prompts for percent formamide, percent of mismatches
+                    allowed and product length.
+                prompt: Prompt for product values
+                format: ("", " -product")[ bool(value) ]
+                argpos: 6
+                name: product
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: This specifies the percent formamide to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter percentage of formamide (value from 0. to 100.)
+                format: ("", " -formamide=" + str(value))[value is not None and value!=vdef]
+                argpos: 7
+                name: formamide
+                precond: product
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+                ctrls:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+            - !mobyle/inputprogramparameter
+                comment: This specifies the percent mismatch to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter percent mismatch (value from 0. to 100.)
+                format: ("", " -mismatch=" + str(value))[value is not None and value!=vdef]
+                argpos: 8
+                name: mismatch
+                precond: product
+                command: false
+                type: !mobyle/floattype {default: 0.0}
+                ctrls:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+            - !mobyle/inputprogramparameter
+                comment: This specifies the product length to be used in calculations
+                    (it is ignored unless -product is used).
+                prompt: Enter the product length
+                format: ("", " -prodlen=" + str(value))[value is not None]
+                argpos: 9
+                name: prodlen
+                precond:
+                    '#and': [product, windowsize]
+                command: false
+                type: !mobyle/integertype {}
+        - !mobyle/inputprogramparagraph
+            prompt: Thermodynamic options
+            name: thermosection
+            children:
+            - !mobyle/inputprogramparameter
+                comment: Output the DeltaG, DeltaH and DeltaS values of the sequence
+                    windows to the output data file.
+                prompt: Thermodynamic calculations
+                format: ("", " -thermo")[ bool(value) ]
+                argpos: 10
+                name: thermo
+                command: false
+                type: !mobyle/booleantype {default: false}
+            - !mobyle/inputprogramparameter
+                comment: If -thermo has been specified then this specifies the temperature
+                    at which to calculate the DeltaG, DeltaH and DeltaS  values.
+                prompt: Enter temperature (value from 0. to 100.)
+                format: ("", " -temperature=" + str(value))[value is not None and
+                    value!=vdef]
+                argpos: 11
+                name: temperature
+                precond: thermo
+                command: false
+                type: !mobyle/floattype {default: 25.0}
+                ctrls:
+                -   message: Value greater than or equal to 0. is required
+                    test:
+                        value: {'#gte': '0.0'}
+                -   message: Value less than or equal to 100. is required
+                    test:
+                        value: {'#lte': '100.0'}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This specifies that the sequence is an RNA sequence and not a
+                DNA sequence.
+            prompt: Use rna data values
+            format: ("", " -rna")[ bool(value) ]
+            argpos: 12
+            name: rna
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: If this is not specified then the file of output data is produced,
+                else a plot of the melting point along the sequence is  produced.
+            prompt: Produce a plot
+            format: ("", " -plot")[ bool(value) ]
+            argpos: 13
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Enter a minimum value for the temperature scale (y-axis) of the
+                plot.
+            prompt: Enter minimum temperature (value from 0. to 150.)
+            format: ("", " -mintemp=" + str(value))[value is not None and value!=vdef]
+            argpos: 14
+            name: mintemp
+            precond: plot
+            command: false
+            type: !mobyle/floattype {default: 55.0}
+            ctrls:
+            -   message: Value greater than or equal to 0. is required
+                test:
+                    value: {'#gte': '0.0'}
+            -   message: Value less than or equal to 150. is required
+                test:
+                    value: {'#lte': '150.0'}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 15
+            name: graph
+            precond: plot
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 16
+            name: xy_goutfile
+            precond: plot
+            command: false
+            type: !mobyle/stringtype {default: dan_xygraph}
+        - !mobyle/inputprogramparameter
+            comment: If a plot is not being produced then data on the melting point
+                etc. in each window along the sequence is output to the  file.
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 17
+            name: outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype {default: dan.report}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the report output format
+            format: ("", " -rformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 18
+            name: rformat_outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype
+                default: SEQTABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 19
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond:
+                '#and':
+                - plot
+                - {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond:
+                '#and':
+                - plot
+                - {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                -   '#and':
+                    - plot
+                    - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond:
+                '#and':
+                - plot
+                - {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond:
+                '#and':
+                - plot
+                - {graph: data}
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"dan.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"dan.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0455']
+topics: ['EDAM_topic:0104']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/dan.html', 'http://emboss.sourceforge.net/docs/themes']
+command: dan
+env: {}

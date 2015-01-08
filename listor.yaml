@@ -1,0 +1,107 @@
+!mobyle/program
+name: listor
+title: listor
+description: Write a list file of the logical OR of two sets of sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Firstsequences option
+            format: ("", " -firstsequences=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: firstsequences
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter
+            prompt: Secondsequences option
+            format: ("", " -secondsequences=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: secondsequences
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Additional section
+        name: additional
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The following logical operators combine the sequences in the\
+                \ following ways: \n  OR - gives all that occur in one set or the\
+                \ other \n  AND - gives only those which occur in both sets \n  XOR\
+                \ - gives those which only occur in one set or the other, but  not\
+                \ in both \n  NOT - gives those which occur in the first set except\
+                \ for those  that also occur in the second"
+            prompt: Logical operator to combine sequence lists
+            format: ("", " -operator=" + str(value))[value is not None and value!=vdef]
+            argpos: 3
+            name: operator
+            command: false
+            type: !mobyle/stringtype
+                default: mobyle_null
+                options:
+                - {label: null, value: mobyle_null}
+                - {label: Or - merger of both sets, value: O}
+                - {label: And - only those in both sets, value: A}
+                - {label: Xor - only those not in both sets, value: X}
+                - {label: Not - those of the  first set that are not in the second,
+                    value: N}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The list of sequence names will be written to this list file
+            prompt: Name of the output file (outfile)
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 4
+            name: outfile
+            command: false
+            type: !mobyle/stringtype {default: outfile.list}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 5
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter {prompt: Outfile_out option, filenames: outfile,
+            name: outfile_out}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"listor.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"listor.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2120']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/listor.html', 'http://emboss.sourceforge.net/docs/themes']
+command: listor
+env: {}

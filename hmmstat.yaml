@@ -1,0 +1,27 @@
+!mobyle/program
+name: hmmstat
+title: HMMSTAT
+description: Sisplay summary statistics for a profile file
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter {prompt: Name of the HMM profile, format: '" "+str(value)',
+        simple: true, argpos: 2, mandatory: true, name: Name, command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"hmmstat.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmstat.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2404']
+topics: ['EDAM_topic:0188']
+command: hmmstat
+env: {}

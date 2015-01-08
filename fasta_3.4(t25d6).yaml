@@ -1,0 +1,613 @@
+!mobyle/program
+name: fasta
+version: 3.4(t25d6)
+title: FASTA
+description: Sequence database search
+authors: W. Pearson
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment: '- fasta: scan a protein or DNA sequence library for similar sequences-
+            tfasta: compare a protein sequence to a DNA sequence librarSy, translating
+            the DNA sequence library `on-the-fly'' to the 3 forward and the 3 reverse
+            frames without frameshifts.- fastx/fasty: compare a DNA sequence to a
+            protein sequence database, comparing the translated DNA sequence in three
+            frames, with frameshifts. fasty2 allows frameshifts inside codons.- tfastx/tfasty:
+            compare a protein sequence vs a translated DNA db, with frameshifts. tfasty
+            allows frameshifts inside codons.- fastf/tfastf: compare an ordered peptide
+            mixture (obtained for example by Edman degradation of a CNBr cleavage)
+            against a protein or translated DNA database.- fasts/tfasts: compare a
+            set of short peptide fragments (obtained from a mass-spec analysis of
+            a protein) against a protein or translated DNA database.'
+        prompt: Fasta program
+        format: str(value) + " -q"
+        simple: true
+        argpos: 0
+        mandatory: true
+        name: fasta
+        command: true
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a program, value: 'null'}
+            - {label: fasta (protein or nucleotide query vs similar db ), value: fasta}
+            - {label: tfasta (protein query vs translated nucleic db), value: tfasta}
+            - {label: fastx (translated nucleotide query  vs protein db (frameshifts
+                    only only between codons)), value: fastx}
+            - {label: tfastx (protein query vs translated DNA db (frameshifts only
+                    between codons)), value: tfastx}
+            - {label: fasty (fastx + frameshifts anywhere), value: fasty}
+            - {label: tfasty (tfastx + frameshifts anywhere), value: tfasty}
+            - {label: fastf (mixed peptide seq vs protein db (modified algorithm)),
+                value: fastf}
+            - {label: tfastf (mixed peptide seq vs translated DNA db (modified algorithm)),
+                value: tfastf}
+            - {label: fasts (several short peptide seq vs protein db (modified algorithm)),
+                value: fasts}
+            - {label: tfasts (several short peptide seq vs translated DNA db (modified
+                    algorithm)), value: tfasts}
+    - !mobyle/inputprogramparameter
+        prompt: Query sequence File
+        format: '" "+str(value)'
+        simple: true
+        argpos: 2
+        mandatory: true
+        name: query
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: Is it a DNA or protein sequence (-n)
+        format: ( "" , " -n" )[ value is not None and value == "DNA" and fasta ==
+            'fasta']
+        simple: true
+        argpos: 1
+        mandatory: true
+        name: seqtype
+        command: false
+        type: !mobyle/stringtype
+            default: 'null'
+            options:
+            - {label: Choose a biotype, value: 'null'}
+            - {label: DNA, value: DNA}
+            - {label: Protein, value: protein}
+    - !mobyle/inputprogramparagraph
+        prompt: Database
+        name: db
+        argpos: 3
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Choose a protein db for fasta, fastx, fatsf, fasty or fasts.Please
+                note that Swissprot usage by and for commercial entities requires
+                a license agreement.
+            prompt: Protein Database
+            format: '" /path/to/fasta/databank/dir/" + str(value)'
+            simple: true
+            mandatory: true
+            name: protein_db
+            precond:
+                '#or':
+                -   '#and':
+                    - {seqtype: protein}
+                    - {fasta: fasta}
+                -   fasta:
+                        '#in': [fastx, fasty, fastf, fasts]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'uniprot: Universal Protein Resource', value: uniprot}
+                - {label: 'uniprot_sprot: Universal Protein Resource (SwissProt part)',
+                    value: uniprot_sprot}
+                - {label: 'uniprot_trembl: Universal Protein Resource (TrEmbl part)',
+                    value: uniprot_trembl}
+                - {label: 'nrprot: NCBI non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot}
+                - {label: 'nrprot_month: NCBI month non-redundant Genbank CDS translations+PDB+Swissprot+PIR',
+                    value: nrprot_month}
+                - {label: 'genpept: Genbank translations (last rel. + upd.)', value: genpept}
+                - {label: 'genpept_new: genpept updates', value: genpept_new}
+                - {label: 'gpbct: genpept bacteries', value: gpbct}
+                - {label: 'gppri: primates', value: gppri}
+                - {label: 'gpmam: other mammals', value: gpmam}
+                - {label: 'gprod: rodents', value: gprod}
+                - {label: 'gpvrt: other vertebrates', value: gpvrt}
+                - {label: 'gpinv: invertebrates', value: gpinv}
+                - {label: 'gppln: plants (including yeast)', value: gppln}
+                - {label: 'gpvrl: virus', value: gpvrl}
+                - {label: 'gpphg: phages', value: gpphg}
+                - {label: 'gpsts: STS', value: gpsts}
+                - {label: 'gpsyn: synthetic', value: gpsyn}
+                - {label: 'gppat: patented', value: gppat}
+                - {label: 'gpuna: unatotated', value: gpuna}
+                - {label: 'gphtg: GS (high throughput Genomic Sequencing)', value: gphtg}
+                - {label: 'sbase: annotated domains sequences', value: sbase}
+        - !mobyle/inputprogramparameter
+            comment: Choose a nucleotide db for fasta, tfasta, tfastx, tfasty, tfastf
+                or tfasts
+            prompt: Nucleotid Database
+            format: '" /path/to/fasta/databank/dir/" + str(value)'
+            simple: true
+            mandatory: true
+            name: nucleotid_db
+            precond:
+                '#or':
+                -   '#and':
+                    - {seqtype: DNA}
+                    - {fasta: fasta}
+                -   fasta:
+                        '#in': [tfasta, tfastx, tfasty, tfastf, tfasts]
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: Choose a database, value: 'null'}
+                - {label: 'embl: Embl last release + updates', value: embl}
+                - {label: 'embl_new: Embl updates', value: embl_new}
+                - {label: 'genbank: Genbank last release + updates', value: genbank}
+                - {label: 'genbank_new: Genbank updates', value: genbank_new}
+                - {label: 'gbbct: genbank bacteria', value: gbbct}
+                - {label: 'gbpri: primates', value: gbpri}
+                - {label: 'gbmam: other mammals', value: gbmam}
+                - {label: 'gbrod: rodents', value: gbrod}
+                - {label: 'gbvrt: other vertebrates', value: gbvrt}
+                - {label: 'gbinv: invertebrates', value: gbinv}
+                - {label: 'gbpln: plants (including yeast)', value: gbpln}
+                - {label: 'gbvrl: virus', value: gbvrl}
+                - {label: 'gbphg: phages', value: gbphg}
+                - {label: 'gbest: EST (Expressed Sequence Tags)', value: gbest}
+                - {label: 'gbsts: STS (Sequence Tagged sites)', value: gbsts}
+                - {label: 'gbsyn: synthetic', value: gbsyn}
+                - {label: 'gbpat: patented', value: gbpat}
+                - {label: 'gbuna: unannotated', value: gbuna}
+                - {label: 'gbgss: Genome Survey Sequences', value: gbgss}
+                - {label: 'gbhtg: GS (high throughput Genomic Sequencing)', value: gbhtg}
+                - {label: 'imgt: IMGT/LIGM-DB, ImMunoGeneTics sequence database',
+                    value: imgt}
+                - {label: 'borrelia: Borrelia burgdorferi complete genome', value: borrelia}
+                - {label: 'ecoli: Escherichia Coli complete genome', value: ecoli}
+                - {label: 'genitalium: Mycoplasma Genitalium complete genome', value: genitalium}
+                - {label: 'pneumoniae: Mycoplasma Pneumoniae complete genome', value: pneumoniae}
+                - {label: 'hpylori: Helicobacter Pylori complete genome', value: hpylori}
+                - {label: 'bsubtilis: Bacillus Subtilis complete genome', value: bsubtilis}
+                - {label: 'tuberculosis: Mycobacterium tuberculosis complete genome',
+                    value: tuberculosis}
+                - {label: 'ypestis: Yersinia pestis unfinished genome', value: ypestis}
+                - {label: 'yeast: Yeast chromosomes', value: yeast}
+                - {label: 'pfalciparum: Plasmodium falciparum 3D7', value: pfalciparum}
+        - !mobyle/inputprogramparameter
+            comment: Break long library sequences into blocks of N residues.  Useful
+                for bacterial genomes, which have only one sequence entry.  -N 2000
+                works well for well for bacterial genomes.
+            prompt: Break long library sequences into blocks (-N)
+            format: ( "" , " -N " + str(value) )[ value is not None ]
+            name: break_long
+            command: false
+            type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Selectivity options
+        name: selectivity_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: ktup sets the sensitivity and speed of the search. If ktup=2,
+                similar regions in the two sequences being compared are found by looking
+                at pairs of aligned residues; if ktup=1, single aligned amino acids
+                are examined. ktup can be set to 2 or 1 for protein sequences, or
+                from 1 to 6 for DNA sequences. The default if ktup is not specified
+                is 2 for proteins and 6 for DNA. 1ktup=1 should be used for oligonucleotides
+                (DNA query length < 20).
+            prompt: Sensitivity and speed of the search
+            format: ("" , " " + str(value) )[ value is not None ]
+            argpos: 4
+            name: ktup
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: The threshold value is normally calculated based on sequence
+                length.
+            prompt: Threshold for band optimization (FASTA, FASTX). (-c)
+            format: ("" , " -c " + str(value) )[ value is not None ]
+            name: optcut
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: The default for fasta with proteins is -12 and -16 for DNAThe
+                default for fastx/fasty/tfastz/tfasty is -15.
+            prompt: Penalty for opening a gap (-f)
+            format: ("" , " -f " + str(value))[ value is not None ]
+            name: gapinit
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: The default for fasta is -2 for proteins and -4 for DNAThe default
+                for fastx/fasty/tfastz/tfasty is -3.
+            prompt: Penalty for gap extension (-g)
+            format: ("" , " -g " + str(value))[ value is not None ]
+            name: gapext
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Expectation value limit for displaying scores and alignments.
+                Defaults  are 10.0 for FASTA  protein searches, 5.0 for translated
+                DNA/protein comparisons, and 2.0 for DNA/DNA searches.
+            prompt: Maximal expectation value threshold for displaying scores and
+                alignments (-E)
+            format: ("" , " -E " + str(value))[ value is not None and value != vdef]
+            name: high_expect
+            command: false
+            type: !mobyle/floattype {default: 10.0}
+        - !mobyle/inputprogramparameter
+            comment: Expectation value lower limit for score and alignment display.  If
+                value is 1e-6  prevents library sequences with E()-values lower than
+                1e-6 from being displayed. This allows the use to focus on more distant
+                relationships.This allow one to skip over close relationships in searches
+                for more distant relationships.
+            prompt: Minimal expectation value threshold for displaying scores and
+                alignments (-F)
+            format: ("" , " -F  " + str(value))[ value is not None ]
+            name: low_expect
+            command: false
+            type: !mobyle/floattype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Scoring options
+        name: score_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparagraph
+            prompt: Nucleic penalty
+            name: scoring_nucleic
+            precond:
+                '#and':
+                - {fasta: fasta}
+                - {seqtype: DNA}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Maximum positive value for a nucleotid match (-r)
+                name: nucleotid_match
+                command: false
+                type: !mobyle/integertype {default: 5}
+            - !mobyle/inputprogramparameter
+                comment: '''+5/-4'' are the default values for nucleotid match/mismatch,
+                    but ''+3/-2'' can perform better in some cases.'
+                prompt: Maximum negative penalty value for a nucleotid mismatch (-r)
+                format: ( "" , ' -r "' + str(nucleotid_match) + '/' + str(value)+
+                    '"' )[ value is not None and nucleotid_match is not None and (nucleotid_match
+                    != 5 and value != vdef) ]
+                name: nucleotid_mismatch
+                precond:
+                    nucleotid_match: {'#ne': None}
+                command: false
+                type: !mobyle/integertype {default: -4}
+        - !mobyle/inputprogramparagraph
+            prompt: Protein penalty
+            name: scoring_protein
+            precond:
+                seqtype: {'#ne': DNA}
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Scoring matrix file (-s)
+                format: ( "" , " -s  " + str(value) )[ value is not None and value
+                    != vdef]
+                name: matrix
+                command: false
+                type: !mobyle/stringtype
+                    default: BL50
+                    options:
+                    - {label: BLOSUM50, value: BL50}
+                    - {label: BLOSUM62, value: BL62}
+                    - {label: BLOSUM80, value: BL80}
+                    - {label: PAM20, value: P20}
+                    - {label: PAM40, value: P40}
+                    - {label: PAM120, value: P120}
+                    - {label: PAM250, value: P250}
+                    - {label: MDM_10, value: M10}
+                    - {label: MDM_20, value: M20}
+                    - {label: MDM_40, value: M40}
+            - !mobyle/inputprogramparameter
+                comment: Particularly useful for fast[xy], where termination codons
+                    are encoded as 'X'.
+                prompt: Penalty for a match to 'X' (independently of the PAM matrix)
+                    (-x)
+                format: ( "" , " -x  " + str(value) )[ value is not None ]
+                name: X_penalty
+                command: false
+                type: !mobyle/integertype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Frameshift and translation options
+        name: frame_transl_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Penalty for frameshift between two codons (fast[xy]/tfast[xy])
+                (-h)
+            format: ("" , " -h  " + str(value))[ value is not None ]
+            name: frameshift
+            precond:
+                fasta:
+                    '#in': [fastx, fasty, tfastx, tfasty]
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Penalty for frameshift within a codon (fasty/tfasty) (-j)
+            format: ("" , " -j  " + str(value))[ value is not None ]
+            name: frameshift_within
+            precond:
+                fasta:
+                    '#in': [fasty, tfasty]
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Search only the three forward frames (-3)
+            format: ("" , " -3")[ value ]
+            name: threeframe
+            precond:
+                fasta:
+                    '#in': [tfasta, tfastx, tfasty]
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Reverse complement the query sequence (-i)
+            format: ( "" , " -i" )[ value ]
+            name: invert
+            precond:
+                fasta:
+                    '#in': [fastx, tfastx, fasty, tfasty]
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Use genetic code for translation (tfasta/tfast[xy]/fast[xy]) (-t)
+            format: ( "" , " -t  " + str(value) )[ value is not None and value !=
+                vdef]
+            name: genetic_code
+            precond:
+                fasta:
+                    '#in': [tfasta, tfastx, tfasty, tfastf, tfasts, fastx, fasty]
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Standard (1), value: '1'}
+                - {label: Vertebrate Mitochondrial (1), value: '2'}
+                - {label: Yeast Mitochondrial (2), value: '3'}
+                - {label: 'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma
+                        (3)', value: '4'}
+                - {label: Invertebrate Mitochondrial (4), value: '5'}
+                - {label: Ciliate Macronuclear and Dasycladacean (5), value: '6'}
+                - {label: Echinoderm Mitochondrial (6), value: '9'}
+                - {label: Euplotid Nuclear (7), value: '10'}
+                - {label: Bacterial (8), value: '11'}
+                - {label: Alternative Yeast Nuclear (9), value: '12'}
+                - {label: Ascidian Mitochondrial (10), value: '13'}
+                - {label: Flatworm Mitochondrial (11), value: '14'}
+                - {label: Blepharisma Macronuclear (12), value: '15'}
+    - !mobyle/inputprogramparagraph
+        prompt: Optimization options
+        name: optimize_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Set the band-width used for optimization. -y 16 is the default
+                for protein when ktup=2 and for all DNA alignments. -y 32 is used
+                for protein and ktup=1. For proteins, optimization slows comparison
+                2-fold and is highly recommended.
+            prompt: Band-width used for optimization (-y)
+            format: ("" , " -y  " + str(value))[ value is not None ]
+            name: band
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            comment: Force Smith-Waterman alignment for output. Smith-Waterman is
+                the default for protein sequences and FASTX, but not for TFASTA or
+                DNA comparisons with FASTA.
+            prompt: Force Smith-Waterman alignment for DNA (-A)
+            format: ("" , " -A")[ value ]
+            name: swalig
+            precond:
+                '#and':
+                -   fasta:
+                        '#in': [tfasta, fasta]
+                - {seqtype: DNA}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Turn off default optimization of all scores greater than OPTCUT.
+                Shirt results by 'initn' scores reduces the accuracy of statistical
+                estimates. This was  the behavior of fasta1 versions.
+            prompt: Turn fasta band optimization off during initial phase (-o)
+            format: ("" , " -o")[ value ]
+            name: noopt
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: In general, 1 and 2 are the best methods.
+            prompt: Specify statistical calculation. (-z)
+            format: ( (( "", " -z  " + str(value) )  [ value is not None and value
+                != vdef]) , " -z 1" + str(value) )[value is not None and value > 0
+                and random is not None ]
+            name: stat
+            command: false
+            type: !mobyle/stringtype
+                default: '1'
+                options:
+                - {label: Turn off statistics (0), value: '0'}
+                - {label: Weigthed regression against the length of the library sequence
+                        (1), value: '1'}
+                - {label: Maximum likelihood estimates of Lambda abd K (2), value: '2'}
+                - {label: Altschul-Gishas statistical (3), value: '3'}
+                - {label: 'Alternate regression method: Variation 1 of 1 (4)', value: '4'}
+                - {label: 'Alternate regression method: Variation 2 of 1 (5)', value: '5'}
+                - {label: Maximum likelihood estimate based on the method of Mott
+                        (6), value: '6'}
+        - !mobyle/inputprogramparameter
+            comment: This doubles the time required for a search, but allows accurate
+                statistics to be estimated for libraries comprised of a single protein
+                family.
+            prompt: Estimate statistical parameters from shuffled copies of each library
+                sequence (-z)
+            name: random
+            precond:
+                stat: {'#gt': '0'}
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Report options
+        name: affichage
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Turn off histogram display (-H)
+            format: ("" , " -H" )[ value ]
+            name: histogram
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Number of similarity scores to be shown (-b)
+            format: (""  , " -b "  + str(value))[ value is not None and value <= high_expect]
+            name: scores
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of alignments to be shown (-d)
+            format: ("" , " -d  " + str(value))[ value is not None and value <= high_expect]
+            name: alns
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: HTML output (-m)
+            format: ( ""  , " -m 6" )[ value ]
+            simple: true
+            name: html_output
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: (MARKX) =0,1,2,3,4. Alternate display of matches and mismatches
+                in alignments.MARKX=0 uses ':','.',' ', for identities, conservative
+                replacements, and non-conservative replacements, respectively.MARKX=1
+                uses ' ','x', and 'X'.MARKX=2 does not show the second sequence, but
+                uses the second alignment line to display matches with a '.' for identity,
+                or with the mismatched residue for mismatches. MARKX=2 is useful for
+                aligning large numbers of similar sequences.MARKX=3 writes out a file
+                of library sequences in FASTA format. MARKX=3 should always be used
+                with the 'SHOWALL' (-a) option, but this does not completely ensure
+                that all of the sequences output will be aligned.MARKX=4 displays
+                a graph of the alignment of the library sequence with respect to the
+                query sequence, so that one can identify the regions of the query
+                sequence that are conserved.
+            prompt: Alternate display of matches and mismatches in alignments (-m)
+            format: ( ""  , " -m  " + str(value) )[ value is not None and value !=
+                vdef]
+            name: markx
+            precond: {'#not': html_output}
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: '0 [: identities] [. conservative repl] [ non-conserv repl]',
+                    value: '0'}
+                - {label: '1: [ identities] [x conservative repl] [X non-conserv repl]',
+                    value: '1'}
+                - {label: '2: [. identities] [res mismatch] - don''t display the 2nd
+                        seq', value: '2'}
+                - {label: '3: writes a file of library sequences in FASTA format',
+                    value: '3'}
+                - {label: '4: displays a graph of the alignment', value: '4'}
+                - {label: '9: 0 + percent identity + coordinates', value: '9'}
+                - {label: '10: output more information', value: '10'}
+        - !mobyle/inputprogramparameter
+            prompt: Sequences ranked by the z-score based on the init1 score (-1)
+            format: ("" , " -1")[ value ]
+            name: init1
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Show normalize score as (-B)
+            format: ( "" , " -B" )[ value is not None and value != vdef]
+            name: z_score_out
+            command: false
+            type: !mobyle/stringtype
+                default: '0'
+                options:
+                - {label: z-score (1), value: '1'}
+                - {label: bit-score (0), value: '0'}
+        - !mobyle/inputprogramparameter
+            prompt: Output line length for sequence alignments (-w)
+            format: ("" , " -w  " + str(value))[ value is not None and value != vdef
+                ]
+            name: linlen
+            command: false
+            type: !mobyle/integertype {default: 60}
+        - !mobyle/inputprogramparameter
+            comment: Causes fasta/lfasta/plfasta to start numbering the aligned sequences
+                starting with offset1 and offset2, rather than 1 and 1. This is particularly
+                useful for showing alignments of promoter regions.
+            prompt: Start numbering the aligned sequences at position x1 x2 (2 numbers
+                separated by comma) (-X)
+            format: ("" , ' -X "' +  str(value) + '"')[ value is not None ]
+            name: offsets
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            prompt: Display more information about the library sequence in the alignment
+                (-L)
+            format: ("" , " -L")[ value ]
+            name: info
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_opt
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Treat lower-case characters in the query or library sequence
+                as 'low-complexity' residues. These characters are treated as 'X'
+                during the initial scan, but are treated as normal residues during
+                the final alignment. Sinces statistical significance is calculated
+                from similarity score calculated during library search, low complexity
+                regions will not produce statistical significant matches.If a significant
+                alignment contains low complexity regions the final score may be higher
+                than the score obtained during the search.
+            prompt: Lower case filtering (-S)
+            format: ( "" , " -S" )[ value ]
+            name: filter
+            command: false
+            type: !mobyle/booleantype {default: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Fasta report
+        filenames: '"fasta.out"'
+        name: outfile
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Html output file
+        filenames: '"fasta.html"'
+        argpos: 100
+        name: html_outfile
+        precond: html_output
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fasta.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+references:
+- {doi: null, label: 'Pearson, W. R. (1999) Flexible sequence similarity searching
+        with the FASTA3 program package. Methods in Molecular Biology', url: null}
+- {doi: null, label: 'W. R. Pearson and D. J. Lipman (1988), Improved Tools for Biological
+        Sequence Analysis, PNAS 85:2444-2448', url: null}
+- {doi: null, label: 'W. R. Pearson (1998) Empirical statistical estimates for sequence
+        similarity searches. In J. Mol. Biol. 276:71-84', url: null}
+- {doi: null, label: 'Pearson, W. R. (1996) Effective protein sequence comparison.
+        In Meth. Enz., R. F. Doolittle, ed. (San Diego: Academic Press) 266:227-258',
+    url: null}
+homepage_links: ['http://fasta.bioch.virginia.edu/fasta_www2/fasta_list2.shtml']
+env: {}
+source_links: ['http://faculty.virginia.edu/wrpearson/fasta/']

@@ -1,0 +1,175 @@
+!mobyle/program
+name: hmmalign
+title: HMMALIGN
+description: Align sequences to a profile HMM
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"hmmalign"'
+        argpos: 0
+        name: hmmcmd
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Input file
+        name: infile
+        children:
+        - !mobyle/inputprogramparagraph
+            comment: "Input sequence file may  be in  any unaligned  or  aligned file\
+                \ format. If  it is \n            in  a multiple alignment format\
+                \  (e.g. Stockholm, MSF,  ClustalW),  the  existing  alignment is\
+                \  \n            ignored  (i.e.,  the\n\t      sequences are read\
+                \ as if they were unaligned)."
+            prompt: Input sequences file
+            name: file
+            argpos: 3
+            children:
+            - !mobyle/inputprogramparameter
+                prompt: Sequences File
+                format: '" " + str(seqfile)'
+                simple: true
+                mandatory: true
+                name: seqfile
+                command: false
+                type: !mobyle/formattedtype
+                    format_terms: ['EDAM_format:2200', 'EDAM_format:1927', 'EDAM_format:1936',
+                        'EDAM_format:2188']
+                    data_terms: ['EDAM_data:2044']
+        - !mobyle/inputprogramparameter {prompt: Profile HMM file, format: '" "+str(value)',
+            simple: true, argpos: 2, mandatory: true, name: hmmfile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Expert Options
+        name: expert_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "The alphabet type (amino, DNA, or RNA) is autodetected by default,\
+                \ by looking at the composition of the\n            msafile. Autodetection\
+                \ is normally quite reliable, but occasionally alphabet type may be\
+                \ ambiguous and\n            autodetection can fail (for instance,\
+                \ on tiny toy alignments of just a few residues). To avoid this, or\
+                \ to\n            increase robustness in automated analysis pipelines,\
+                \ you may specify the alphabet type of msafile with\n            these\
+                \ options.Protein: Specify that all sequences in seqfile are proteins.\
+                \ By default, alphabet type is\n                    autodetected from\
+                \ looking at the residue composition.DNA: Specify that all sequences\
+                \ in seqfile are DNAs.RNA: Specify that all sequences in seqfile are\
+                \ RNAs."
+            prompt: Assert sequences and hmm files are both in same type
+            format: ("", " " + str(value))[ value is not None and value != vdef]
+            name: biotype
+            command: false
+            type: !mobyle/stringtype
+                default: 'null'
+                options:
+                - {label: No Autodetection, value: 'null'}
+                - {label: Protein, value: --amino}
+                - {label: DNA, value: --dna}
+                - {label: RNA, value: --rna}
+    - !mobyle/inputprogramparagraph
+        prompt: Common Options
+        name: common_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Include columns in the output alignment for every match (consensus)\
+                \ state in\n            the hmmfile, even if it means having all-gap\
+                \ columns. This is useful in analysis\n            pipelines that\
+                \ need to be able to maintain a predetermined profile HMM architecture\n\
+                \            (with an unchanging number of consensus columns) through\
+                \ an hmmalign\n            step."
+            prompt: Include all consensus columns in ali, even if all gaps
+            format: ( "" , " --allcol " )[ value  ]
+            name: allcol
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: "Merge the existing alignment in file into the result, where\
+                \ the file is exactly the\n            same alignment that was used\
+                \ to build the model in hmmfile. This is done using\n            a\
+                \ 'map' of alignment columns to consensus profile positions that is\
+                \ stored in the\n            hmmfile. The multiple alignment in the\
+                \ file will be exactly reproduced in its consensus\n            columns\
+                \ (as defined by the profile), but the displayed alignment in insert\
+                \ columns\n            may be altered, because insertions relative\
+                \ to a profile are considered by convention\n            to be unaligned\
+                \ data."
+            prompt: Include alignment file
+            format: ( "" , " --mapali " + str(value) )[ value is not None ]
+            name: mapali
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1961']
+                data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Trim nonhomologous residues (assigned to N and C states in the\
+                \ optimal alignments)\n            from the resulting multiple alignment\
+                \ output."
+            prompt: Trim terminal tails of nonaligned residues from alignment
+            format: ( "", " --trim" )[ value ]
+            name: trim
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Outfile name (-o)
+            format: ("", " -o " + str(value))[value is not None]
+            name: outfile_name
+            command: false
+            type: !mobyle/stringtype {}
+        - !mobyle/inputprogramparameter
+            comment: "Specify that the msafile is in the selected format. Currently\
+                \ the accepted multiple \n            alignment sequence file formats\
+                \ only include Stockholm and SELEX. Default is to autodetect\n   \
+                \         the format of the file."
+            prompt: Output format
+            format: ( "" , " --outformat " + str( value) )[ value is not None and
+                value != vdef ]
+            simple: true
+            name: outputformat
+            command: false
+            type: !mobyle/stringtype
+                default: STOCKHOLM
+                options:
+                - {label: STOCKHOLM, value: STOCKHOLM}
+                - {label: Pfam, value: Pfam}
+                - {label: A2M, value: A2M}
+                - {label: PSIBLAST, value: PSIBLAST}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output Options
+        name: output_options
+        argpos: 1
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Alignment file
+            filenames: str(outfile_name)
+            name: outputfile
+            precond:
+                outfile_name: {'#ne': None}
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+        - !mobyle/outputprogramparameter
+            prompt: Alignment file
+            filenames: '"hmmalign.out"'
+            name: outfile
+            precond:
+                outfile_name: {'#eq': None}
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:0863']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"hmmalign.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0300']
+topics: ['EDAM_topics:0188']
+env: {}

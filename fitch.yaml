@@ -1,0 +1,328 @@
+!mobyle/program
+name: fitch
+title: fitch
+description: Fitch-Margoliash and Least-Squares Distance Methods
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        format: '"fitch <fitch.params"'
+        argpos: 0
+        name: fitch
+        command: true
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        comment: "Give a file containing a distance matrix\n\t  obtained by distance\
+            \ matrix programs like protdist or\n\t  dnadist"
+        prompt: Distances matrix File
+        format: '"ln -s " + str( value ) + " infile && "'
+        simple: true
+        argpos: -5
+        mandatory: true
+        name: infile
+        precond:
+            infile: {'#ne': infile}
+        command: false
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0870']
+    - !mobyle/inputprogramparameter
+        prompt: Method (D)
+        paramfile: fitch.params
+        name: Method
+        command: false
+        type: !mobyle/stringtype {default: FM}
+    - !mobyle/inputprogramparagraph
+        prompt: Fitch options
+        name: fitch_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Negative branch lengths allowed (-)
+            format: ( "" , "-\n" )[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: negative_branch
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: For the Fitch-Margoliash method, which is the default method
+                with this program, P is 2.0. For the Cavalli-Sforza and Edwards least
+                squares method it should be set to 0 (so that the denominator is always
+                1). An intermediate method is also available in which P is 1.0, and
+                any other value of P, such as 4.0 or -2.3, can also be used. This
+                generates a whole family of methods.Please read the documentation
+                (man distance).
+            prompt: Power (P)
+            format: ( "" , "P\n" + str(value ) + "\n" )[ value is not None and value
+                != vdef ]
+            argpos: 1
+            paramfile: fitch.params
+            name: power
+            command: false
+            type: !mobyle/floattype {default: 2.0}
+    - !mobyle/inputprogramparagraph
+        prompt: Randomize options
+        name: jumble_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Randomize (jumble) input order (J)
+            format: ( "" , "J\n"+str( jumble_seed ) +"\n" + str( jumble_number ) +"\n"
+                )[ value ]
+            argpos: 20
+            paramfile: fitch.params
+            name: jumble
+            precond: {'#not': user_tree}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed (must be odd)
+            format: '""'
+            argpos: 19
+            mandatory: true
+            name: jumble_seed
+            precond: jumble
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Number of times to jumble
+            format: '""'
+            argpos: 19
+            name: jumble_number
+            precond: jumble
+            command: false
+            type: !mobyle/integertype {default: 1}
+    - !mobyle/inputprogramparagraph
+        prompt: Bootstrap options
+        name: bootstrap
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Analyze multiple data sets (M)
+            format: ( "", "M\n"+str(multiple_number)+"\n"+str(multiple_seed)+"\n")[value]
+            argpos: 10
+            paramfile: fitch.params
+            name: multiple
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: How many data sets
+            format: '""'
+            argpos: 9
+            mandatory: true
+            name: multiple_number
+            precond: multiple
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Random number seed (must be odd)
+            format: '""'
+            argpos: 19
+            mandatory: true
+            name: multiple_seed
+            precond: multiple
+            command: false
+            type: !mobyle/integertype {}
+        - !mobyle/inputprogramparameter
+            prompt: Compute a consensus tree
+            format: ( "" , " && cp infile fitch.infile &&  cp fitch.outtree intree
+                && consense <consense.params && mv outtree consense.outtree && mv
+                outfile consense.outfile" )[ value ]
+            argpos: 10
+            name: consense
+            precond:
+                '#and': [multiple, print_treefile]
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: consense.params
+        name: consense_confirm
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"T\n"'
+        argpos: -2
+        paramfile: consense.params
+        name: consense_terminal_type
+        precond: consense
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: User tree options
+        name: user_tree_opt
+        children:
+        - !mobyle/inputprogramparameter
+            comment: 'To give your tree to the program, you must normally put it in
+                the alignment file, after the sequences, preceded by a line indicating
+                how many trees you give.Here, this will be automatically appended:
+                just give a treefile and the number of trees in it.'
+            prompt: 'Use User tree (default: no, search for best tree) (U)'
+            format: ( "" , "U\n")[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            mandatory: true
+            name: user_tree
+            precond:
+                tree_file: {'#ne': None}
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: User Tree file
+            format: ("" , "cat "+str( tree_file ) + " >> intree; " )[ value is not
+                None ]
+            argpos: -1
+            name: tree_file
+            precond: user_tree
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1910']
+                data_terms: ['EDAM_data:0872']
+        - !mobyle/inputprogramparameter
+            prompt: Use lengths from user trees (N)
+            format: ( "" , "N\n" )[ value ]
+            argpos: 2
+            paramfile: fitch.params
+            name: use_lengths
+            precond: user_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Output options
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to print a semi-graphical picture of the tree
+                in the outfile.
+            prompt: Print out tree (3)
+            format: ( "3\n" , "" )[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: print_tree
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: Tells the program to save the tree in a treefile (a standard
+                representation of trees where the tree is specified by a nested pairs
+                of parentheses, enclosing names and separated by commas).
+            prompt: Write out trees onto tree file (4)
+            format: ( "4\n" , "" )[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: print_treefile
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Print out the data at start of run (1)
+            format: ( "" , "1\n" )[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: printdata
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Other options
+        name: other_options
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Outgroup species root (O)
+            format: ( "" , "O\n" +str( value )+ "\n" )[ value is not None and value
+                != vdef]
+            argpos: 1
+            paramfile: fitch.params
+            name: outgroup
+            command: false
+            type: !mobyle/integertype {default: 1}
+        - !mobyle/inputprogramparameter
+            prompt: Matrix format
+            argpos: 1
+            paramfile: fitch.params
+            name: triangular
+            command: false
+            type: !mobyle/stringtype {default: square}
+        - !mobyle/inputprogramparameter
+            comment: If the S (subreplication) option is in effect, the above degrees
+                of freedom must be modified by noting that N is not n(n-1)/2 but is
+                the sum of the numbers of replicates of all cells in the distance
+                matrix read in, which may be either square or triangular. A further
+                explanation of the statistical test of the clock is given in a paper
+                of mine (Felsenstein, 1986).
+            prompt: Subreplicates (S)
+            format: ( "" , "S\n" )[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: subreplicates
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            comment: is the Global search option. This causes, after the last species
+                is added to the tree, each possible group to be removed and re-added.
+                This improves the result, since the position of every species is reconsidered.
+                It approximately triples the run-time of the program. It is not an
+                option in KITSCH because it is the default and is always in force
+                there.
+            prompt: Global rearrangements (G)
+            format: ( "", "G\n")[ value ]
+            argpos: 1
+            paramfile: fitch.params
+            name: global
+            command: false
+            type: !mobyle/booleantype {default: false}
+    - !mobyle/inputprogramparameter
+        format: '"Y\n"'
+        argpos: 1000
+        paramfile: fitch.params
+        name: confirm
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparameter
+        format: '"0\n"'
+        argpos: -1
+        paramfile: fitch.params
+        name: terminal_type
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter {prompt: Consense output file, filenames: '"consense.outfile"',
+        name: consense_outfile, precond: consense}
+    - !mobyle/outputprogramparameter
+        prompt: Consense tree file
+        filenames: '"consense.outtree"'
+        name: consense_treefile
+        precond: consense
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter {prompt: Fitch output file, filenames: '"fitch.outfile"',
+        name: outfile}
+    - !mobyle/outputprogramparameter
+        prompt: Fitch tree file
+        filenames: '"fitch.outtree"'
+        name: treefile
+        precond: print_treefile
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:1910']
+            data_terms: ['EDAM_data:0872']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"fitch.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"fitch.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "This program carries out Fitch-Margoliash,\n\t  Least Squares, and a number\
+    \ of similar methods"
+operations: ['EDAM_operation:3293']
+topics: ['EDAM_topic:0084']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/phylip/doc/fitch.html']
+env: {}

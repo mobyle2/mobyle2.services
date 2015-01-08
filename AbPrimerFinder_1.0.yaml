@@ -1,0 +1,90 @@
+!mobyle/program
+name: AbPrimerFinder
+version: '1.0'
+title: AbPrimerFinder
+description: Identifies the forward and reverse primer of a sequence
+authors: Kathy Yu,Yves Fomekong Nanfack
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        prompt: list of protein sequences in  (-A)
+        format: '" " + str( value )'
+        simple: true
+        argpos: 20
+        mandatory: true
+        name: aafile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        prompt: list of nucleotide sequences (-N)
+        format: '"  " + str( value )'
+        simple: true
+        argpos: 30
+        mandatory: true
+        name: ntfile
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparameter
+        comment: Heavy or Light chain sequences
+        prompt: Heavy or Light chain sequences (-T)
+        format: '"  " + str( value )'
+        simple: true
+        argpos: 10
+        mandatory: true
+        name: vType
+        command: false
+        type: !mobyle/stringtype
+            default: VH
+            options:
+            - {label: VH, value: VH}
+            - {label: VL, value: VL}
+    - !mobyle/inputprogramparameter {comment: "The excel file has to be organized\
+            \ as follow- One  sheet for VH FORWARD, VH REVERSE, VL FORWARD, VL REVERSE.-\
+            \ Each sheet has 3 columns as PRIMERNAME\tAA\tNT , where AA and NT are\
+            \ respectively the amino acids and the nucleotides sequence.", prompt: excel
+            file with the list of primers  (-P), format: '("", "  " + str(value))[value
+            is not None]', simple: true, argpos: 40, mandatory: true, name: parameterPrimerFile,
+        command: false}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output parameters
+        name: outputparam
+        argpos: 5
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: PRIMER LIST.
+            filenames: '"*.out"'
+            name: results
+            output_type: stdout
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2048']
+        - !mobyle/outputprogramparameter {comment: analysis, prompt: NEW PRIMER, filenames: '"*.csv"',
+            name: dat}
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"AbPrimerFinder.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+comment: "As input, the program  reads a list of protein sequences and their corresponding\
+    \ NT sequences, both in fasta format. In addition, the program reads an excel\
+    \ file containing a list of predefined primers.\n                \tEach sequence\
+    \ should be a variable domain. The AA sequence should be from FR1 to FR4. 3 cases\
+    \ scenario are possible:- Perfect match: an existing primer is idenfied (AA match\
+    \ and NT match).                     e.g: DA0000004881_a03 \tForward:\tMSVH3_f1_NcoI\t\
+    AA:\tEVQLV \tNT:\tGaGgtgcagctggtg\t;- Half match:  an existing primer is identified\
+    \ at the AA level, but the NT sequence is new. e.g: DA0000004881_a03 Reverse:\t\
+    Rev_VH1\tAA:\tVTVSS\tNEW NT:\tGTCACCGTCTCTTCG- No match, none of the existing\
+    \ AA primers could be identified;                             e.g: DA0000004881_a01\
+    \ \tForward:\tNEW PRIMER\tAA:\t    \tNT:\tNEWIf any new primer is identified,\
+    \ a excel file (in csv format) is returned additionaly."
+operations: ['EDAM_operation:0308']
+topics: ['EDAM_topic:0632']
+command: source /sgcomp/aletheia/etc/aletheia_YFNconfig.bash; source /sgcomp/aletheia/packages/x86_64/Matlab/Config/.linux2013a.bashrc;
+    /sgcomp/aletheia/packages/x86_64/Matlab/Documents/Projects/Bin/PrimerFinder/PrimerFinder/src/run_PrimerFinder.sh  $MCR_ROOT
+env: {}

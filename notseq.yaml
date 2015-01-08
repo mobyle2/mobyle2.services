@@ -1,0 +1,144 @@
+!mobyle/program
+name: notseq
+title: notseq
+description: Write to file a subset of an input stream of sequences
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: "Enter a list of sequence names or accession numbers to exclude\
+                \ from the sequences read in. The excluded sequences will be  written\
+                \ to the file specified in the 'junkout' parameter. The  remainder\
+                \ will be written out to the file specified in the  'outseq' parameter.\
+                \ \n  The list of sequence names can be separated by either spaces\
+                \ or  commas. \n  The sequence names can be wildcarded. \n  The sequence\
+                \ names are case independent. \n  An example of a list of sequences\
+                \ to be excluded is: \n  myseq, hs*, one two three \n  a file containing\
+                \ a list of sequence names can be specified by  giving the file name\
+                \ preceeded by a '@', eg: '@names.dat'"
+            prompt: Sequence names to exclude
+            format: ("", " -exclude=" + str(value))[value is not None]
+            simple: true
+            argpos: 2
+            mandatory: true
+            name: exclude
+            command: false
+            type: !mobyle/stringtype {}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output sequence file (outseq)
+            format: ("" , " -outseq=" + str(value))[value is not None]
+            argpos: 3
+            name: outseq
+            command: false
+            type: !mobyle/stringtype {default: notseq.outseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: osformat_outseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+        - !mobyle/inputprogramparameter
+            comment: This file collects the sequences which you have excluded from
+                the main output file of sequences.
+            prompt: Name of the output sequence file (junkoutseq)
+            format: ("" , " -junkoutseq=" + str(value))[value is not None]
+            argpos: 5
+            name: junkoutseq
+            command: false
+            type: !mobyle/stringtype {default: notseq.junkoutseq}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the sequence output format
+            format: ("", " -osformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 6
+            name: osformat_junkoutseq
+            command: false
+            type: !mobyle/stringtype
+                default: FASTA
+                options:
+                - {label: Embl, value: EMBL}
+                - {label: Fasta, value: FASTA}
+                - {label: Gcg, value: GCG}
+                - {label: Genbank, value: GENBANK}
+                - {label: Nbrf, value: NBRF}
+                - {label: Pir, value: PIR}
+                - {label: Raw, value: RAW}
+                - {label: Swissprot, value: SWISSPROT}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 7
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outseq_out option
+            filenames: outseq
+            name: outseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+        - !mobyle/outputprogramparameter
+            prompt: Junkoutseq_out option
+            filenames: junkoutseq
+            name: junkoutseq_out
+            type: !mobyle/formattedtype
+                data_terms: ['EDAM_data:2044']
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"notseq.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"notseq.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:2121']
+topics: ['EDAM_topic:0220']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/notseq.html', 'http://emboss.sourceforge.net/docs/themes']
+command: notseq
+env: {}

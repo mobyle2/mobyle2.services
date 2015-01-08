@@ -1,0 +1,227 @@
+!mobyle/program
+name: tcode
+title: tcode
+description: Identify protein-coding regions using Fickett TESTCODE statistic
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparagraph
+        prompt: Input section
+        name: input
+        children:
+        - !mobyle/inputprogramparameter
+            prompt: Sequence option
+            format: ("", " -sequence=" + str(value))[value is not None]
+            simple: true
+            argpos: 1
+            mandatory: true
+            name: sequence
+            command: false
+            type: !mobyle/formattedtype
+                format_terms: ['EDAM_format:1927', 'EDAM_format:2200', 'EDAM_format:1935',
+                    'EDAM_format:1936', 'EDAM_format:1948', 'EDAM_format:1948', 'EDAM_format:1957',
+                    'EDAM_format:2188']
+                data_terms: ['EDAM_data:2977']
+        - !mobyle/inputprogramparameter {comment: The default data file is Etcode.dat
+                and contains coding probabilities for each base. The probabilities
+                are for both  positional and compositional information., prompt: Testcode
+                data file, format: '("", " -datafile=" + str(value))[value is not
+                None ]', argpos: 2, name: datafile, command: false}
+    - !mobyle/inputprogramparagraph
+        prompt: Required section
+        name: required
+        children:
+        - !mobyle/inputprogramparameter
+            comment: This is the number of nucleotide bases over which the TESTCODE
+                statistic will be performed each time. The window will  then slide
+                along the sequence, covering the same number of bases  each time.
+            prompt: Length of sliding window (value greater than or equal to 200)
+            format: ("", " -window=" + str(value))[value is not None and value!=vdef]
+            simple: true
+            argpos: 3
+            mandatory: true
+            name: window
+            command: false
+            type: !mobyle/integertype {default: 200}
+            ctrls:
+            -   message: Value greater than or equal to 200 is required
+                test:
+                    value: {'#gte': '200'}
+    - !mobyle/inputprogramparagraph
+        prompt: Advanced section
+        name: advanced
+        children:
+        - !mobyle/inputprogramparameter
+            comment: The selected window will, by default, slide along the nucleotide
+                sequence by three bases at a time, retaining the frame  (although
+                the algorithm is not frame sensitive). This may be  altered to increase
+                or decrease the increment of the slide.
+            prompt: Stepping increment for the window (value greater than or equal
+                to 1)
+            format: ("", " -step=" + str(value))[value is not None and value!=vdef]
+            argpos: 4
+            name: step
+            command: false
+            type: !mobyle/integertype {default: 3}
+            ctrls:
+            -   message: Value greater than or equal to 1 is required
+                test:
+                    value: {'#gte': '1'}
+    - !mobyle/inputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/inputprogramparameter
+            comment: On selection a graph of the sequence (X axis) plotted against
+                the coding score (Y axis) will be displayed. Sequence  above the green
+                line is coding, that below the red line is  non-coding.
+            prompt: Graphical display
+            format: ("", " -plot")[ bool(value) ]
+            argpos: 5
+            name: plot
+            command: false
+            type: !mobyle/booleantype {default: false}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the report file
+            format: ("" , " -outfile=" + str(value))[value is not None]
+            argpos: 6
+            name: outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype {default: tcode.report}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the report output format
+            format: ("", " -rformat=" + str(value))[value is not None and value!=vdef]
+            argpos: 7
+            name: rformat_outfile
+            precond: {'#not': plot}
+            command: false
+            type: !mobyle/stringtype
+                default: TABLE
+                options:
+                - {label: Dasgff, value: DASGFF}
+                - {label: Dbmotif, value: DBMOTIF}
+                - {label: Diffseq, value: DIFFSEQ}
+                - {label: Embl, value: EMBL}
+                - {label: Excel, value: EXCEL}
+                - {label: Feattable, value: FEATTABLE}
+                - {label: Genbank, value: GENBANK}
+                - {label: Gff, value: GFF}
+                - {label: Listfile, value: LISTFILE}
+                - {label: Motif, value: MOTIF}
+                - {label: Nametable, value: NAMETABLE}
+                - {label: Pir, value: PIR}
+                - {label: Regions, value: REGIONS}
+                - {label: Seqtable, value: SEQTABLE}
+                - {label: Simple, value: SIMPLE}
+                - {label: Srs, value: SRS}
+                - {label: Swiss, value: SWISS}
+                - {label: Table, value: TABLE}
+                - {label: Tagseq, value: TAGSEQ}
+        - !mobyle/inputprogramparameter
+            prompt: Choose the graph output format
+            format: (" -graph=" + str(vdef), " -graph=" + str(value))[value is not
+                None and value!=vdef]
+            argpos: 8
+            name: graph
+            precond: plot
+            command: false
+            type: !mobyle/stringtype
+                default: png
+                options:
+                - {label: Png, value: png}
+                - {label: Gif, value: gif}
+                - {label: Cps, value: cps}
+                - {label: Ps, value: ps}
+                - {label: Meta, value: meta}
+                - {label: Data, value: data}
+        - !mobyle/inputprogramparameter
+            prompt: Name of the output graph
+            format: ("" , " -goutfile=" + str(value))[value is not None]
+            argpos: 9
+            name: xy_goutfile
+            precond: plot
+            command: false
+            type: !mobyle/stringtype {default: tcode_xygraph}
+    - !mobyle/inputprogramparameter
+        prompt: Turn off any prompting
+        format: '" -auto -stdout"'
+        argpos: 10
+        name: auto
+        command: false
+        hidden: true
+        type: !mobyle/stringtype {}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparagraph
+        prompt: Output section
+        name: output
+        children:
+        - !mobyle/outputprogramparameter
+            prompt: Outfile_out option
+            filenames: outfile
+            name: outfile_out
+            precond:
+                rformat_outfile:
+                    '#in': [DASGFF, DBMOTIF, DIFFSEQ, EMBL, EXCEL, FEATTABLE, GENBANK,
+                        GFF, LISTFILE, MOTIF, NAMETABLE, PIR, REGIONS, SEQTABLE, SIMPLE,
+                        SRS, SWISS, TABLE, TAGSEQ]
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.png"'
+            name: xy_outgraph_png
+            precond:
+                '#and':
+                - plot
+                - {graph: png}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.gif"'
+            name: xy_outgraph_gif
+            precond:
+                '#and':
+                - plot
+                - {graph: gif}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.ps"'
+            name: xy_outgraph_ps
+            precond:
+                '#or':
+                -   '#and':
+                    - plot
+                    - {graph: ps}
+                - {graph: cps}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.meta"'
+            name: xy_outgraph_meta
+            precond:
+                '#and':
+                - plot
+                - {graph: meta}
+        - !mobyle/outputprogramparameter
+            prompt: Graph file
+            filenames: '"*.dat"'
+            name: xy_outgraph_data
+            precond:
+                '#and':
+                - plot
+                - {graph: data}
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"tcode.out"'
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+    - !mobyle/outputprogramparameter
+        prompt: Standard error
+        filenames: '"tcode.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+operations: ['EDAM_operation:0436']
+topics: ['EDAM_topic:0109']
+documentation_links: ['http://bioweb2.pasteur.fr/docs/EMBOSS/tcode.html', 'http://emboss.sourceforge.net/docs/themes']
+command: tcode
+env: {}
