@@ -1,0 +1,117 @@
+!mobyle/program
+name: makeblastdb
+version: 2.2.28
+title: makeblastdb
+description: Application to create BLAST databases
+authors: GNU
+inputs: !mobyle/inputparagraph
+    children:
+    - !mobyle/inputprogramparameter
+        comment:  Input file to use as source
+        prompt: Input file
+        format: '" -in " + str(value)'
+        argpos: 1
+        mandatory: true
+        name: input_file
+        command: false
+        type: !mobyle/formattedtype
+            format_terms: ['EDAM_format:2200']
+            data_terms: ['EDAM_data:0863']
+    - !mobyle/inputprogramparameter
+        comment: 
+        prompt: Database type
+        format: '" -dbtype " + str(value)'
+        argpos: 2
+        mandatory: true
+        name: dbtype
+        command: false
+        type: !mobyle/stringtype
+            default: nucl
+            options:
+                - {label: Nucleic, value: nucl}
+                - {label: Proteic, value: prot}
+outputs: !mobyle/outputparagraph
+    children:
+    - !mobyle/outputprogramparameter
+        prompt: Standard output
+        filenames: '"makeblastdb.out"'
+        argpos: 1
+        name: stdout
+        output_type: stdout
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+            format_terms: ['EDAM_format:1964']
+    - !mobyle/outputprogramparameter
+        prompt: Report
+        filenames: '"makeblastdb.err"'
+        name: stderr
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:2048']
+            format_terms: ['EDAM_format:1964']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database NIN file
+        comment: DNA index file
+        filenames: '"*.nin"'
+        name: nin_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database NHR file
+        comment: DNA header file
+        filenames: '"*.nhr"'
+        name: nhr_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database NSQ file
+        comment: DNA sequence file
+        filenames: '"*.nsq"'
+        name: nsq_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database NAL file
+        comment: DNA alias file
+        filenames: '"*.nal"'
+        name: nal_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database PIN file
+        comment: Protein index file
+        filenames: '"*.pin"'
+        name: pin_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database PHR file
+        comment: Protein header file
+        filenames: '"*.phr"'
+        name: phr_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database PSQ file
+        comment: Protein sequence file
+        filenames: '"*.psq"'
+        name: psq_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+    - !mobyle/outputprogramparameter
+        prompt: BLAST Database PAL file
+        comment: Protein alias file
+        filenames: '"*.pal"'
+        name: pal_file
+        type: !mobyle/formattedtype
+            data_terms: ['EDAM_data:0955']
+            format_terms: ['EDAM_format:3326']
+public_name: makeblastdb
+command: makeblastdb
+env: {}
